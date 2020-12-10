@@ -20,6 +20,14 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'pause_start_time',
+        'pause_end_time',
+        'working_days',
+        'phone',
+        'work_start_time',
+        'work_end_time',
+        'manager_id',
+        'developer'
     ];
 
     /**
