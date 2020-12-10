@@ -48,5 +48,7 @@ Thumbs.db
 *.mov
 *.wmv
 
+# Files specific for this project
 .env
+vendor
 
