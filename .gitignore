@@ -51,4 +51,7 @@ Thumbs.db
 # Files specific for this project
 .env
 /vendor
+/storage
+/public/storage
+/public/uploads
 
