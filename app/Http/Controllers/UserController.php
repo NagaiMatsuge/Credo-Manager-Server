@@ -14,12 +14,12 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $user = User::all();
-        return $this->successResposne($user);
+        return $this->successResponse($user);
     }
-    
+
     public function show(User $id)
     {
-        return $this->successResposne($id);;
+        return $this->successResponse($id);;
     }
 
     public function store(Request $request)
@@ -31,20 +31,20 @@ class UserController extends Controller
             'pause_start_time' => 'required',
             'pause_end_time' => 'required',
             'working_days' => 'required',
-            'developer' => 'required'                      
+            'developer' => 'required'
         ]));
-        return $this->successResposne($create_user);
+        return $this->successResponse($create_user);
     }
 
     public function update(Request $request, User $id)
     {
         $id->update($request->all());
-        return $this->successResposne($id);
+        return $this->successResponse($id);
     }
 
     public function destroy($user)
     {
         $res = DB::table('users')->where('id', $user)->delete();
-        return $this->successResposne($res);   
+        return $this->successResponse($res);
     }
 }
