@@ -50,5 +50,5 @@ Thumbs.db
 
 # Files specific for this project
 .env
-vendor
+/vendor
 
