@@ -1,29 +1,17 @@
-# README #
+# README
 
-This README would normally document whatever steps are necessary to get your application up and running.
+Time Manager App
 
-### What is this repository for? ###
+### How do I get set up?
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+- git clone https://NagaiMatsuge@bitbucket.org/NagaiMatsuge/backend.git
+- cp .env.example .env
+- composer install
+- php artisan key:generate
+- php artisan migrate
 
-### How do I get set up? ###
+### Contribution guidelines
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+- Writing tests
+- Code review
+- Other guidelines
