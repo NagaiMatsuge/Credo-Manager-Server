@@ -3,6 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Authentication Routes
+require_once __DIR__ . "/Auth/auth.php";
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
