@@ -85,15 +85,15 @@ class Handler extends ExceptionHandler
             ]);
         }
 
-        if ($exception instanceof QueryException && $request->wantsJson()) {
-            return response()->json([
-                'data' => [],
-                'message' => 'Wrong Input Details are given',
-                'success' => false,
-                'error' => true,
-                'status_code' => 422
-            ]);
-        }
+        // if ($exception instanceof QueryException && $request->wantsJson()) {
+        //     return response()->json([
+        //         'data' => [],
+        //         'message' => 'Wrong Input Details are given',
+        //         'success' => false,
+        //         'error' => true,
+        //         'status_code' => 422
+        //     ]);
+        // }
 
         if ($exception instanceof MethodNotAllowedHttpException && $request->wantsJson()) {
             return response()->json([
