@@ -9,6 +9,7 @@ Route::group(['namespace' => 'Auth'], function () {
     Route::post('/login', [LoginController::class, 'login']);
     Route::post('/password/forgot', [PasswordResetController::class, 'forgot']);
     Route::post('/password/reset', [PasswordResetController::class, 'reset']);
+    Route::get('/create', [LoginController::class, 'create']);
 
     Route::group(['middleware' => 'auth:api'], function () {
         Route::post('/logout', [LogoutController::class, 'logout']);
