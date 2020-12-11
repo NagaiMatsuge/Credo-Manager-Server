@@ -22,20 +22,6 @@ class UserController extends Controller
         return $this->successResponse($id);;
     }
 
-    public function store(Request $request)
-    {
-        $create_user = User::create($request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email',
-            'password' => 'required|string|min:8',
-            'pause_start_time' => 'required',
-            'pause_end_time' => 'required',
-            'working_days' => 'required',
-            'developer' => 'required'
-        ]));
-        return $this->successResponse($create_user);
-    }
-
     public function update(Request $request, User $id)
     {
         $id->update($request->all());
