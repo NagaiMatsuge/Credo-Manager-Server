@@ -25,7 +25,7 @@ class PasswordResetController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user)
-            return $this->errorResponse('Email doesn\'t exists', 403);
+            return $this->errorResponse('not-found/user');
 
         $token = Str::random(60);
         DB::table('password_resets')->updateOrInsert(
@@ -40,7 +40,7 @@ class PasswordResetController extends Controller
 
         Mail::to($user)->send(new PasswordReset($user, $token));
 
-        return $this->successResponse([], 200, "Email is sent to $user->email");
+        return $this->successResponse([], 200, "email-reset");
     }
 
     //* Reset password of the user
@@ -53,10 +53,10 @@ class PasswordResetController extends Controller
 
         $token = DB::table('password_resets')->where('token', $request->token)->first();
         if (!$token)
-            return $this->errorResponse('Password reset failed');
+            return $this->errorResponse('not-found/user');
         $user = User::where('email', $token->email)->first();
         if (!$user)
-            return $this->errorResponse('User not found', 403);
+            return $this->errorResponse('not-found/user', 403);
         $user->update(['password' => Hash::make($request->password)]);
         DB::table('password_resets')->where('token', $request->token)->delete();
         info($request->password);

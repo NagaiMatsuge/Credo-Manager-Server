@@ -23,6 +23,6 @@ trait ResponseTrait
             'error' => true,
             'status_code' => $status_c,
             'message' => $message
-        ], $status_c);
+        ]);
     }
 }

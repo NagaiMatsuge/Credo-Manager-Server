@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 
 class VerifyEmail extends Mailable
@@ -25,8 +26,9 @@ class VerifyEmail extends Mailable
      */
     public function __construct($user, $password)
     {
-        $this->url = URL::temporarySignedRoute('verify/email', now()->addMinutes(10), [
-            'id' => $user->id
+        $this->url = URL::temporarySignedRoute('verify/email', now()->addDays(1), [
+            'id' => $user->id,
+            'email' => Hash::make($user->email)
         ]);
         $this->user = $user;
         $this->password = $password;

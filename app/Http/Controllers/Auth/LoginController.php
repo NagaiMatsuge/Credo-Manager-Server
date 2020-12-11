@@ -23,10 +23,10 @@ class LoginController extends Controller
             'remember_me' => 'nullable|boolean'
         ]);
 
-        if (!Auth::attempt($request->only(['email', 'password']), $request->remember_me))
-            return $this->errorResponse('Credentials don\'t match our records!', 401);
+        if (!Auth::attempt($request->only(['email', 'password'])))
+            return $this->errorResponse('auth/fail', 400);
         $user = $request->user();
-        $request->user()->tokens()->delete();
+        // $request->user()->tokens()->delete();
 
         $token = $user->createToken('Personal access token')->accessToken;
         return $this->successResponse(array_merge($request->user()->toArray(), ['_token' => $token]), 200, 'Login Successfull');

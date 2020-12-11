@@ -33,6 +33,6 @@ class RegisterController extends Controller
 
         Mail::to($request->email)->send(new VerifyEmail($user, $request->password));
 
-        return $this->successResponse($user->toArray(), 201, 'email-verify/' . $user->email);
+        return $this->successResponse($user->toArray(), 201, 'email-verify');
     }
 }
