@@ -15,7 +15,7 @@ trait ResponseTrait
         ]);
     }
 
-    public function errorResponse($message, int $status_c = 200)
+    public function errorResponse($message, int $status_c = 400)
     {
         return response()->json([
             'data' => [],
@@ -23,6 +23,6 @@ trait ResponseTrait
             'error' => true,
             'status_code' => $status_c,
             'message' => $message
-        ]);
+        ], $status_c);
     }
 }

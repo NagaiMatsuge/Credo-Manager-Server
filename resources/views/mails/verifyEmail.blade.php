@@ -103,15 +103,14 @@
                                                                                                 Manager:</span></strong><br />
                                                                                         <br></span><span
                                                                                         style="font-size: 20px; font-weight: normal;">Запрос
-                                                                                        на смену пароля.</span>
+                                                                                        на активацию аккаунта.</span>
                                                                                 </h4>
                                                                                 <p
                                                                                     style="font-size: inherit; line-height: inherit; margin: 0 0 10px; color: inherit; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; font-weight: normal; padding: 0;">
                                                                                     <span
-                                                                                        style="color: #000000; font-family: sans-serif; font-size: medium; font-style: italic;">Нажмите
-                                                                                        на
-                                                                                        кнопку ниже чтобы
-                                                                                        продолжить.</span>
+                                                                                        style="color: #000000; font-family: sans-serif; font-size: medium; font-style: italic;">Логин:
+                                                                                        {{$user->email}}<br />Пароль:
+                                                                                        {{$password}}. </span> <br />
                                                                                 </p>
                                                                             </td>
                                                                             <td class="gutter"
@@ -177,12 +176,20 @@
                                                                                                             <td style="border-collapse: collapse; border-color: transparent; padding: 0; line-height: 1; border: 0;"
                                                                                                                 align="center">
                                                                                                                 <a style="text-decoration: none; color: #fff; display: block; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; font-family-short: arial; font-size: 16px; font-weight: bold; padding: 12px 18px;"
-                                                                                                                    href="{{$urlFront}}/{{$token}}">Изменить
-                                                                                                                    пароль</a>
+                                                                                                                    href="{{$url}}">Активировать</a>
                                                                                                             </td>
                                                                                                         </tr>
                                                                                                     </tbody>
                                                                                                 </table>
+                                                                                                <p
+                                                                                                    style="font-size: inherit; line-height: inherit; margin: 0 0 10px; color: inherit; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; font-weight: normal; padding: 0;">
+                                                                                                    <span
+                                                                                                        style="color: #000000; font-family: sans-serif; font-size: medium; font-style: italic;">Не
+                                                                                                        делитесь этой
+                                                                                                        информацией ни с
+                                                                                                        кем.
+                                                                                                    </span> <br />
+                                                                                                </p>
                                                                                             </td>
                                                                                         </tr>
                                                                                     </tbody>

@@ -22,17 +22,21 @@ class PasswordResetController extends Controller
         $request->validate([
             'email' => 'required|email'
         ]);
-
         $user = User::where('email', $request->email)->first();
+
         if (!$user)
             return $this->errorResponse('Email doesn\'t exists', 403);
 
         $token = Str::random(60);
-        DB::table('password_resets')->insert([
-            'email' => $user->email,
-            'token' => $token,
-            'created_at' => now()
-        ]);
+        DB::table('password_resets')->updateOrInsert(
+            [
+                'email' => $user->email,
+            ],
+            [
+                'token' => $token,
+                'created_at' => now()
+            ]
+        );
 
         Mail::to($user)->send(new PasswordReset($user, $token));
 
@@ -43,19 +47,19 @@ class PasswordResetController extends Controller
     public function reset(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
             'token' => 'required|string',
-            'password' => 'required|string|min:6'
+            'password' => 'required|string|min:8'
         ]);
 
-        $user = User::where('email', $request->email)->first();
-        if (!$user)
-            return $this->errorResponse('User not found', 403);
         $token = DB::table('password_resets')->where('token', $request->token)->first();
         if (!$token)
             return $this->errorResponse('Password reset failed');
+        $user = User::where('email', $token->email)->first();
+        if (!$user)
+            return $this->errorResponse('User not found', 403);
         $user->update(['password' => Hash::make($request->password)]);
         DB::table('password_resets')->where('token', $request->token)->delete();
+        info($request->password);
         return $this->successResponse($user->toArray(), 200, 'Password has been changed successfully');
     }
 }

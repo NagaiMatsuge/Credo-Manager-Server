@@ -15,7 +15,7 @@ class CreateUsersHaveTasksTable extends Migration
     {
         Schema::create('users_have_tasks', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
+            $table->uuid('user_id');
             $table->unsignedBigInteger('task_id');
             $table->boolean('current');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
