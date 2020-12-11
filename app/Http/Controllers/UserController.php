@@ -13,7 +13,7 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $user = User::all();
+        $user = User::paginate(10);
         return $this->successResponse($user);
     }
 
@@ -25,9 +25,9 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $create_user = User::create($request->validate([
-            'name' => 'required',
-            'email' => 'required',
-            'password' => 'required',
+            'name' => 'required|string',
+            'email' => 'required|email',
+            'password' => 'required|string|min:8',
             'pause_start_time' => 'required',
             'pause_end_time' => 'required',
             'working_days' => 'required',
