@@ -15,6 +15,8 @@ class PasswordReset extends Mailable
 
     public $token;
 
+    public $urlFront;
+
     /**
      * Create a new message instance.
      *
@@ -24,6 +26,7 @@ class PasswordReset extends Mailable
     {
         $this->user = $user;
         $this->token = $token;
+        $this->urlFront = config('params.urls.front_end_password_reset');
     }
 
     /**

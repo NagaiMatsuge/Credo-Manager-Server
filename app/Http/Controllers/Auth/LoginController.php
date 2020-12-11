@@ -7,27 +7,25 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use App\Traits\ResponseTrait;
 
 class LoginController extends Controller
 {
+    use ResponseTrait;
+
     public function login(Request $request)
     {
-        $validation = Validator::make($request->only(['email', 'password', 'remember_me']), [
+        $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
             'remember_me' => 'nullable|boolean'
         ]);
 
-        if ($validation->fails())
-            return response()->json('Validation error');
-
         if (!Auth::attempt($request->only(['email', 'password']), $request->remember_me ?? false))
-            return response()->json('Invalid credentials');
+            return $this->errorResponse('Credentials don\'t match our records!', 401);
 
         $request->user()->tokens()->delete();
-        $user = $request->user();
-        $token = $user->createToken('Personal access token')->accessToken;
-        return response()->json($token);
+        $token = $request->user()->createToken('Personal access token')->accessToken;
+        return $this->successResponse(array_merge($request->user()->toArray(), ['_token' => $token]), 200, 'Login Successfull');
     }
 }
