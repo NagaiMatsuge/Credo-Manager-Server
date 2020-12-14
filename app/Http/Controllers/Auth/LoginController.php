@@ -12,6 +12,7 @@ use App\Traits\ResponseTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Spatie\Permission\Models\Role;
 
 class LoginController extends Controller
 {
@@ -34,23 +35,30 @@ class LoginController extends Controller
         //     return $this->errorResponse('auth/email-not-verified');
         // }
         $token = $user->createToken('Personal access token')->accessToken;
-        return $this->successResponse(array_merge($request->user()->toArray(), ['_token' => $token]), 200, 'Login Successfull');
+        $rolesOfTheUser = $user->getRoleNames()->toArray();
+        $res = array_merge($request->user()->toArray(), ['_token' => $token]);
+        $res['role'] = $rolesOfTheUser;
+        return $this->successResponse($res, 200, 'Login Successfull');
     }
 
     //* Describe your method
     public function create(Request $request)
     {
-        $user = User::create([
-            'name' => 'Ruslan',
-            'email' => 'menrusamen19992@gmail.com',
-            'password' => Hash::make('password'),
-            'work_start_time' => '9:9:9',
-            'work_end_time' => '8:8:8',
-            'pause_start_time' => '7:7:7',
-            'pause_end_time' => '6:6:6',
-            'working_days' => '[1, 2, 3, 4, 5]',
-            'developer' => true
-        ]);
-        return response()->json($user->toArray());
+        // $user = User::create([
+        //     'name' => 'Ruslan',
+        //     'email' => 'menrusamen19992@gmail.com',
+        //     'password' => Hash::make('password'),
+        //     'work_start_time' => '9:9:9',
+        //     'work_end_time' => '8:8:8',
+        //     'pause_start_time' => '7:7:7',
+        //     'pause_end_time' => '6:6:6',
+        //     'working_days' => '[1, 2, 3, 4, 5]',
+        //     'developer' => true
+        // ]);
+        // return response()->json($user->toArray());
+        // $role = Role::create(['name' => 'Admin', 'guard_name' => 'web']);
+        // $user = User::find('4ee26c38-4d31-435d-869f-2b0830180af5');
+        // $user->syncRoles('Admin');
+        // return response()->json($user->getRoleNames()->toArray());
     }
 }

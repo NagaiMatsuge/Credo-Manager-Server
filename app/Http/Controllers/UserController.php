@@ -13,7 +13,7 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $user = User::paginate(10);
+        $user = User::latest()->paginate(10);
         return $this->successResponse($user);
     }
 
@@ -28,15 +28,16 @@ class UserController extends Controller
         return $this->successResponse($id);
     }
 
-    public function destroy($user)
+    public function destroy($id)
     {
-        $res = DB::table('users')->where('id', $user)->delete();
+        $res = DB::table('users')->where('id', $id)->delete();
         return $this->successResponse($res);
     }
 
     //* Fetch user credentials
     public function getUser(Request $request)
     {
-        return $this->successResponse($request->user());
+        $roles = $request->user()->getRoleNames()->toArray();
+        return $this->successResponse(array_merge(['role' => $roles], $request->user()->toArray()));
     }
 }

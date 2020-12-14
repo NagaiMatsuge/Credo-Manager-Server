@@ -13,8 +13,8 @@ class TaskController extends Controller
 
     public function index()
     {
-       $tasks = Task::all();
-       return $this->successResponse($tasks); 
+        $tasks = Task::all();
+        return $this->successResponse($tasks);
     }
 
     public function show(Task $id)
@@ -43,9 +43,9 @@ class TaskController extends Controller
         return $this->successResponse($id);
     }
 
-    public function destroy($task)
+    public function destroy($id)
     {
-        $delete = DB::table('tasks')->where('id', $task)->delete();
+        $delete = DB::table('tasks')->where('id', $id)->delete();
         return $this->successResponse($delete);
     }
 }

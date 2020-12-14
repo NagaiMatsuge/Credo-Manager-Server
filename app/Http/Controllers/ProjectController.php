@@ -16,7 +16,7 @@ class ProjectController extends Controller
     public function index(Request $request)
     {
         $projects = Project::paginate(10);
-        return $this->successResponse($projects);    
+        return $this->successResponse($projects);
     }
 
     public function show(Project $id)
@@ -38,8 +38,8 @@ class ProjectController extends Controller
         ]);
         $project = Project::create($request->project);
         $tasks = $request->tasks;
-        foreach($tasks as $key => $val){
-            $tasks[$key]['project_id'] = $project->id; 
+        foreach ($tasks as $key => $val) {
+            $tasks[$key]['project_id'] = $project->id;
         }
         DB::table('tasks')->insert($tasks);
     }
@@ -50,9 +50,9 @@ class ProjectController extends Controller
         return $this->successResponse($id);
     }
 
-    public function destroy($project)
+    public function destroy($id)
     {
-        $delete = DB::table('projects')->where('id', $project)->delete();
+        $delete = DB::table('projects')->where('id', $id)->delete();
         return $this->successResponse($delete);
     }
 }

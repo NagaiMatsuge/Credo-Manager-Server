@@ -22,31 +22,25 @@ require_once __DIR__ . "/Auth/auth.php";
 */
 
 Route::group(['prefix' => 'users'], function () {
-
-    Route::get('user', [UserController::class, 'index']);
-    Route::get('user/{id}', [UserController::class, 'show']);
-    Route::post('user', [UserController::class, 'store']);
-    Route::put('user/{id}', [UserController::class, 'update']);
-    Route::delete('user/{user}', [UserController::class, 'destroy'])->where(['id' => '[0-9]+git']);
-
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('/{id}', [UserController::class, 'show']);
+    Route::post('/create', [UserController::class, 'store']);
+    Route::put('/update/{id}', [UserController::class, 'update']);
+    Route::delete('/delete/{id}', [UserController::class, 'destroy']);
 });
 
 Route::group(['prefix' => 'projects'], function () {
-    
-    Route::get('projects', [ProjectController::class, 'index']);
-    Route::get('projects/{id}', [ProjectController::class, 'show']);
-    Route::post('projects', [ProjectController::class, 'store']);
-    Route::put('projects/{id}', [ProjectController::class, 'update']);
-    Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->where(['id' => '[0-9]+git']);
-
+    Route::get('/', [ProjectController::class, 'index']);
+    Route::get('/{id}', [ProjectController::class, 'show'])->where(['id' => '[0-9]+']);
+    Route::post('/create', [ProjectController::class, 'store']);
+    Route::put('/update/{id}', [ProjectController::class, 'update'])->where(['id' => '[0-9]+']);
+    Route::delete('/delete/{id}', [ProjectController::class, 'destroy'])->where(['id' => '[0-9]+']);
 });
 
 Route::group(['prefix' => 'tasks'], function () {
-
-    Route::get('tasks', [TaskController::class, 'index']);
-    Route::get('tasks/{id}', [TaskController::class, 'show']);
-    Route::post('tasks', [TaskController::class, 'store']);
-    Route::put('tasks/{id}', [TaskController::class, 'update']);
-    Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->where(['id' => '[0-9]+git']);
-    
+    Route::get('/', [TaskController::class, 'index']);
+    Route::get('/{id}', [TaskController::class, 'show'])->where(['id' => '[0-9]+']);
+    Route::post('/create', [TaskController::class, 'store']);
+    Route::put('/update/{id}', [TaskController::class, 'update'])->where(['id' => '[0-9]+']);
+    Route::delete('/delete/{id}', [TaskController::class, 'destroy'])->where(['id' => '[0-9]+']);
 });
