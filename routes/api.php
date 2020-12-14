@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ServerController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -50,3 +51,13 @@ Route::group(['prefix' => 'tasks'], function () {
     Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->where(['id' => '[0-9]+git']);
     
 });
+
+Route::group(['prefix' => 'server'], function () {
+    Route::get('server', [ServerController::class, 'index']);
+    Route::get('server/{id}', [ServerController::class, 'show']);
+    Route::post('server', [ServerController::class, 'store']);
+    Route::put('server/{id}', [ServerController::class, 'update']);
+    Route::delete('server/{server}', [ServerController::class, 'destroy'])->where(['id' => '[0-9]+git']);
+    
+});
+

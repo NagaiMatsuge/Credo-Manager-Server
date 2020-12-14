@@ -9,4 +9,13 @@ class DbAccess extends Model
 {
     use HasFactory;
     protected $table = 'db_access'; 
+    
+    protected $fillable = [
+        'db_name',
+        'server_name',
+        'login',
+        'password',
+        'description',
+        'server_id'
+    ];
 }
