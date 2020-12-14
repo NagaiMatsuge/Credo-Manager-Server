@@ -18,6 +18,7 @@ return [
         'not-found/user' => 'User не найден',
         'repeat/email-verified' => 'Email уже активирован',
         'link/expire' => 'Линк испорился',
-        'auth/fail' => 'Неправилные данные'
+        'auth/fail' => 'Неправилные данные',
+        'auth/email-not-verified' => 'Email не активирован'
     ]
 ];

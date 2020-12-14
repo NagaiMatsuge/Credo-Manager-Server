@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\VerifyEmail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Traits\ResponseTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class LoginController extends Controller
 {
@@ -26,8 +28,11 @@ class LoginController extends Controller
         if (!Auth::attempt($request->only(['email', 'password'])))
             return $this->errorResponse('auth/fail', 400);
         $user = $request->user();
-        // $request->user()->tokens()->delete();
-
+        $request->user()->tokens()->delete();
+        // if (!$user->email_verified_at) {
+        //     Mail::to($user->email)->send(new VerifyEmail($user, 'Пароль не бел изменен'));
+        //     return $this->errorResponse('auth/email-not-verified');
+        // }
         $token = $user->createToken('Personal access token')->accessToken;
         return $this->successResponse(array_merge($request->user()->toArray(), ['_token' => $token]), 200, 'Login Successfull');
     }

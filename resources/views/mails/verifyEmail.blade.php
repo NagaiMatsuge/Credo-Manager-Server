@@ -107,10 +107,12 @@
                                                                                 </h4>
                                                                                 <p
                                                                                     style="font-size: inherit; line-height: inherit; margin: 0 0 10px; color: inherit; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; font-weight: normal; padding: 0;">
+                                                                                    @isset($password)
                                                                                     <span
                                                                                         style="color: #000000; font-family: sans-serif; font-size: medium; font-style: italic;">Логин:
                                                                                         {{$user->email}}<br />Пароль:
                                                                                         {{$password}}. </span> <br />
+                                                                                    @endisset
                                                                                 </p>
                                                                             </td>
                                                                             <td class="gutter"

@@ -12,7 +12,7 @@ trait ResponseTrait
             'error' => false,
             'status_code' => $status_c,
             'message' => $message
-        ]);
+        ])->header('Access-Control-Allow-Origin', '*');
     }
 
     public function errorResponse($message, int $status_c = 400)
@@ -23,6 +23,6 @@ trait ResponseTrait
             'error' => true,
             'status_code' => $status_c,
             'message' => $message
-        ]);
+        ])->header('Access-Control-Allow-Origin', '*');
     }
 }

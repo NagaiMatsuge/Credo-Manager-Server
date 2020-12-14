@@ -24,7 +24,7 @@ class VerifyEmail extends Mailable
      *
      * @return void
      */
-    public function __construct($user, $password)
+    public function __construct($user, $password = null)
     {
         $this->url = URL::temporarySignedRoute('verify/email', now()->addDays(1), [
             'id' => $user->id,
