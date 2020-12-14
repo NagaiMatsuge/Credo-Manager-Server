@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\Task;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class ProjectController extends Controller
 {
@@ -24,12 +26,19 @@ class ProjectController extends Controller
 
     public function store(Request $request)
     {
-        $create_projects = Project::create($request->validate([
-            'server_id' => 'required|integer',
-            'title' => 'required|string|min:3|max:255',
-            'description' => 'nullable|min:10'
-        ]));
-        return $this->successResponse($create_projects);
+        $request->validate([
+            'project.title' => 'required|string|min:3|max:255',
+            'project.description' => 'nullable|min:10',
+            'tasks.*.price' => 'required|integer',
+            'tasks.*.currency_id' => 'required|integer',
+            'tasks.*.payment_type' => 'required|integer',
+            'tasks.*.payment_date' => 'required|date',
+            'tasks.*.title' => 'required|string|min:3|max:255'
+        ]);
+        $project = Project::create($request->project);
+        $tasks = $request->only('tasks');
+        $tasks['project_id'] = $project->id;
+        DB::table('tasks')->insert($request->tasks);
     }
 
     public function update(Request $request, Project $id)

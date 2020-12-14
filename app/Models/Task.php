@@ -15,7 +15,7 @@ class Task extends Model
         'price',
         'currency_id',
         'payment_type',
-        'payment-date',
+        'payment_date',
         'finished',
         'approved',
         'time_left'
