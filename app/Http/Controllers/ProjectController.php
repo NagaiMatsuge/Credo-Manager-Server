@@ -29,6 +29,7 @@ class ProjectController extends Controller
         $request->validate([
             'project.title' => 'required|string|min:3|max:255',
             'project.description' => 'nullable|min:10',
+            'tasks' => 'required|array',
             'tasks.*.price' => 'required|integer',
             'tasks.*.currency_id' => 'required|integer',
             'tasks.*.payment_type' => 'required|integer',
@@ -36,9 +37,11 @@ class ProjectController extends Controller
             'tasks.*.title' => 'required|string|min:3|max:255'
         ]);
         $project = Project::create($request->project);
-        $tasks = $request->only('tasks');
-        $tasks['project_id'] = $project->id;
-        DB::table('tasks')->insert($request->tasks);
+        $tasks = $request->tasks;
+        foreach($tasks as $key => $val){
+            $tasks[$key]['project_id'] = $project->id; 
+        }
+        DB::table('tasks')->insert($tasks);
     }
 
     public function update(Request $request, Project $id)
