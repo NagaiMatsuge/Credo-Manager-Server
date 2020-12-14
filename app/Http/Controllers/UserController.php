@@ -33,4 +33,10 @@ class UserController extends Controller
         $res = DB::table('users')->where('id', $user)->delete();
         return $this->successResponse($res);
     }
+
+    //* Fetch user credentials
+    public function getUser(Request $request)
+    {
+        return $this->successResponse($request->user());
+    }
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['namespace' => 'Auth'], function () {
@@ -17,5 +18,6 @@ Route::group(['namespace' => 'Auth'], function () {
 
     Route::group(['middleware' => 'auth:api'], function () {
         Route::post('/logout', [LogoutController::class, 'logout']);
+        Route::get('/user', [UserController::class, 'getUser']);
     });
 });
