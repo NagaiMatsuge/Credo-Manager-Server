@@ -22,7 +22,7 @@ class AlterUsersTable extends Migration
             $table->time('pause_end_time', 0)->comment('when break time ends');
             $table->json('working_days')->comment('[1,2,3] -> monday, tuesday, wednesday');
             $table->boolean('developer')->comment("If the user is developer");
-            $table->text('photo');
+            $table->text('photo')->nullable();
         });
     }
 
