@@ -18,6 +18,7 @@ class CreateTasksTable extends Migration
             $table->string('title');
             $table->unsignedBigInteger('project_id');
             $table->double('price', 13, 3);
+            $table->double('debt', 13, 3);
             $table->smallInteger('currency_id');
             $table->smallInteger('payment_type')->comment('1-Qiwi, 2-Wmp, 3-Wmz, 4-Yandex, 5-Bank');
             $table->date('payment_date');
