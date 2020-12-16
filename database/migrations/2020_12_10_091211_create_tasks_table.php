@@ -24,7 +24,7 @@ class CreateTasksTable extends Migration
             $table->date('payment_date');
             $table->boolean('finished')->default(false);
             $table->boolean('approved')->default(false)->comment('Only can be approved by Admin');
-            $table->time('time_left');
+            $table->dateTime('deadline');
             $table->timestamps();
 
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
