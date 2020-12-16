@@ -60,4 +60,9 @@ class ServerController extends Controller
             DB::table('db_access')->where('id', $id)->update($data['db_access']);          
         });
     }
+    public function destroy($id)
+    {
+        $delete = DB::table('servers')->where('id', $id)->delete();
+        return $this->successResponse($delete);
+    }
 }

@@ -47,11 +47,10 @@ Route::group(['prefix' => 'tasks'], function () {
 });
 
 Route::group(['prefix' => 'server'], function () {
-    Route::get('server', [ServerController::class, 'index']);
-    Route::get('server/{id}', [ServerController::class, 'show']);
-    Route::post('server', [ServerController::class, 'store']);
-    Route::put('server/{id}', [ServerController::class, 'update']);
-    Route::delete('server/{server}', [ServerController::class, 'destroy'])->where(['id' => '[0-9]+git']);
-    
+    Route::get('/', [ServerController::class, 'index']);
+    Route::get('/{id}', [ServerController::class, 'show'])->where(['id' => '[0-9]+']);
+    Route::post('/create', [ServerController::class, 'store']);
+    Route::put('/update/{id}', [ServerController::class, 'update'])->where(['id' => '[0-9]+']);
+    Route::delete('/delete/{id}', [ServerController::class, 'destroy'])->where(['id' => '[0-9]+']);
 });
 
