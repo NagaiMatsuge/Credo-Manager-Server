@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -21,19 +20,23 @@ class UserController extends Controller
     //* Show one user by its id
     public function show($id)
     {
-        return $this->successResponse([
-            'user' => User::userWithRole($id),
-            'roles' => config('params.roles')
-        ]);
+        return $this->successResponse(User::userWithRole($id));
     }
 
     //* Update user By its id
-    public function update(Request $request, $id)
+    public function update(Request $request, User $user)
     {
         $this->validateRequest($request);
 
-        // DB::table('users')->
-        return $this->successResponse($id);
+        $user->syncRoles($request->role);
+        $data = $request->except(['role', 'photo']);
+
+        if ($request->has('photo')) {
+            $image = $request->file('photo')->store('avatars');
+            $data['photo'] = $image;
+        }
+        $user->update($data);
+        return $this->successResponse($user->toArray());
     }
 
     //* Delete user by its id
@@ -55,11 +58,11 @@ class UserController extends Controller
         $request->validate([
             'email' => 'required|email|min:3',
             'password' => 'required|string|min:8',
-            'work_start_time' => 'required|date',
-            'work_end_time' => 'required|date',
-            'pause_start_time' => 'required|date',
-            'pause_end_time' => 'required|date',
-            'working_days' => 'required|json',
+            'work_start_time' => 'required|date_format:H:i',
+            'work_end_time' => 'required|date_format:H:i',
+            'pause_start_time' => 'required|date_format:H:i',
+            'pause_end_time' => 'required|date_format:H:i',
+            'working_days' => 'required|array',
             'role' => [
                 'required',
                 Rule::in(config('params.roles'))

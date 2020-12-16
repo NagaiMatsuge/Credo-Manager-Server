@@ -4,15 +4,10 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Mail\VerifyEmail;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\ResponseTrait;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Spatie\Permission\Models\Role;
 
 class LoginController extends Controller
 {
@@ -58,8 +53,8 @@ class LoginController extends Controller
         // ]);
         // return response()->json($user->toArray());
         // $role = Role::create(['name' => 'Admin', 'guard_name' => 'web']);
-        $user = User::find('ee5e305d-5567-46c5-be6b-869d84d907bd');
-        $user->syncRoles('Admin');
-        return response()->json($user->getRoleNames()->toArray());
+        // $user = User::find('81e52ba5-77bf-4e5b-ad86-216fec1a40ca');
+        // $user->syncRoles('Admin');
+        // return response()->json($user->getRoleNames()->toArray());
     }
 }

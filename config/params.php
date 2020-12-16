@@ -7,9 +7,14 @@ return [
     ],
     'roles' => [
         'Admin',
-        'Moderator',
-        'Developer'
+        'Manager',
+        'Backend Developer',
+        'Frontend Developer',
+        'System Administrator',
+        'UI\UX Designer',
+        'Assistant'
     ],
+
     'response_messages' => [
         'auth/too-many-requests' => 'Превышен лимит на запрос смены пароля',
         'auth/email-already-in-use' => 'Пользователь с таким Email уже зарегистрирован',
