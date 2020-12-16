@@ -5,39 +5,43 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
-use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
     use ResponseTrait;
 
+    //* Return All users with their role
     public function index(Request $request)
     {
-        $users = DB::table('users')->select('users.*', DB::raw('(SELECT roles.name FROM roles WHERE roles.id=(SELECT model_has_roles.role_id FROM model_has_roles WHERE model_has_roles.model_uuid=users.id LIMIT 1)) as role'))->paginate(10);
-        return $this->successResponse($users);
+        return $this->successResponse(User::usersWithRoleAndPagination());
     }
 
-    public function show(User $id)
+    //* Show one user by its id
+    public function show($id)
     {
-        return $this->successResponse($id);;
+        return $this->successResponse([
+            'user' => User::userWithRole($id),
+            'roles' => config('params.roles')
+        ]);
     }
 
+    //* Update user By its id
     public function update(Request $request, User $id)
     {
-        $id->update($request->all());
+        $id->update($request->input());
         return $this->successResponse($id);
     }
 
+    //* Delete user by its id
     public function destroy($id)
     {
-        $res = DB::table('users')->where('id', $id)->delete();
-        return $this->successResponse($res);
+        return $this->successResponse(User::deleteOneById($id));
     }
 
     //* Fetch user credentials
     public function getUser(Request $request)
     {
-        $user = DB::select('SELECT users.*, (SELECT roles.name FROM roles WHERE roles.id=(SELECT model_has_roles.role_id FROM model_has_roles WHERE model_has_roles.model_uuid=users.id LIMIT 1)) as role FROM users WHERE users.id=?', [$request->user()->id]);
+        $user = User::userWithRole($request->user()->id);
         return $this->successResponse($user[0]);
     }
 }

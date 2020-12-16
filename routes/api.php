@@ -1,10 +1,10 @@
 <?php
 
+use App\Http\Controllers\ParamsController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
@@ -54,3 +54,6 @@ Route::group(['prefix' => 'server'], function () {
     Route::delete('/delete/{id}', [ServerController::class, 'destroy'])->where(['id' => '[0-9]+']);
 });
 
+Route::group(['prefix' => 'params'], function () {
+    Route::get('/roles', [ParamsController::class, 'getAllRoles']);
+});

@@ -5,6 +5,10 @@ return [
         'front_end_password_reset' => 'http://localhost:8080/password/reset',
         'front_base_url' => 'http://localhost:8080'
     ],
+    'roles' => [
+        'Admin',
+        'Moderator',
+    ],
     'response_messages' => [
         'auth/too-many-requests' => 'Превышен лимит на запрос смены пароля',
         'auth/email-already-in-use' => 'Пользователь с таким Email уже зарегистрирован',
