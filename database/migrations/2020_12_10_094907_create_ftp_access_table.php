@@ -13,7 +13,7 @@ class CreateFtpAccessTable extends Migration
      */
     public function up()
     {
-        Schema::create('ftp_acess', function (Blueprint $table) {
+        Schema::create('ftp_access', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('server_id');
             $table->string('title');
