@@ -8,6 +8,7 @@ return [
     'roles' => [
         'Admin',
         'Moderator',
+        'Developer'
     ],
     'response_messages' => [
         'auth/too-many-requests' => 'Превышен лимит на запрос смены пароля',

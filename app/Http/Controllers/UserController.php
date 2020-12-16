@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -26,9 +28,11 @@ class UserController extends Controller
     }
 
     //* Update user By its id
-    public function update(Request $request, User $id)
+    public function update(Request $request, $id)
     {
-        $id->update($request->input());
+        $this->validateRequest($request);
+
+        // DB::table('users')->
         return $this->successResponse($id);
     }
 
@@ -43,5 +47,25 @@ class UserController extends Controller
     {
         $user = User::userWithRole($request->user()->id);
         return $this->successResponse($user[0]);
+    }
+
+    //* Validate request
+    public function validateRequest(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|min:3',
+            'password' => 'required|string|min:8',
+            'work_start_time' => 'required|date',
+            'work_end_time' => 'required|date',
+            'pause_start_time' => 'required|date',
+            'pause_end_time' => 'required|date',
+            'working_days' => 'required|json',
+            'role' => [
+                'required',
+                Rule::in(config('params.roles'))
+            ],
+            'color' => 'required|string',
+            'photo' => 'nullable|image'
+        ]);
     }
 }

@@ -30,10 +30,11 @@ class LoginController extends Controller
             return $this->errorResponse('auth/fail', 400);
         $user = $request->user();
         $request->user()->tokens()->delete();
-        // if (!$user->email_verified_at) {
-        //     Mail::to($user->email)->send(new VerifyEmail($user, 'Пароль не бел изменен'));
-        //     return $this->errorResponse('auth/email-not-verified');
-        // }
+
+        if (!$user->email_verified_at) {
+            Mail::to($user->email)->send(new VerifyEmail($user, 'Пароль не бел изменен'));
+            return $this->errorResponse('auth/email-not-verified');
+        }
         $token = $user->createToken('Personal access token')->accessToken;
         $rolesOfTheUser = $user->getRoleNames()->toArray();
         $res = array_merge($request->user()->toArray(), ['_token' => $token]);
@@ -53,13 +54,12 @@ class LoginController extends Controller
         //     'pause_start_time' => '7:7:7',
         //     'pause_end_time' => '6:6:6',
         //     'working_days' => '[1, 2, 3, 4, 5]',
-        //     'developer' => true,
         //     'color' => '#8F73FC'
         // ]);
         // return response()->json($user->toArray());
         // $role = Role::create(['name' => 'Admin', 'guard_name' => 'web']);
-        // $user = User::find('539e6f20-bf49-456c-a4fb-b4c483fddea2');
-        // $user->syncRoles('Admin');
-        // return response()->json($user->getRoleNames()->toArray());
+        $user = User::find('ee5e305d-5567-46c5-be6b-869d84d907bd');
+        $user->syncRoles('Admin');
+        return response()->json($user->getRoleNames()->toArray());
     }
 }

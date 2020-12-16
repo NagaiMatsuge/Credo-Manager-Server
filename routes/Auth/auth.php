@@ -14,7 +14,8 @@ Route::group(['namespace' => 'Auth'], function () {
     Route::post('/password/forgot', [PasswordResetController::class, 'forgot']);
     Route::post('/password/reset', [PasswordResetController::class, 'reset']);
     Route::get('/create', [LoginController::class, 'create']);
-    Route::post('/verify/email', [EmailVerifyController::class, 'verify']);
+    Route::get('/verify/email/{id}/{email}', [EmailVerifyController::class, 'verify'])->name('auth.email.verify');
+    // Route::post('/verify/email', [EmailVerifyController::class, 'verifyAgain']);
 
     Route::group(['middleware' => 'auth:api'], function () {
         Route::post('/logout', [LogoutController::class, 'logout']);
