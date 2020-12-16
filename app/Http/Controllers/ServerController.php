@@ -12,12 +12,14 @@ use Illuminate\Support\Facades\DB;
 class ServerController extends Controller
 {
     use ResponseTrait;
-
+//* Fetch all servers with pagination
     public function index(Request $request)
     {
         $server_details = Server::paginate(10);
         return $this->successResponse($server_details);
     }
+
+//* Create server, ftp_access, db_access with validation
     public function store(Request $request)
     {
        $request->validate([
@@ -41,6 +43,8 @@ class ServerController extends Controller
             DbAccess::create(array_merge($data['db_access'], ['server_id' => $server->id]));
        });
     }
+
+//* Show server, ftp_access, db_access by server's id    
     public function show(Request $request, $id)
     {
         $id = DB::table('servers')
@@ -51,6 +55,7 @@ class ServerController extends Controller
         return $this->successResponse($id);
     }
 
+//* Update server, ftp_access, db-access by server's id    
     public function update(Request $request, $id)
     {
         $data = $request->input();
@@ -60,6 +65,8 @@ class ServerController extends Controller
             DB::table('db_access')->where('id', $id)->update($data['db_access']);          
         });
     }
+
+//* Delete server, ftp_access, db_access by server's id    
     public function destroy($id)
     {
         $delete = DB::table('servers')->where('id', $id)->delete();

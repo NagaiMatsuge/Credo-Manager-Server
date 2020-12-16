@@ -25,7 +25,7 @@ class UserController extends Controller
         ]);
     }
 
-    //* Update user By its id
+    //* Update user by its id
     public function update(Request $request, User $id)
     {
         $id->update($request->input());
