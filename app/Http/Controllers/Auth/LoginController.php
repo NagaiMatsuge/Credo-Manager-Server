@@ -53,11 +53,12 @@ class LoginController extends Controller
         //     'pause_start_time' => '7:7:7',
         //     'pause_end_time' => '6:6:6',
         //     'working_days' => '[1, 2, 3, 4, 5]',
-        //     'developer' => true
+        //     'developer' => true,
+        //     'color' => '#8F73FC'
         // ]);
         // return response()->json($user->toArray());
         // $role = Role::create(['name' => 'Admin', 'guard_name' => 'web']);
-        // $user = User::find('4ee26c38-4d31-435d-869f-2b0830180af5');
+        // $user = User::find('539e6f20-bf49-456c-a4fb-b4c483fddea2');
         // $user->syncRoles('Admin');
         // return response()->json($user->getRoleNames()->toArray());
     }

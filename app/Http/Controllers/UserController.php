@@ -13,8 +13,8 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $user = User::latest()->paginate(10);
-        return $this->successResponse($user);
+        $users = DB::table('users')->select('users.*', DB::raw('(SELECT roles.name FROM roles WHERE roles.id=(SELECT model_has_roles.role_id FROM model_has_roles WHERE model_has_roles.model_uuid=users.id LIMIT 1)) as role'))->paginate(10);
+        return $this->successResponse($users);
     }
 
     public function show(User $id)
@@ -37,7 +37,7 @@ class UserController extends Controller
     //* Fetch user credentials
     public function getUser(Request $request)
     {
-        $roles = $request->user()->getRoleNames()->toArray();
-        return $this->successResponse(array_merge(['role' => $roles], $request->user()->toArray()));
+        $user = DB::select('SELECT users.*, (SELECT roles.name FROM roles WHERE roles.id=(SELECT model_has_roles.role_id FROM model_has_roles WHERE model_has_roles.model_uuid=users.id LIMIT 1)) as role FROM users WHERE users.id=?', [$request->user()->id]);
+        return $this->successResponse($user[0]);
     }
 }

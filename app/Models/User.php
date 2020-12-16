@@ -30,7 +30,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'work_start_time',
         'work_end_time',
         'manager_id',
-        'developer'
+        'developer',
+        'phone',
+        'color'
     ];
 
     /**

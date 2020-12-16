@@ -23,6 +23,7 @@ class AlterUsersTable extends Migration
             $table->json('working_days')->comment('[1,2,3] -> monday, tuesday, wednesday');
             $table->boolean('developer')->comment("If the user is developer");
             $table->text('photo')->nullable();
+            $table->string('color');
         });
     }
 
