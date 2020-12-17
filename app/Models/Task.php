@@ -18,6 +18,6 @@ class Task extends Model
         'payment_date',
         'finished',
         'approved',
-        'time_left'
+        'deadline'
     ];
 }
