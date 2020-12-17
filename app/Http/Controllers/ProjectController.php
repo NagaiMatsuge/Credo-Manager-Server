@@ -3,20 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
-use App\Models\Task;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 
 class ProjectController extends Controller
 {
     use ResponseTrait;
 
-//* Fetch all projects
+//* Fetch all projects with deadline
     public function index(Request $request)
     {
-        $projects = Project::paginate(10);
+        $projects = DB::table('projects')->select('projects.*', DB::raw('(select max(deadline) from tasks where tasks.project_id = projects.id) as deadline'))->get();
         return $this->successResponse($projects);
     }
 
