@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 class ServerController extends Controller
 {
     use ResponseTrait;
+    
 //* Fetch all servers with pagination
     public function index(Request $request)
     {

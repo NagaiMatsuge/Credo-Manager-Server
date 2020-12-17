@@ -18,12 +18,13 @@ class CreateTasksTable extends Migration
             $table->string('title');
             $table->unsignedBigInteger('project_id');
             $table->double('price', 13, 3);
+            $table->double('debt', 13, 3);
             $table->smallInteger('currency_id');
             $table->smallInteger('payment_type')->comment('1-Qiwi, 2-Wmp, 3-Wmz, 4-Yandex, 5-Bank');
             $table->date('payment_date');
             $table->boolean('finished')->default(false);
             $table->boolean('approved')->default(false)->comment('Only can be approved by Admin');
-            $table->time('time_left');
+            $table->dateTime('deadline');
             $table->timestamps();
 
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
