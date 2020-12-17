@@ -65,10 +65,10 @@ class UserController extends Controller
         $request->validate([
             'email' => 'required|email|min:3',
             'password' => 'nullable|string|min:8',
-            'work_start_time' => 'required|date_format:H:i:s',
-            'work_end_time' => 'required|date_format:H:i:s',
-            'pause_start_time' => 'required|date_format:H:i:s',
-            'pause_end_time' => 'required|date_format:H:i:s',
+            'work_start_time' => 'required|date_format:H:i',
+            'work_end_time' => 'required|date_format:H:i',
+            'pause_start_time' => 'required|date_format:H:i',
+            'pause_end_time' => 'required|date_format:H:i',
             'working_days' => 'required|array',
             'role' => [
                 'required',
