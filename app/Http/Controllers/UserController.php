@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -20,7 +22,9 @@ class UserController extends Controller
     //* Show one user by its id
     public function show($id)
     {
-        return $this->successResponse(User::userWithRole($id));
+        $user = User::userWithRole($id);
+        $user[0]->working_days = json_decode($user[0]->working_days);
+        return $this->successResponse($user);
     }
 
     //* Update user By its id
@@ -28,14 +32,17 @@ class UserController extends Controller
     {
         $this->validateRequest($request);
 
-        $user->syncRoles($request->role);
-        $data = $request->except(['role', 'photo']);
+        $data = $request->except(['role', 'photo', 'password']);
 
         if ($request->has('photo')) {
             $image = $request->file('photo')->store('avatars');
             $data['photo'] = $image;
         }
+        if ($request->has('password'))
+            $data['password'] = Hash::make($request->password);
+
         $user->update($data);
+        $user->syncRoles($request->role);
         return $this->successResponse($user->toArray());
     }
 
@@ -57,17 +64,17 @@ class UserController extends Controller
     {
         $request->validate([
             'email' => 'required|email|min:3',
-            'password' => 'required|string|min:8',
-            'work_start_time' => 'required|date_format:H:i',
-            'work_end_time' => 'required|date_format:H:i',
-            'pause_start_time' => 'required|date_format:H:i',
-            'pause_end_time' => 'required|date_format:H:i',
+            'password' => 'nullable|string|min:8',
+            'work_start_time' => 'required|date_format:H:i:s',
+            'work_end_time' => 'required|date_format:H:i:s',
+            'pause_start_time' => 'required|date_format:H:i:s',
+            'pause_end_time' => 'required|date_format:H:i:s',
             'working_days' => 'required|array',
             'role' => [
                 'required',
                 Rule::in(config('params.roles'))
             ],
-            'color' => 'required|string',
+            'color' => 'nullable|string',
             'photo' => 'nullable|image'
         ]);
     }

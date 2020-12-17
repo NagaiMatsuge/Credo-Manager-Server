@@ -17,24 +17,24 @@ class UserSeeder extends Seeder
     {
         $users[] = User::create([
             'name' => 'Ruslan',
-            'email' => 'Menrusamen19992@gmail.com',
+            'email' => 'menrusamen19992@gmail.com',
             'password' => Hash::make('password'),
             'work_start_time' => '9:9:9',
             'work_end_time' => '8:8:8',
             'pause_start_time' => '7:7:7',
             'pause_end_time' => '6:6:6',
-            'working_days' => '[1, 2, 3, 4, 5]',
+            'working_days' => [1, 2, 3, 4, 5],
             'color' => '#FC73AD'
         ]);
         $users[] = User::create([
             'name' => 'Bobur',
-            'email' => 'Komilovboburweb@gmail.com',
+            'email' => 'komilovboburweb@gmail.com',
             'password' => Hash::make('password'),
             'work_start_time' => '9:9:9',
             'work_end_time' => '8:8:8',
             'pause_start_time' => '7:7:7',
             'pause_end_time' => '6:6:6',
-            'working_days' => '[1, 2, 3, 4, 5]',
+            'working_days' => [1, 2, 3, 4, 5],
             'color' => '#FC73AD'
         ]);
         $users[] = User::create([
@@ -45,7 +45,7 @@ class UserSeeder extends Seeder
             'work_end_time' => '8:8:8',
             'pause_start_time' => '7:7:7',
             'pause_end_time' => '6:6:6',
-            'working_days' => '[1, 2, 3, 4, 5]',
+            'working_days' => [1, 2, 3, 4, 5],
             'color' => '#FC73AD'
         ]);
         $users[] = User::create([
@@ -56,7 +56,7 @@ class UserSeeder extends Seeder
             'work_end_time' => '8:8:8',
             'pause_start_time' => '7:7:7',
             'pause_end_time' => '6:6:6',
-            'working_days' => '[1, 2, 3, 4, 5]',
+            'working_days' => [1, 2, 3, 4, 5],
             'color' => '#FC73AD'
         ]);
         $roles = config('params.roles');
