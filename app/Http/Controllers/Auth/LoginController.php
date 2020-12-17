@@ -35,7 +35,7 @@ class LoginController extends Controller
         $token = $user->createToken('Personal access token')->accessToken;
         $rolesOfTheUser = $user->getRoleNames()->toArray();
         $res = array_merge($request->user()->toArray(), ['_token' => $token]);
-        $res['role'] = $rolesOfTheUser;
+        $res['role'] = $rolesOfTheUser[0];
         return $this->successResponse($res, 200, 'Login Successfull');
     }
 

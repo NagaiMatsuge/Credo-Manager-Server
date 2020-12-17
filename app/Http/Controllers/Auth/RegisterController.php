@@ -41,6 +41,7 @@ class RegisterController extends Controller
         $data = $request->except('password');
         $data['password'] = Hash::make($request->password);
         $user = User::create($data);
+        $user->syncRoles($data['role']);
 
         Mail::to($request->email)->send(new VerifyEmail($user, $request->password));
 
