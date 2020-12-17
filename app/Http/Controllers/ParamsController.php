@@ -13,6 +13,6 @@ class ParamsController extends Controller
     //* Get all Roles
     public function getAllRoles(Request $request)
     {
-        return $this->successResponse(Role::all()->pluck('name'));
+        return $this->successResponse(Role::select('id', 'name')->get());
     }
 }

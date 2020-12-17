@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Traits\ResponseTrait;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class RegisterController extends Controller
@@ -20,11 +21,11 @@ class RegisterController extends Controller
         $request->validate([
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'work_start_time' => 'required|date_format:H:i:s',
-            'work_end_time' => 'required|date_format:H:i:s',
+            'work_start_time' => 'required|date_format:H:i',
+            'work_end_time' => 'required|date_format:H:i',
             'manager_id' => 'nullable',
-            'pause_start_time' => 'required|date_format:H:i:s',
-            'pause_end_time' => 'required|date_format:H:i:s',
+            'pause_start_time' => 'required|date_format:H:i',
+            'pause_end_time' => 'required|date_format:H:i',
             'working_days' => 'required|array',
             'name' => 'required|string|min:3|max:255',
             'role' => [
@@ -37,7 +38,10 @@ class RegisterController extends Controller
         // $working_days = json_encode($request->working_days);
         // $data['working_days'] = "$working_days";
         // return $this->successResponse($request->input());
-        $user = User::create($request->input());
+        $data = $request->except('password');
+        $data['password'] = Hash::make($request->password);
+        $user = User::create($data);
+        $user->syncRoles($data['role']);
 
         Mail::to($request->email)->send(new VerifyEmail($user, $request->password));
 

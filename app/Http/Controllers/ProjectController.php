@@ -11,20 +11,20 @@ class ProjectController extends Controller
 {
     use ResponseTrait;
 
-//* Fetch all projects with deadline
+    //* Fetch all projects with deadline
     public function index(Request $request)
     {
         $projects = DB::table('projects')->select('projects.*', DB::raw('(select max(deadline) from tasks where tasks.project_id = projects.id) as deadline'))->get();
         return $this->successResponse($projects);
     }
 
-//* Show project by its id
+    //* Show project by its id
     public function show(Project $id)
     {
         return $this->successResponse($id);
     }
 
-//* Create project and tasks with validation    
+    //* Create project and tasks with validation    
     public function store(Request $request)
     {
         $request->validate([
@@ -45,14 +45,14 @@ class ProjectController extends Controller
         DB::table('tasks')->insert($tasks);
     }
 
-//* Update project by its id   
+    //* Update project by its id   
     public function update(Request $request, Project $id)
     {
         $id->update($request->all());
         return $this->successResponse($id);
     }
 
-//* Delete project by its id    
+    //* Delete project by its id    
     public function destroy($id)
     {
         $delete = DB::table('projects')->where('id', $id)->delete();
