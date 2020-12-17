@@ -54,6 +54,10 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'working_days' => 'array'
+        'working_days' => 'array',
+        'pause_start_time' => 'date:hh:mm',
+        'pause_end_time' => 'date:hh:mm',
+        'work_start_time' => 'date:hh:mm',
+        'work_end_time' => 'date:hh:mm',
     ];
 }
