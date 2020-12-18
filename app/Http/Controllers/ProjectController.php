@@ -11,10 +11,28 @@ class ProjectController extends Controller
 {
     use ResponseTrait;
 
-    //* Fetch all projects with deadline
+    //* Fetch all projects with deadline and paid amount in percentage
     public function index(Request $request)
     {
-        $projects = DB::table('projects')->select('projects.*', DB::raw('(select max(deadline) from tasks where tasks.project_id = projects.id) as deadline'))->get();
+        $projects = Project::select('projects.*', DB::raw('(select max(deadline) from tasks where tasks.project_id = projects.id) as deadline'), DB::raw('(select count(id) from tasks where tasks.project_id = projects.id AND tasks.approved=1) as approved_tasks'), DB::raw('(select count(id) from tasks where tasks.project_id=projects.id) as num_tasks'))->paginate(5)->toArray();
+
+        $tasks = DB::select("select price, debt, project_id from tasks");
+        foreach($projects['data'] as $key => $project) {
+            $id = $project['id'];
+            $tasksOfProject = [];
+            foreach($tasks as $task) {
+                if($task->project_id == $id) {
+                    $tasksOfProject[] = $task;
+                }
+            }
+            $debtPercent = 0;
+            $taskCount = 0;
+            foreach($tasksOfProject as $t) {
+                $taskCount++;
+                $debtPercent += ($t->price - $t->debt)*100/$t->price;
+            }
+            $projects['data'][$key]['paid_in_percentage'] = ($debtPercent * 100) / ($taskCount * 100);
+        }
         return $this->successResponse($projects);
     }
 
@@ -58,4 +76,31 @@ class ProjectController extends Controller
         $delete = DB::table('projects')->where('id', $id)->delete();
         return $this->successResponse($delete);
     }
+    /*
+    $projects = Project::select('projects.*', DB::raw('(select max(deadline) from tasks where tasks.project_id = projects.id) as deadline'), DB::raw('(select count(id) from tasks where tasks.project_id = projects.id AND tasks.approved=1) as approved_tasks'), DB::raw('(select count(id) from tasks where tasks.project_id=projects.id) as num_tasks'))->paginate(5)->toArray();
+
+        $tasks = DB::select("select price, debt, project_id from tasks");
+        $res = [];
+        foreach($projects['data'] as $project) {
+            $id = $project['id'];
+            $tasksOfProject = [];
+            foreach($tasks as $task) {
+                if($task->project_id == $id) {
+                    $tasksOfProject[] = $task;
+                }
+            }
+            $debtPercent = 0;
+            $taskCount = 0;
+            foreach($tasksOfProject as $t) {
+                $taskCount++;
+                $debtPercent += ($t->price - $t->debt)*100/$t->price;
+            }
+            $res[$id] = ($debtPercent * 100) / ($taskCount * 100);
+        }
+        foreach($projects['data'] as $key =>  $project) {
+            $projects['data'][$key]['paid_in_percentage'] = $res[$project['id']]; 
+        }
+    
+    
+    */
 }
