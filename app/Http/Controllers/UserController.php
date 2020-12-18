@@ -88,7 +88,6 @@ class UserController extends Controller
             'name' => 'required|min:3',
             'phone' => 'nullable',
             'password' => [
-                'required',
                 'min:8',
                 Rule::requiredIf($request->has('new_password'))
             ]
@@ -96,7 +95,7 @@ class UserController extends Controller
 
         $data = $request->only(['photo', 'password', 'new_password', 'name', 'phone']);
 
-        $user = DB::where('id', $id)->first();
+        $user = DB::table('users')->where('id', $id)->first();
 
         if ($request->has('photo')) {
             $image = $request->file('photo')->store('avatars');
