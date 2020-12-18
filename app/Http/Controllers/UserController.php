@@ -6,6 +6,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -77,5 +78,39 @@ class UserController extends Controller
             'color' => 'nullable|string',
             'photo' => 'nullable|image'
         ]);
+    }
+
+    public function settingUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'photo' => 'nullable|image',
+            'new_password' => 'nullable|min:8',
+            'name' => 'required|min:3',
+            'phone' => 'nullable',
+            'password' => 'required_if|new_password|min:8'
+        ]);
+
+        $data = $request->only(['photo', 'password', 'new_password', 'name', 'phone']);
+
+        $user = DB::where('id', $id)->first();
+
+        if ($request->has('photo')) {
+            $image = $request->file('photo')->store('avatars');
+            $data['photo'] = $image;
+        }
+
+        if ($request->has('new_password')) {
+            if (Hash::check($request->new_password, $user->password))
+                return $this->errorResponse('password-matches-old');
+            if (Hash::check($request->password, $user->password)) {
+                $data['password'] = Hash::make($request->new_password);
+            } else {
+                return $this->errorResponse('password-dontmatch');
+            }
+        }
+
+        $res = DB::table('users')->where('id', $id)->update($data);
+
+        return $this->successResponse($res);
     }
 }
