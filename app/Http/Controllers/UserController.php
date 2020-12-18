@@ -87,7 +87,11 @@ class UserController extends Controller
             'new_password' => 'nullable|min:8',
             'name' => 'required|min:3',
             'phone' => 'nullable',
-            'password' => 'required_if|new_password|min:8'
+            'password' => [
+                'required',
+                'min:8',
+                Rule::requiredIf($request->has('new_password'))
+            ]
         ]);
 
         $data = $request->only(['photo', 'password', 'new_password', 'name', 'phone']);

@@ -9,5 +9,5 @@ Route::group(['prefix' => 'users'], function () {
     Route::post('/create', [UserController::class, 'store']);
     Route::put('/update/{user}', [UserController::class, 'update']);
     Route::delete('/delete/{id}', [UserController::class, 'destroy']);
-    Route::post('/setting/update/{id}', [UserController::class, 'settingUpdate']);
+    Route::put('/setting/update/{id}', [UserController::class, 'settingUpdate']);
 });
