@@ -63,6 +63,7 @@ class UserSeeder extends Seeder
             'working_days' => [1, 2, 3, 4, 5],
             'color' => '#8F73FC'
         ]);
+
         $roles = config('params.roles');
         foreach ($users as $user) {
             $user->syncRoles($roles[rand(0, 6)]);
