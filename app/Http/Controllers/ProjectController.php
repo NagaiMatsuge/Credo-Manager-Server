@@ -14,7 +14,7 @@ class ProjectController extends Controller
     //* Fetch all projects with deadline and paid amount in percentage
     public function index(Request $request)
     {
-        $projects = Project::select('projects.*', DB::raw('(select max(deadline) from tasks where tasks.project_id = projects.id) as deadline'), DB::raw('(select count(id) from tasks where tasks.project_id = projects.id AND tasks.approved=1) as approved_tasks'), DB::raw('(select count(id) from tasks where tasks.project_id=projects.id) as num_tasks'))->paginate(5)->toArray();
+        $projects = Project::select('projects.*',  DB::raw('(select count(id) from tasks where tasks.project_id = projects.id AND tasks.approved=1) as approved_tasks'), DB::raw('(select count(id) from tasks where tasks.project_id=projects.id) as num_tasks'))->paginate(5)->toArray();
 
         $tasks = DB::select("select price, debt, project_id from tasks");
         foreach ($projects['data'] as $key => $project) {
@@ -57,7 +57,7 @@ class ProjectController extends Controller
             'project.color' => 'nullable',
             'project.title' => 'required|string|min:3|max:255',
             'project.description' => 'nullable|min:10',
-            'project.deadline' => 'required|date|date_format: d M Y',
+            'project.deadline' => 'required|date|date_format: Y m d',
             'tasks' => 'required|array',
             'tasks.*.price' => 'required|integer',
             'tasks.*.currency_id' => 'required|integer',
