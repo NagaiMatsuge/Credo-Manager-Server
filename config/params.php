@@ -31,6 +31,18 @@ return [
         '#FC73AD',
         '#FCB573'
     ],
+    'currencies' => [
+        '1' => 'SUM',
+        '2' => 'USD',
+        '3' => 'RUB'
+    ],
+    'payment_types' => [
+        '1' => 'Qiwi',
+        '2' => 'Wmp',
+        '3' => 'Wmz',
+        '4' => 'Yandex',
+        '5' => 'Bank'
+    ],
     'response_messages' => [
         'auth/too-many-requests' => 'Превышен лимит на запрос смены пароля',
         'auth/email-already-in-use' => 'Пользователь с таким Email уже зарегистрирован',

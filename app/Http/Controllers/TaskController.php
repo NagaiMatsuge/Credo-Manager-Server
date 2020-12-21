@@ -10,18 +10,18 @@ use Illuminate\Support\Facades\DB;
 class TaskController extends Controller
 {
     use ResponseTrait;
-//* Fetch all tasks
+    //* Fetch all tasks
     public function index()
     {
         $tasks = Task::all();
         return $this->successResponse($tasks);
     }
-//* Show task by its id
+    //* Show task by its id
     public function show(Task $id)
     {
         return $this->successResponse($id);
     }
-//* Create task with validation
+    //* Create task with validation
     public function store(Request $request)
     {
         $create_task = Task::create($request->validate([
@@ -36,13 +36,13 @@ class TaskController extends Controller
 
         return $this->successResponse($create_task);
     }
-//* Update task by its id
+    //* Update task by its id
     public function update(Request $request, Task $id)
     {
         $id->update($request->all());
         return $this->successResponse($id);
     }
-//* Delete task by its id
+    //* Delete task by its id
     public function destroy($id)
     {
         $delete = DB::table('tasks')->where('id', $id)->delete();
