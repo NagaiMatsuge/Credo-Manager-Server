@@ -66,7 +66,7 @@ class UserSeeder extends Seeder
 
         $roles = config('params.roles');
         foreach ($users as $user) {
-            $user->syncRoles($roles[rand(0, 6)]);
+            $user->syncRoles($roles[rand(0, 4)]);
         }
     }
 }
