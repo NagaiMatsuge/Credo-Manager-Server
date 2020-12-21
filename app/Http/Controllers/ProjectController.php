@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ProjectController extends Controller
 {
@@ -39,7 +40,7 @@ class ProjectController extends Controller
             $date = explode("-", $project['deadline']);
             $projects['data'][$key]['deadline'] = $date[2] . ' ' . config('params.month_format.' . $date[1]) . ' ' .  $date[0];
         }
-        
+
         return $this->successResponse($projects);
     }
 
@@ -53,11 +54,14 @@ class ProjectController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'project.image' => 'nullable',
-            'project.color' => 'nullable',
+            'project.photo' => 'nullable|image',
+            'project.color' => [
+                Rule::requiredIf($request->input('project.photo') == null),
+                'string'
+            ],
             'project.title' => 'required|string|min:3|max:255',
             'project.description' => 'nullable|min:10',
-            'project.deadline' => 'required|date|date_format: Y m d',
+            'project.deadline' => 'required|date|date_format:Y-m-d',
             'tasks' => 'required|array',
             'tasks.*.price' => 'required|integer',
             'tasks.*.currency_id' => 'required|integer',
@@ -65,7 +69,14 @@ class ProjectController extends Controller
             'tasks.*.payment_date' => 'required|date',
             'tasks.*.title' => 'required|string|min:3|max:255'
         ]);
-        $project = Project::create($request->project);
+
+        $project = $request->project;
+        if ($request->has('project.photo')) {
+            $project['photo'] = $request->file('project.photo')->store('projects');
+        }
+
+        $project = Project::create($project);
+
         $tasks = $request->tasks;
         foreach ($tasks as $key => $val) {
             $tasks[$key]['project_id'] = $project->id;
