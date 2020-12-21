@@ -39,26 +39,35 @@ class ProjectController extends Controller
             'project.title' => 'required|string|min:3|max:255',
             'project.description' => 'nullable|min:10',
             'project.deadline' => 'required|date|date_format:Y-m-d',
-            'tasks' => 'required|array',
-            'tasks.*.price' => 'required|integer',
-            'tasks.*.currency_id' => 'required|integer',
-            'tasks.*.payment_type' => 'required|integer',
-            'tasks.*.payment_date' => 'required|date',
-            'tasks.*.title' => 'required|string|min:3|max:255'
+            'steps' => 'required|array',
+            'steps.*.price' => 'required',
+            'steps.*.currency_id' => [
+                'required',
+                Rule::in(array_keys(config('params.currencies')))
+            ],
+            'steps.*.payment_type' => [
+                'required',
+                Rule::in(array_keys(config('params.payment_types')))
+            ],
+            'steps.*.payment_date' => 'required|date',
+            'steps.*.title' => 'required|string|min:3|max:255'
         ]);
 
-        $project = $request->project;
-        if ($request->has('project.photo')) {
-            $project['photo'] = $request->file('project.photo')->store('projects');
-        }
+        DB::transaction(function () use ($request) {
+            $project = $request->project;
+            if ($request->has('project.photo')) {
+                $project['photo'] = $request->file('project.photo')->store('projects');
+            }
 
-        $project = Project::create($project);
+            $project = Project::create($project);
 
-        $tasks = $request->tasks;
-        foreach ($tasks as $key => $val) {
-            $tasks[$key]['project_id'] = $project->id;
-        }
-        DB::table('tasks')->insert($tasks);
+            $steps = $request->steps;
+            foreach ($steps as $key => $val) {
+                $steps[$key]['project_id'] = $project->id;
+            }
+            DB::table('steps')->insert($steps);
+            return $this->successResponse([], 201, 'Successfully created');
+        });
     }
 
     //* Update project by its id   
@@ -73,6 +82,16 @@ class ProjectController extends Controller
     {
         $delete = DB::table('projects')->where('id', $id)->delete();
         return $this->successResponse($delete);
+    }
+
+    //* Get all payment credentials
+    public function getCredentials(Request $request)
+    {
+        $data = [
+            'payment_types' => config('params.payment_types'),
+            'currencies' => config('params.currencies')
+        ];
+        return $this->successResponse($data);
     }
 
     /*

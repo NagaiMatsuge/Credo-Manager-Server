@@ -9,4 +9,5 @@ Route::group(['prefix' => 'projects'], function () {
     Route::post('/create', [ProjectController::class, 'store']);
     Route::put('/update/{id}', [ProjectController::class, 'update'])->where(['id' => '[0-9]+']);
     Route::delete('/delete/{id}', [ProjectController::class, 'destroy'])->where(['id' => '[0-9]+']);
+    Route::get('/create', [ProjectController::class, 'getCredentials']);
 });
