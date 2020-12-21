@@ -17,7 +17,6 @@ class CreateTasksTable extends Migration
             $table->id();
             $table->string('title');
             $table->unsignedBigInteger('step_id');
-            $table->date('payment_date');
             $table->boolean('finished')->default(false);
             $table->boolean('approved')->default(false)->comment('Only can be approved by Admin');
             $table->dateTime('deadline');
