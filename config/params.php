@@ -10,11 +10,8 @@ return [
         'Manager',
         'Backend Developer',
         'Frontend Developer',
-        'System Administrator',
         'UI\UX Designer',
-        'Assistant'
     ],
-
     'month_format' => [
         '1' => 'январь',
         '2' => 'февраль',
@@ -29,7 +26,11 @@ return [
         '11' => 'ноябрь',
         '12' => 'декабрь',
     ],
-
+    'colors' => [
+        '#8F73FC',
+        '#FC73AD',
+        '#FCB573'
+    ],
     'response_messages' => [
         'auth/too-many-requests' => 'Превышен лимит на запрос смены пароля',
         'auth/email-already-in-use' => 'Пользователь с таким Email уже зарегистрирован',

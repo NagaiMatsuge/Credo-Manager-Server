@@ -16,11 +16,11 @@ class CreateProjectsTable extends Migration
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('server_id')->nullable();
-            $table->string('image')->nullable();
+            $table->string('photo')->nullable();
             $table->string('color')->nullable();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->dateTime('deadline');
+            $table->date('deadline');
 
             $table->foreign('server_id')->references('id')->on('servers')->onDelete('cascade');
         });

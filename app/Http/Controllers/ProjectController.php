@@ -17,21 +17,25 @@ class ProjectController extends Controller
         $projects = Project::select('projects.*', DB::raw('(select max(deadline) from tasks where tasks.project_id = projects.id) as deadline'), DB::raw('(select count(id) from tasks where tasks.project_id = projects.id AND tasks.approved=1) as approved_tasks'), DB::raw('(select count(id) from tasks where tasks.project_id=projects.id) as num_tasks'))->paginate(5)->toArray();
 
         $tasks = DB::select("select price, debt, project_id from tasks");
-        foreach($projects['data'] as $key => $project) {
+        foreach ($projects['data'] as $key => $project) {
             $id = $project['id'];
             $tasksOfProject = [];
-            foreach($tasks as $task) {
-                if($task->project_id == $id) {
+            foreach ($tasks as $task) {
+                if ($task->project_id == $id) {
                     $tasksOfProject[] = $task;
                 }
             }
             $debtPercent = 0;
             $taskCount = 0;
-            foreach($tasksOfProject as $t) {
+            foreach ($tasksOfProject as $t) {
                 $taskCount++;
-                $debtPercent += ($t->price - $t->debt)*100/$t->price;
+                $debtPercent += ($t->price - $t->debt) * 100 / $t->price;
             }
-            $projects['data'][$key]['paid_in_percentage'] = ($debtPercent * 100) / ($taskCount * 100);
+            if ($taskCount === 0) {
+                $projects['data'][$key]['paid_in_percentage'] = null;
+            } else {
+                $projects['data'][$key]['paid_in_percentage'] = ($debtPercent * 100) / ($taskCount * 100);
+            }
             $date = explode("-", $project['deadline']);
             $projects['data'][$key]['deadline'] = $date[2] . ' ' . config('params.month_format.' . $date[1]) . ' ' .  $date[0];
         }
