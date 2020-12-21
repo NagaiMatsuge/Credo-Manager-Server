@@ -31,7 +31,7 @@ class TaskController extends Controller
             'currency_id' => 'required|integer',
             'payment_type' => 'required|integer',
             'payment_date' => 'required|date|date_format:Y-m-d',
-            'deadline' => 'required|date|date_format: d M Y'
+            'deadline' => 'required|date|date_format: Y-m-d'
         ]));
 
         return $this->successResponse($create_task);
