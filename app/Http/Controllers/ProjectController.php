@@ -32,7 +32,10 @@ class ProjectController extends Controller
                 $debtPercent += ($t->price - $t->debt)*100/$t->price;
             }
             $projects['data'][$key]['paid_in_percentage'] = ($debtPercent * 100) / ($taskCount * 100);
+            $date = explode("-", $project['deadline']);
+            $projects['data'][$key]['deadline'] = $date[2] . ' ' . config('params.month_format.' . $date[1]) . ' ' .  $date[0];
         }
+        
         return $this->successResponse($projects);
     }
 
@@ -50,7 +53,7 @@ class ProjectController extends Controller
             'project.color' => 'nullable',
             'project.title' => 'required|string|min:3|max:255',
             'project.description' => 'nullable|min:10',
-            'project.deadline' => 'required|date|date_format: Y-m-d',
+            'project.deadline' => 'required|date|date_format: d M Y',
             'tasks' => 'required|array',
             'tasks.*.price' => 'required|integer',
             'tasks.*.currency_id' => 'required|integer',
