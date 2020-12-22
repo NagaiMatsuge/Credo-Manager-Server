@@ -19,6 +19,11 @@ class ProjectController extends Controller
     public function index(Request $request)
     {
         $projects = DB::table('projects')->select('projects.*', DB::raw('(SELECT COUNT(tasks.id) FROM tasks WHERE tasks.step_id IN (SELECT id FROM steps WHERE steps.project_id=projects.id)) as task_count'), DB::raw('(SELECT COUNT(tasks.id) FROM tasks WHERE tasks.step_id IN (SELECT id FROM steps WHERE steps.project_id=projects.id AND tasks.approved=1)) as approved_count'), DB::raw('(SELECT SUM(t1.percent)/ COUNT(t1.percent) AS paid_percent FROM (SELECT ((steps.price - steps.debt) * 100 / steps.price) AS percent FROM steps WHERE steps.project_id=projects.id) AS t1) AS paid_percent'))->paginate(10);
+        $projects = $projects->toArray();
+        foreach ($projects['data'] as $key => $project) {
+            $date = explode("-", $project->deadline);
+            $projects['data'][$key]->deadline = $date[2] . ' ' . config('params.month_format.' . $date[1]) . ' ' .  $date[0];
+        }
         return $this->successResponse($projects);
     }
 
@@ -50,8 +55,8 @@ class ProjectController extends Controller
                 $steps[$key]['debt'] = $steps[$key]['price'];
             }
             DB::table('steps')->insert($steps);
-            return $this->successResponse([], 201, 'Successfully created');
         });
+        return $this->successResponse([], 201, 'Successfully created');
     }
 
     //* Update project by its id   
@@ -119,7 +124,7 @@ class ProjectController extends Controller
 
     public function getProjectSteps(Project $project)
     {
-        $steps = $project->step()->get() ;
+        $steps = $project->step()->get();
         $data = [
             'project' => $project,
             'steps' => $steps
