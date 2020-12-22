@@ -101,6 +101,13 @@ class ProjectController extends Controller
     //* Get all payment credentials
     public function getCredentials(Request $request)
     {
+        $data = $this->getPaymentAndCurrencies();
+        return $this->successResponse($data);
+    }
+
+    //* Get the currencies and payment methods
+    private function getPaymentAndCurrencies()
+    {
         $payment_types = config('params.payment_types');
         $payment_types_res = [];
         foreach ($payment_types as $key => $val) {
@@ -117,11 +124,10 @@ class ProjectController extends Controller
                 'name' => $val
             ];
         }
-        $data = [
+        return [
             'payment_types' => $payment_types_res,
             'currencies' => $currencies_res
         ];
-        return $this->successResponse($data);
     }
 
     public function getProjectSteps(Project $project)
@@ -131,7 +137,7 @@ class ProjectController extends Controller
             'project' => $project,
             'steps' => $steps
         ];
-        return $this->successResponse($data);
+        return $this->successResponse(array_merge($data, $this->getPaymentAndCurrencies()));
     }
     //* Validates the requrest for projects
     public function makeValidation(Request $request)
