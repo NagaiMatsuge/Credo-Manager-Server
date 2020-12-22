@@ -10,4 +10,6 @@ Route::group(['prefix' => 'projects'], function () {
     Route::put('/update/{id}', [ProjectController::class, 'update'])->where(['id' => '[0-9]+']);
     Route::delete('/delete/{id}', [ProjectController::class, 'destroy'])->where(['id' => '[0-9]+']);
     Route::get('/create', [ProjectController::class, 'getCredentials']);
+    Route::get('/{project}/steps', [ProjectController::class, 'getProjectSteps'])->where(['id' => '[0-9]+']);
+
 });
