@@ -28,8 +28,6 @@ class StepResource extends JsonResource
                 'id' => $this->payment_type,
                 'name' => config("params.payment_types.$this->payment_type")
             ],
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at
         ];
     }
 }

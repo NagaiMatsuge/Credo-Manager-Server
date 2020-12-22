@@ -18,4 +18,6 @@ class Step extends Model
         'payment_type',
         'payment_date'
     ];
+
+    protected $timestampts = false;
 }
