@@ -4,15 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Step;
-use App\Models\Task;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use App\Traits\DateTimeTrait;
 
 class ProjectController extends Controller
 {
-    use ResponseTrait;
+    use ResponseTrait, DateTimeTrait;
 
     //* Fetch all projects with deadline and paid amount in percentage
     public function index(Request $request)
@@ -30,28 +31,7 @@ class ProjectController extends Controller
     //* Create project and tasks with validation    
     public function store(Request $request)
     {
-        $request->validate([
-            'project.photo' => 'nullable|image',
-            'project.color' => [
-                Rule::requiredIf($request->input('project.photo') == null),
-                'string'
-            ],
-            'project.title' => 'required|string|min:3|max:255',
-            'project.description' => 'nullable|min:10',
-            'project.deadline' => 'required|date|date_format:Y-m-d',
-            'steps' => 'required|array',
-            'steps.*.price' => 'required',
-            'steps.*.currency_id' => [
-                'required',
-                Rule::in(array_keys(config('params.currencies')))
-            ],
-            'steps.*.payment_type' => [
-                'required',
-                Rule::in(array_keys(config('params.payment_types')))
-            ],
-            'steps.*.payment_date' => 'required|date',
-            'steps.*.title' => 'required|string|min:3|max:255'
-        ]);
+        $this->makeValidation($request);
 
         DB::transaction(function () use ($request) {
             $project = $request->project;
@@ -59,11 +39,15 @@ class ProjectController extends Controller
                 $project['photo'] = $request->file('project.photo')->store('projects');
             }
 
+            $project['deadline'] = $this->makeDateFillable($project['deadline'], '.');
+
             $project = Project::create($project);
 
             $steps = $request->steps;
             foreach ($steps as $key => $val) {
                 $steps[$key]['project_id'] = $project->id;
+                $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
+                $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
             }
             DB::table('steps')->insert($steps);
             return $this->successResponse([], 201, 'Successfully created');
@@ -71,10 +55,33 @@ class ProjectController extends Controller
     }
 
     //* Update project by its id   
-    public function update(Request $request, Project $id)
+    public function update(Request $request, $id)
     {
-        $id->update($request->all());
-        return $this->successResponse($id);
+        $this->makeValidation($request);
+
+        $oldProject = Project::where('id', $id)->first();
+        $project = $request->project;
+
+        if ($request->input('project.photo') !== null) {
+            if ($oldProject->photo)
+                Storage::disk('public')->delete($oldProject->photo);
+            $project['photo'] = $request->file('project.photo')->store('projects');
+        }
+
+        $project['deadline'] = $this->makeDateFillable($project['deadline'], '.');
+
+        $oldProject->update($project);
+
+        $steps = $request->steps;
+
+        foreach ($steps as $key => $val) {
+            $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
+            $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
+        }
+
+        Step::updateOrCreate($steps);
+
+        return $this->successResponse([], 201, 'Successfully updated');
     }
 
     //* Delete project by its id    
@@ -87,9 +94,25 @@ class ProjectController extends Controller
     //* Get all payment credentials
     public function getCredentials(Request $request)
     {
+        $payment_types = config('params.payment_types');
+        $payment_types_res = [];
+        foreach ($payment_types as $key => $val) {
+            $payment_types_res[] = [
+                'id' => $key,
+                'name' => $val
+            ];
+        }
+        $currencies = config('params.currencies');
+        $currencies_res = [];
+        foreach ($currencies as $key => $val) {
+            $currencies_res[] = [
+                'id' => $key,
+                'name' => $val
+            ];
+        }
         $data = [
-            'payment_types' => config('params.payment_types'),
-            'currencies' => config('params.currencies')
+            'payment_types' => $payment_types_res,
+            'currencies' => $currencies_res
         ];
         return $this->successResponse($data);
     }
@@ -103,6 +126,33 @@ class ProjectController extends Controller
         ];
         return $this->successResponse($data);
     }
+    //* Validates the requrest for projects
+    public function makeValidation(Request $request)
+    {
+        $request->validate([
+            'project.photo' => 'nullable|image',
+            'project.color' => [
+                Rule::requiredIf($request->input('project.photo') == null),
+                'string'
+            ],
+            'project.title' => 'required|string|min:3|max:255',
+            'project.description' => 'nullable|min:10',
+            'project.deadline' => 'required|date|date_format:d.m.Y',
+            'steps' => 'required|array',
+            'steps.*.price' => 'required',
+            'steps.*.currency_id.id' => [
+                'required',
+                Rule::in(array_keys(config('params.currencies')))
+            ],
+            'steps.*.payment_type.id' => [
+                'required',
+                Rule::in(array_keys(config('params.payment_types')))
+            ],
+            'steps.*.payment_date' => 'required|date',
+            'steps.*.title' => 'required|string|min:3|max:255'
+        ]);
+    }
+
     /*
 public function index(Request $request)
     {
