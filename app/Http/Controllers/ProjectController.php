@@ -45,7 +45,6 @@ class ProjectController extends Controller
                 $project['photo'] = $request->file('project.photo')->store('projects');
             }
 
-            $project['deadline'] = $this->makeDateFillable($project['deadline'], '.');
             $project = Project::create($project);
 
             $steps = $request->steps;
@@ -74,8 +73,6 @@ class ProjectController extends Controller
                     Storage::disk('public')->delete($oldProject->photo);
                 $project['photo'] = $request->file('project.photo')->store('projects');
             }
-
-            $project['deadline'] = $this->makeDateFillable($project['deadline'], '.');
 
             $oldProject->update($project);
 
@@ -131,7 +128,7 @@ class ProjectController extends Controller
             'project' => [
                 'title' => '',
                 'description' => '',
-                'deadline' => date('Y.m.d')
+                'deadline' => date('Y-m-d')
             ],
             'steps' => [
                 [

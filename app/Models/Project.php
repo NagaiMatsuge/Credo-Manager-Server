@@ -25,9 +25,4 @@ class Project extends Model
     {
         return $this->hasMany(Step::class);
     }
-    protected $dateFormat = 'd-m-Y';
-
-    protected $casts = [
-        'deadline' => 'date:Y.m.d'
-    ];
 }
