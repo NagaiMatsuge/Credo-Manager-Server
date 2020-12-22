@@ -24,17 +24,17 @@ class TaskController extends Controller
     //* Create task with validation
     public function store(Request $request)
     {
-        $create_task = Task::create($request->validate([
-            'title' => 'required|string|min:3|max:255',
-            'project_id' => 'required|integer',
-            'price' => 'required|integer',
-            'currency_id' => 'required|integer',
-            'payment_type' => 'required|integer',
-            'payment_date' => 'required|date|date_format:Y-m-d',
-            'deadline' => 'required|date|date_format: Y-m-d'
-        ]));
+        $this->makeValidation($request);
 
-        return $this->successResponse($create_task);
+        $tasks = $request->tasks;
+
+        foreach ($tasks as $key => $task) {
+            $tasks[$key]['step_id'] = $request->step_id;
+        }
+
+        Task::updateOrCreate($tasks);
+
+        return $this->successResponse([], 201, "Successfully created");
     }
     //* Update task by its id
     public function update(Request $request, Task $id)
@@ -47,5 +47,17 @@ class TaskController extends Controller
     {
         $delete = DB::table('tasks')->where('id', $id)->delete();
         return $this->successResponse($delete);
+    }
+
+    //* Validate the request for tasks
+    public function makeValidation(Request $request)
+    {
+        $request->validate([
+            'step_id' => 'required|integer',
+            'tasks' => 'required|array',
+            'tasks.*.title' => 'required|string|min:3|max:255',
+            'tasks.*.step_id' => 'required|integer',
+            'tasks.*.deadline' => 'required|date|date_format:Y-m-d'
+        ]);
     }
 }

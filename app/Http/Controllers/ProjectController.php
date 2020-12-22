@@ -80,9 +80,25 @@ class ProjectController extends Controller
     //* Get all payment credentials
     public function getCredentials(Request $request)
     {
+        $payment_types = config('params.payment_types');
+        $payment_types_res = [];
+        foreach ($payment_types as $key => $val) {
+            $payment_types_res[] = [
+                'id' => $key,
+                'name' => $val
+            ];
+        }
+        $currencies = config('params.currencies');
+        $currencies_res = [];
+        foreach ($currencies as $key => $val) {
+            $currencies_res[] = [
+                'id' => $key,
+                'name' => $val
+            ];
+        }
         $data = [
-            'payment_types' => config('params.payment_types'),
-            'currencies' => config('params.currencies')
+            'payment_types' => $payment_types_res,
+            'currencies' => $currencies_res
         ];
         return $this->successResponse($data);
     }
