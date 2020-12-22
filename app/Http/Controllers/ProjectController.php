@@ -117,6 +117,15 @@ class ProjectController extends Controller
         return $this->successResponse($data);
     }
 
+    public function getProjectSteps(Project $project)
+    {
+        $steps = $project->step()->get() ;
+        $data = [
+            'project' => $project,
+            'steps' => $steps
+        ];
+        return $this->successResponse($data);
+    }
     //* Validates the requrest for projects
     public function makeValidation(Request $request)
     {
