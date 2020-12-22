@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\StepResource;
 use App\Models\Project;
 use App\Models\Step;
 use App\Traits\ResponseTrait;
@@ -135,9 +136,9 @@ class ProjectController extends Controller
         $steps = $project->step()->get();
         $data = [
             'project' => $project,
-            'steps' => $steps
+            'steps' => StepResource::collection($steps)
         ];
-        return $this->successResponse(array_merge($data, $this->getPaymentAndCurrencies()));
+        return $this->successResponse($data);
     }
     //* Validates the requrest for projects
     public function makeValidation(Request $request)
