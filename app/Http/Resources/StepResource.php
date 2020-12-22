@@ -15,6 +15,7 @@ class StepResource extends JsonResource
     public function toArray($request)
     {
         return [
+            'id' => $this->id,
             'title' => $this->title,
             'project_id' => $this->project_id,
             'price' => $this->price,
