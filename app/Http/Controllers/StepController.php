@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\StepResource;
 use App\Models\Step;
 use App\Models\Task;
 use App\Traits\ResponseTrait;
@@ -23,7 +24,7 @@ class StepController extends Controller
     //* Show step by its id
     public function show(Step $id)
     {
-        return $this->successResponse($id);
+        return $this->successResponse(new StepResource($id));
     }
 
     //* Create step with valiadtion
