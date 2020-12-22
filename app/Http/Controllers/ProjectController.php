@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\StepResource;
 use App\Models\Project;
 use App\Models\Step;
 use App\Traits\ResponseTrait;
@@ -19,6 +20,11 @@ class ProjectController extends Controller
     public function index(Request $request)
     {
         $projects = DB::table('projects')->select('projects.*', DB::raw('(SELECT COUNT(tasks.id) FROM tasks WHERE tasks.step_id IN (SELECT id FROM steps WHERE steps.project_id=projects.id)) as task_count'), DB::raw('(SELECT COUNT(tasks.id) FROM tasks WHERE tasks.step_id IN (SELECT id FROM steps WHERE steps.project_id=projects.id AND tasks.approved=1)) as approved_count'), DB::raw('(SELECT SUM(t1.percent)/ COUNT(t1.percent) AS paid_percent FROM (SELECT ((steps.price - steps.debt) * 100 / steps.price) AS percent FROM steps WHERE steps.project_id=projects.id) AS t1) AS paid_percent'))->paginate(10);
+        $projects = $projects->toArray();
+        foreach ($projects['data'] as $key => $project) {
+            $date = explode("-", $project->deadline);
+            $projects['data'][$key]->deadline = $date[2] . ' ' . config('params.month_format.' . $date[1]) . ' ' .  $date[0];
+        }
         return $this->successResponse($projects);
     }
 
@@ -39,8 +45,6 @@ class ProjectController extends Controller
                 $project['photo'] = $request->file('project.photo')->store('projects');
             }
 
-            $project['deadline'] = $this->makeDateFillable($project['deadline'], '.');
-
             $project = Project::create($project);
 
             $steps = $request->steps;
@@ -48,10 +52,12 @@ class ProjectController extends Controller
                 $steps[$key]['project_id'] = $project->id;
                 $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
                 $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
+                $steps[$key]['debt'] = $steps[$key]['price'];
+                unset($steps[$key]['id']);
             }
             DB::table('steps')->insert($steps);
-            return $this->successResponse([], 201, 'Successfully created');
         });
+        return $this->successResponse([], 201, 'Successfully created');
     }
 
     //* Update project by its id   
@@ -59,28 +65,31 @@ class ProjectController extends Controller
     {
         $this->makeValidation($request);
 
-        $oldProject = Project::where('id', $id)->first();
-        $project = $request->project;
+        DB::transaction(function () use ($request, $id) {
+            $oldProject = Project::where('id', $id)->first();
+            $project = $request->project;
 
-        if ($request->input('project.photo') !== null) {
-            if ($oldProject->photo)
-                Storage::disk('public')->delete($oldProject->photo);
-            $project['photo'] = $request->file('project.photo')->store('projects');
-        }
+            if ($request->input('project.photo') !== null) {
+                if ($oldProject->photo)
+                    Storage::disk('public')->delete($oldProject->photo);
+                $project['photo'] = $request->file('project.photo')->store('projects');
+            }
+            $oldProject->update($project);
 
-        $project['deadline'] = $this->makeDateFillable($project['deadline'], '.');
+            $steps = $request->steps;
 
-        $oldProject->update($project);
-
-        $steps = $request->steps;
-
-        foreach ($steps as $key => $val) {
-            $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
-            $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
-        }
-
-        Step::updateOrCreate($steps);
-
+            $stepsNeedToBeCreated = [];
+            foreach ($steps as $key => $val) {
+                if ($val['id'] !== null) {
+                    $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
+                    $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
+                } else {
+                    $stepsNeedToBeCreated[] = $val;
+                }
+            }
+            DB::table('steps')->insert($stepsNeedToBeCreated);
+            Step::upsert($steps, ['id']);
+        });
         return $this->successResponse([], 201, 'Successfully updated');
     }
 
@@ -93,6 +102,13 @@ class ProjectController extends Controller
 
     //* Get all payment credentials
     public function getCredentials(Request $request)
+    {
+        $data = $this->getPaymentAndCurrencies();
+        return $this->successResponse($data);
+    }
+
+    //* Get the currencies and payment methods
+    private function getPaymentAndCurrencies()
     {
         $payment_types = config('params.payment_types');
         $payment_types_res = [];
@@ -110,21 +126,39 @@ class ProjectController extends Controller
                 'name' => $val
             ];
         }
-        $data = [
+        return [
             'payment_types' => $payment_types_res,
-            'currencies' => $currencies_res
+            'currencies' => $currencies_res,
+            'project' => [
+                'title' => '',
+                'description' => '',
+                'deadline' => date('Y-m-d')
+            ],
+            'steps' => [
+                [
+                    'title' => '',
+                    'price' => '',
+                    'currency_id' => [
+                        'id' => 1,
+                        'name' => config("params.currencies.1")
+                    ],
+                    'payment_type' => [
+                        'id' => 1,
+                        'name' => config("params.payment_types.1")
+                    ]
+                ]
+            ]
         ];
-        return $this->successResponse($data);
     }
 
     public function getProjectSteps(Project $project)
     {
-        $steps = $project->step()->get() ;
+        $steps = $project->step()->get();
         $data = [
             'project' => $project,
-            'steps' => $steps
+            'steps' => StepResource::collection($steps)
         ];
-        return $this->successResponse($data);
+        return $this->successResponse(array_merge($this->getPaymentAndCurrencies(), $data));
     }
     //* Validates the requrest for projects
     public function makeValidation(Request $request)
@@ -137,7 +171,7 @@ class ProjectController extends Controller
             ],
             'project.title' => 'required|string|min:3|max:255',
             'project.description' => 'nullable|min:10',
-            'project.deadline' => 'required|date|date_format:d.m.Y',
+            'project.deadline' => 'required|date|date_format:Y-m-d',
             'steps' => 'required|array',
             'steps.*.price' => 'required',
             'steps.*.currency_id.id' => [
@@ -148,7 +182,6 @@ class ProjectController extends Controller
                 'required',
                 Rule::in(array_keys(config('params.payment_types')))
             ],
-            'steps.*.payment_date' => 'required|date',
             'steps.*.title' => 'required|string|min:3|max:255'
         ]);
     }

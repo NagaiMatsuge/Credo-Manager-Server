@@ -13,13 +13,16 @@ class Project extends Model
     protected $fillable = [
         'server_id',
         'title',
-        'description'
+        'description',
+        'deadline',
+        'color',
+        'photo'
     ];
 
     public $timestamps = false;
 
-    public function step(){
+    public function step()
+    {
         return $this->hasMany(Step::class);
     }
-    protected $dateFormat = 'd-m-Y';
 }
