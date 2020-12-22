@@ -64,8 +64,8 @@ class ProjectController extends Controller
     public function update(Request $request, $id)
     {
         $this->makeValidation($request);
-
         DB::transaction(function () use ($request, $id) {
+
             $oldProject = Project::where('id', $id)->first();
             $project = $request->project;
 
@@ -74,6 +74,8 @@ class ProjectController extends Controller
                     Storage::disk('public')->delete($oldProject->photo);
                 $project['photo'] = $request->file('project.photo')->store('projects');
             }
+            unset($project['id']);
+
             $oldProject->update($project);
 
             $steps = $request->steps;
@@ -83,13 +85,25 @@ class ProjectController extends Controller
                 if ($val['id'] !== null) {
                     $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
                     $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
+                    $steps[$key]['debt'] = $steps[$key]['price'];
                 } else {
-                    $stepsNeedToBeCreated[] = $val;
+                    $stepNew = $steps[$key];
+                    $stepNew['project_id'] = $id;
+                    $stepNew['debt'] = $stepNew['price'];
+                    $stepNew['currency_id'] = $stepNew['currency_id']['id'];
+                    $stepNew['payment_type'] = $stepNew['payment_type']['id'];
+                    $stepsNeedToBeCreated[] = $stepNew;
+                    unset($steps[$key]);
                 }
             }
-            DB::table('steps')->insert($stepsNeedToBeCreated);
-            Step::upsert($steps, ['id']);
+
+            if (count($stepsNeedToBeCreated))
+                DB::table('steps')->insert($stepsNeedToBeCreated);
+
+            if (count($steps))
+                Step::upsert($steps, ['id'], ['title', 'project_id', 'price', 'currency_id', 'payment_type']);
         });
+
         return $this->successResponse([], 201, 'Successfully updated');
     }
 
