@@ -128,7 +128,7 @@ class ProjectController extends Controller
             ],
             'project.title' => 'required|string|min:3|max:255',
             'project.description' => 'nullable|min:10',
-            'project.deadline' => 'required|date|date_format:Y-m-d',
+            'project.deadline' => 'required|date|date_format:d-m-Y',
             'steps' => 'required|array',
             'steps.*.price' => 'required',
             'steps.*.currency_id.id' => [
