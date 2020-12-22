@@ -9,10 +9,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use App\Traits\DateTimeTrait;
 
 class ProjectController extends Controller
 {
-    use ResponseTrait;
+    use ResponseTrait, DateTimeTrait;
 
     //* Fetch all projects with deadline and paid amount in percentage
     public function index(Request $request)
@@ -38,6 +39,8 @@ class ProjectController extends Controller
                 $project['photo'] = $request->file('project.photo')->store('projects');
             }
 
+            $project['deadline'] = $this->makeDateFillable($project['deadline'], '.');
+
             $project = Project::create($project);
 
             $steps = $request->steps;
@@ -62,6 +65,8 @@ class ProjectController extends Controller
                 Storage::disk('public')->delete($oldProject->photo);
             $project['photo'] = $request->file('project.photo')->store('projects');
         }
+
+        $project['deadline'] = $this->makeDateFillable($project['deadline'], '.');
 
         $oldProject->update($project);
 

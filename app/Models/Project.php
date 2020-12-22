@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Project extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'server_id',
         'title',
@@ -17,5 +17,5 @@ class Project extends Model
 
     public $timestamps = false;
 
-    protected $dateFormat = 'Y-m-d';
+    protected $dateFormat = 'd-m-Y';
 }
