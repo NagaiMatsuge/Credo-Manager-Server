@@ -64,27 +64,29 @@ class ProjectController extends Controller
     {
         $this->makeValidation($request);
 
-        $oldProject = Project::where('id', $id)->first();
-        $project = $request->project;
+        DB::transaction(function () use ($request, $id) {
+            $oldProject = Project::where('id', $id)->first();
+            $project = $request->project;
 
-        if ($request->input('project.photo') !== null) {
-            if ($oldProject->photo)
-                Storage::disk('public')->delete($oldProject->photo);
-            $project['photo'] = $request->file('project.photo')->store('projects');
-        }
+            if ($request->input('project.photo') !== null) {
+                if ($oldProject->photo)
+                    Storage::disk('public')->delete($oldProject->photo);
+                $project['photo'] = $request->file('project.photo')->store('projects');
+            }
 
-        $project['deadline'] = $this->makeDateFillable($project['deadline'], '.');
+            $project['deadline'] = $this->makeDateFillable($project['deadline'], '.');
 
-        $oldProject->update($project);
+            $oldProject->update($project);
 
-        $steps = $request->steps;
+            $steps = $request->steps;
 
-        foreach ($steps as $key => $val) {
-            $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
-            $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
-        }
+            foreach ($steps as $key => $val) {
+                $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
+                $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
+            }
 
-        Step::updateOrCreate($steps);
+            Step::updateOrCreate($steps);
+        });
 
         return $this->successResponse([], 201, 'Successfully updated');
     }
