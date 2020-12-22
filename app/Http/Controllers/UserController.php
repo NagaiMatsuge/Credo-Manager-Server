@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -98,6 +99,8 @@ class UserController extends Controller
         $user = DB::table('users')->where('id', $id)->first();
 
         if ($request->has('photo')) {
+            if ($user->photo)
+                Storage::disk('public')->delete($user->photo);
             $image = $request->file('photo')->store('avatars');
             $data['photo'] = $image;
         }
