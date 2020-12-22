@@ -53,6 +53,7 @@ class ProjectController extends Controller
                 $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
                 $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
                 $steps[$key]['debt'] = $steps[$key]['price'];
+                unset($steps[$key]['id']);
             }
             DB::table('steps')->insert($steps);
         });
@@ -73,19 +74,22 @@ class ProjectController extends Controller
                     Storage::disk('public')->delete($oldProject->photo);
                 $project['photo'] = $request->file('project.photo')->store('projects');
             }
-
             $oldProject->update($project);
 
             $steps = $request->steps;
 
+            $stepsNeedToBeCreated = [];
             foreach ($steps as $key => $val) {
-                $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
-                $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
+                if ($val['id'] !== null) {
+                    $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
+                    $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
+                } else {
+                    $stepsNeedToBeCreated[] = $val;
+                }
             }
-
-            Step::updateOrCreate($steps);
+            DB::table('steps')->insert($stepsNeedToBeCreated);
+            Step::upsert($steps, ['id']);
         });
-
         return $this->successResponse([], 201, 'Successfully updated');
     }
 
