@@ -16,9 +16,10 @@ class CreatePaymentsTable extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->text('comment');
-            $table->date('payment_date');
+            $table->dateTime('payment_date');
             $table->unsignedBigInteger('step_id');
-            $table->timestamps();
+            $table->double('price', 13, 3);
+            $table->smallInteger('payment_type')->comment('1-Qiwi, 2-Wmp, 3-Wmz, 4-Yandex, 5-Bank');
 
             $table->foreign('step_id')->references('id')->on('steps')->onDelete('cascade');
         });

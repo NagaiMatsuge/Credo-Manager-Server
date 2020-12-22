@@ -21,7 +21,6 @@ class CreateStepsTable extends Migration
             $table->double('debt', 13, 3);
             $table->smallInteger('currency_id');
             $table->smallInteger('payment_type')->comment('1-Qiwi, 2-Wmp, 3-Wmz, 4-Yandex, 5-Bank');
-            $table->date('payment_date');
             $table->timestamps();
 
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
