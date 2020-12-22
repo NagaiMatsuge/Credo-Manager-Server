@@ -24,7 +24,6 @@ class StepSeeder extends Seeder
             'debt' => 1500,
             'currency_id' => 1,
             'payment_type' => 1,
-            'payment_date' => now()->addDays(7)
         ];
         $steps[] = [
             'id' => 2,
@@ -34,7 +33,6 @@ class StepSeeder extends Seeder
             'debt' => 1300,
             'currency_id' => 1,
             'payment_type' => 1,
-            'payment_date' => now()->addDays(27)
         ];
         $steps[] = [
             'id' => 3,
@@ -44,7 +42,6 @@ class StepSeeder extends Seeder
             'debt' => 1500,
             'currency_id' => 1,
             'payment_type' => 1,
-            'payment_date' => now()->addDays(14)
         ];
         $steps[] = [
             'id' => 4,
@@ -54,7 +51,6 @@ class StepSeeder extends Seeder
             'debt' => 900,
             'currency_id' => 1,
             'payment_type' => 1,
-            'payment_date' => now()->addDays(25)
         ];
         $steps[] = [
             'id' => 5,
@@ -64,7 +60,6 @@ class StepSeeder extends Seeder
             'debt' => 1200,
             'currency_id' => 1,
             'payment_type' => 1,
-            'payment_date' => now()->addDays(25)
         ];
 
         DB::table('steps')->insert($steps);
