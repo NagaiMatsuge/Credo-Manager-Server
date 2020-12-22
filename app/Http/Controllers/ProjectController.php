@@ -46,6 +46,8 @@ class ProjectController extends Controller
             $steps = $request->steps;
             foreach ($steps as $key => $val) {
                 $steps[$key]['project_id'] = $project->id;
+                $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
+                $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
             }
             DB::table('steps')->insert($steps);
             return $this->successResponse([], 201, 'Successfully created');
@@ -70,7 +72,14 @@ class ProjectController extends Controller
 
         $oldProject->update($project);
 
-        Step::updateOrCreate($request->steps);
+        $steps = $request->steps;
+
+        foreach ($steps as $key => $val) {
+            $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
+            $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
+        }
+
+        Step::updateOrCreate($steps);
 
         return $this->successResponse([], 201, 'Successfully updated');
     }
@@ -122,11 +131,11 @@ class ProjectController extends Controller
             'project.deadline' => 'required|date|date_format:Y-m-d',
             'steps' => 'required|array',
             'steps.*.price' => 'required',
-            'steps.*.currency_id' => [
+            'steps.*.currency_id.id' => [
                 'required',
                 Rule::in(array_keys(config('params.currencies')))
             ],
-            'steps.*.payment_type' => [
+            'steps.*.payment_type.id' => [
                 'required',
                 Rule::in(array_keys(config('params.payment_types')))
             ],
