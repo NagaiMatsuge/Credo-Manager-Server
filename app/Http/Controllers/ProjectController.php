@@ -40,7 +40,6 @@ class ProjectController extends Controller
             }
 
             $project['deadline'] = $this->makeDateFillable($project['deadline'], '.');
-
             $project = Project::create($project);
 
             $steps = $request->steps;
@@ -48,6 +47,7 @@ class ProjectController extends Controller
                 $steps[$key]['project_id'] = $project->id;
                 $steps[$key]['currency_id'] = $steps[$key]['currency_id']['id'];
                 $steps[$key]['payment_type'] = $steps[$key]['payment_type']['id'];
+                $steps[$key]['debt'] = $steps[$key]['price'];
             }
             DB::table('steps')->insert($steps);
             return $this->successResponse([], 201, 'Successfully created');
@@ -139,7 +139,6 @@ class ProjectController extends Controller
                 'required',
                 Rule::in(array_keys(config('params.payment_types')))
             ],
-            'steps.*.payment_date' => 'required|date',
             'steps.*.title' => 'required|string|min:3|max:255'
         ]);
     }

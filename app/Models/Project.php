@@ -12,7 +12,10 @@ class Project extends Model
     protected $fillable = [
         'server_id',
         'title',
-        'description'
+        'description',
+        'deadline',
+        'color',
+        'photo'
     ];
 
     public $timestamps = false;
