@@ -127,7 +127,26 @@ class ProjectController extends Controller
         }
         return [
             'payment_types' => $payment_types_res,
-            'currencies' => $currencies_res
+            'currencies' => $currencies_res,
+            'project' => [
+                'title' => null,
+                'description' => null,
+                'deadline' => date('Y.m.d')
+            ],
+            'steps' => [
+                [
+                    'title' => null,
+                    'price' => null,
+                    'currency_id' => [
+                        'id' => 1,
+                        'name' => config("params.currencies.1")
+                    ],
+                    'payment_type' => [
+                        'id' => 1,
+                        'name' => config("params.payment_types.1")
+                    ]
+                ]
+            ]
         ];
     }
 
