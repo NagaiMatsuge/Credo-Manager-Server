@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Step;
-use App\Models\Task;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class ProjectController extends Controller
@@ -29,6 +29,66 @@ class ProjectController extends Controller
 
     //* Create project and tasks with validation    
     public function store(Request $request)
+    {
+        $this->makeValidation($request);
+
+        DB::transaction(function () use ($request) {
+            $project = $request->project;
+            if ($request->has('project.photo')) {
+                $project['photo'] = $request->file('project.photo')->store('projects');
+            }
+
+            $project = Project::create($project);
+
+            $steps = $request->steps;
+            foreach ($steps as $key => $val) {
+                $steps[$key]['project_id'] = $project->id;
+            }
+            DB::table('steps')->insert($steps);
+            return $this->successResponse([], 201, 'Successfully created');
+        });
+    }
+
+    //* Update project by its id   
+    public function update(Request $request, $id)
+    {
+        $this->makeValidation($request);
+
+        $oldProject = Project::where('id', $id)->first();
+        $project = $request->project;
+
+        if ($request->input('project.photo') !== null) {
+            if ($oldProject->photo)
+                Storage::disk('public')->delete($oldProject->photo);
+            $project['photo'] = $request->file('project.photo')->store('projects');
+        }
+
+        $oldProject->update($project);
+
+        Step::updateOrCreate($request->steps);
+
+        return $this->successResponse([], 201, 'Successfully updated');
+    }
+
+    //* Delete project by its id    
+    public function destroy($id)
+    {
+        $delete = DB::table('projects')->where('id', $id)->delete();
+        return $this->successResponse($delete);
+    }
+
+    //* Get all payment credentials
+    public function getCredentials(Request $request)
+    {
+        $data = [
+            'payment_types' => config('params.payment_types'),
+            'currencies' => config('params.currencies')
+        ];
+        return $this->successResponse($data);
+    }
+
+    //* Validates the requrest for projects
+    public function makeValidation(Request $request)
     {
         $request->validate([
             'project.photo' => 'nullable|image',
@@ -52,46 +112,6 @@ class ProjectController extends Controller
             'steps.*.payment_date' => 'required|date',
             'steps.*.title' => 'required|string|min:3|max:255'
         ]);
-
-        DB::transaction(function () use ($request) {
-            $project = $request->project;
-            if ($request->has('project.photo')) {
-                $project['photo'] = $request->file('project.photo')->store('projects');
-            }
-
-            $project = Project::create($project);
-
-            $steps = $request->steps;
-            foreach ($steps as $key => $val) {
-                $steps[$key]['project_id'] = $project->id;
-            }
-            DB::table('steps')->insert($steps);
-            return $this->successResponse([], 201, 'Successfully created');
-        });
-    }
-
-    //* Update project by its id   
-    public function update(Request $request, Project $id)
-    {
-        $id->update($request->all());
-        return $this->successResponse($id);
-    }
-
-    //* Delete project by its id    
-    public function destroy($id)
-    {
-        $delete = DB::table('projects')->where('id', $id)->delete();
-        return $this->successResponse($delete);
-    }
-
-    //* Get all payment credentials
-    public function getCredentials(Request $request)
-    {
-        $data = [
-            'payment_types' => config('params.payment_types'),
-            'currencies' => config('params.currencies')
-        ];
-        return $this->successResponse($data);
     }
 
     /*
