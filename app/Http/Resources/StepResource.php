@@ -20,8 +20,14 @@ class StepResource extends JsonResource
             'project_id' => $this->project_id,
             'price' => $this->price,
             'debt' => $this->debt,
-            'currency_id' => config("params.currencies.$this->currency_id"),
-            'payment_type' => config("params.payment_types.$this->payment_type"),
+            'currency_id' => [
+                'id' => $this->currency_id,
+                'name' => config("params.currencies.$this->currency_id")
+            ],
+            'payment_type' => [
+                'id' => $this->payment_type,
+                'name' => config("params.payment_types.$this->payment_type")
+            ],
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at
         ];
