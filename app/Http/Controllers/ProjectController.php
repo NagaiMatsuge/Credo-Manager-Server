@@ -154,7 +154,7 @@ class ProjectController extends Controller
             'project' => $project,
             'steps' => StepResource::collection($steps)
         ];
-        return $this->successResponse($data);
+        return $this->successResponse(array_merge($this->getPaymentAndCurrencies(), $data));
     }
     //* Validates the requrest for projects
     public function makeValidation(Request $request)
