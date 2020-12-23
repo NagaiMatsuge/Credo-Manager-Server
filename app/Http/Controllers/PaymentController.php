@@ -29,7 +29,7 @@ class PaymentController extends Controller
     public function store(Request $request)
     {
         $create_payment = DB::table('payments')->insert($this->makeValidation($request));
-        
+
         return $this->successResponse($create_payment);
     }
 
@@ -51,12 +51,12 @@ class PaymentController extends Controller
     private function makeValidation(Request $request)
     {
         return $request->validate([
-            'comment' => 'required|min:3',
+            'comment' => 'required|string|min:3',
             'payment_date' => 'required|date',
-            'step_id' => 'required',
-            'currency_id' => 'required',
-            'amount' => 'required|integer',
-            'payment_type' => 'required'
+            'step_id' => 'required|integer',
+            'currency_id' => 'required|integer',
+            'amount' => 'required',
+            'payment_type' => 'required|integer'
         ]);
     }
 }
