@@ -28,23 +28,37 @@ class PaymentController extends Controller
     //* Create Payment with validation
     public function store(Request $request)
     {
-        $create_payment = DB::table('payments')->insert($this->makeValidation($request));
+        $validatedPayment = $this->makeValidation($request);
+        DB::transaction(function () use ($request, $validatedPayment) {
+            DB::table('payments')->insert($validatedPayment);
+            DB::select('update steps set debt=debt-? where id=?', [$request->amount, $request->step_id]);
+        });
 
-        return $this->successResponse($create_payment);
+        return $this->successResponse([], 201, 'Successfully created');
     }
 
     //* Update Payment by its id
-    public function update(Request $request, Payment $id)
+    public function update(Request $request, Payment $payment)
     {
-        $id->update($this->makeValidation($request));
-        return $this->successResponse($id);
+        $updatedPayment = $this->makeValidation($request);
+        DB::transaction(function () use ($request, $payment, $updatedPayment) {
+            $amount = $payment->amount;
+            $newAmount = $request->amount;
+            DB::select('update steps set debt=debt+? where id=?', [$amount - $newAmount, $request->step_id]);
+            $payment->update($updatedPayment);
+        });
+        return $this->successResponse([], 201, 'Successfully updated');
     }
 
     //* Delete payment by its id
     public function destroy($id)
     {
-        $delete = DB::table('payments')->where('id', $id)->delete();
-        return $this->successResponse($delete);
+        DB::transaction(function () use ($id) {
+            $payment = DB::table('payments')->where('id', $id)->first();
+            DB::select('update steps set debt=debt+? where id=?', [$payment->amount, $payment->step_id]);
+            $payment->delete();
+        });
+        return $this->successResponse([], 200, 'Successfully deleted');
     }
 
     //* Validation
