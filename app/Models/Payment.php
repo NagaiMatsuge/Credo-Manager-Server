@@ -18,5 +18,5 @@ class Payment extends Model
         'payment_type'
     ];
 
-    protected $timestampts = false;
+    public $timestamps = false;
 }

@@ -28,14 +28,7 @@ class PaymentController extends Controller
     //* Create Payment with validation
     public function store(Request $request)
     {
-        $create_payment = DB::table('payments')->insert($request->validate([
-            'comment' => 'required|min:3',
-            'payment_date' => 'required|date|date_format: Y-m-d',
-            'step_id' => 'required',
-            'currency_id' => 'required',
-            'amount' => 'required|integer',
-            'payment_type' => 'required'
-        ]));
+        $create_payment = DB::table('payments')->insert($this->makeValidation($request));
         
         return $this->successResponse($create_payment);
     }
@@ -43,14 +36,27 @@ class PaymentController extends Controller
     //* Update Payment by its id
     public function update(Request $request, Payment $id)
     {
-        $id = DB::table('payments')->update($request->validate([
+        $id->update($this->makeValidation($request));
+        return $this->successResponse($id);
+    }
+
+    //* Delete payment by its id
+    public function destroy($id)
+    {
+        $delete = DB::table('payments')->where('id', $id)->delete();
+        return $this->successResponse($delete);
+    }
+
+    //* Validation
+    private function makeValidation(Request $request)
+    {
+        return $request->validate([
             'comment' => 'required|min:3',
-            'payment_date' => 'required|date|date_format: Y-m-d',
+            'payment_date' => 'required|date',
             'step_id' => 'required',
             'currency_id' => 'required',
             'amount' => 'required|integer',
             'payment_type' => 'required'
-        ]));
-        return $this->successResponse($id);
+        ]);
     }
 }
