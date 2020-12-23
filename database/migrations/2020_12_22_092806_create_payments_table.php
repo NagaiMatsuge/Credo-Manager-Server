@@ -18,7 +18,8 @@ class CreatePaymentsTable extends Migration
             $table->text('comment');
             $table->dateTime('payment_date');
             $table->unsignedBigInteger('step_id');
-            $table->double('price', 13, 3);
+            $table->smallInteger('currency_id');
+            $table->double('amount', 13, 3);
             $table->smallInteger('payment_type')->comment('1-Qiwi, 2-Wmp, 3-Wmz, 4-Yandex, 5-Bank');
 
             $table->foreign('step_id')->references('id')->on('steps')->onDelete('cascade');
