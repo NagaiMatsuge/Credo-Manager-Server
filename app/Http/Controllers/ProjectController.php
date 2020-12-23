@@ -98,7 +98,7 @@ class ProjectController extends Controller
 
             if ($request->input('project.photo') !== null) {
                 if ($oldProject->photo)
-                    Storage::disk('public')->delete($oldProject->photo);
+                    Storage::disk('public')->delete('uploads/' . $oldProject->photo);
                 $project['photo'] = $request->file('project.photo')->store('projects', 'public');
             }
             unset($project['id']);

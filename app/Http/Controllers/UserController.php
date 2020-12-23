@@ -100,7 +100,7 @@ class UserController extends Controller
 
         if ($request->has('photo')) {
             if ($user->photo)
-                Storage::disk('public')->delete($user->photo);
+                Storage::disk('public')->delete('uploads/' . $user->photo);
             $image = $request->file('photo')->store('avatars', 'public');
             $data['photo'] = $image;
         }
