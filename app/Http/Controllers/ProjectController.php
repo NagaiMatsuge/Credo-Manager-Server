@@ -24,7 +24,8 @@ class ProjectController extends Controller
         $this->project_shape = [
             'title' => '',
             'description' => '',
-            'deadline' => date('Y-m-d')
+            'deadline' => date('Y-m-d'),
+            'photo' => null
         ];
         $this->steps_shape = [
             [
