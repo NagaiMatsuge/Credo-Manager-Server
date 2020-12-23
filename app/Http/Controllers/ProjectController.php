@@ -229,6 +229,16 @@ class ProjectController extends Controller
         return $this->successResponse(array_merge($paymentsOfProject, $this->getPaymentAndCurrencies(false)));
     }
 
+    //* Archive or dearchive the project
+    public function archive(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|boolean'
+        ]);
+        DB::table('projects')->where('id', $id)->update(['archive' => $request->archive]);
+        return $this->successResponse([], 200, "Successfully Updated");
+    }
+
     /*
 public function index(Request $request)
     {
