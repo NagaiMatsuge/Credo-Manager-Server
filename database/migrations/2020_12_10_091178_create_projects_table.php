@@ -21,6 +21,7 @@ class CreateProjectsTable extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->date('deadline');
+            $table->boolean('archived')->default(false);
 
             $table->foreign('server_id')->references('id')->on('servers')->onDelete('cascade');
         });

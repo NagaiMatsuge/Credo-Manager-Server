@@ -37,7 +37,7 @@ class UserController extends Controller
         $data = $request->except(['role', 'photo', 'password']);
 
         if ($request->has('photo')) {
-            $image = $request->file('photo')->store('avatars');
+            $image = $request->file('photo')->store('avatars', 'public');
             $data['photo'] = $image;
         }
         if ($request->has('password'))
@@ -101,7 +101,7 @@ class UserController extends Controller
         if ($request->has('photo')) {
             if ($user->photo)
                 Storage::disk('public')->delete($user->photo);
-            $image = $request->file('photo')->store('avatars');
+            $image = $request->file('photo')->store('avatars', 'public');
             $data['photo'] = $image;
         }
 

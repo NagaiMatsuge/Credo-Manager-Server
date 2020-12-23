@@ -68,7 +68,7 @@ class ProjectController extends Controller
         DB::transaction(function () use ($request) {
             $project = $request->project;
             if ($request->has('project.photo')) {
-                $project['photo'] = $request->file('project.photo')->store('projects');
+                $project['photo'] = $request->file('project.photo')->store('projects', 'public');
             }
 
             $project = Project::create($project);
@@ -98,7 +98,7 @@ class ProjectController extends Controller
             if ($request->input('project.photo') !== null) {
                 if ($oldProject->photo)
                     Storage::disk('public')->delete($oldProject->photo);
-                $project['photo'] = $request->file('project.photo')->store('projects');
+                $project['photo'] = $request->file('project.photo')->store('projects', 'public');
             }
             unset($project['id']);
 
@@ -193,7 +193,9 @@ class ProjectController extends Controller
         $request->validate([
             'project.photo' => 'nullable|image',
             'project.color' => [
-                Rule::requiredIf($request->input('project.photo') == null),
+                Rule::requiredIf(function () use ($request) {
+                    return !($request->has('project.photo')) and ($request->input('project.photo') == null);
+                }),
                 'string'
             ],
             'project.title' => 'required|string|min:3|max:255',
