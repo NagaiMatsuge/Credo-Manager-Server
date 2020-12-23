@@ -16,6 +16,32 @@ class ProjectController extends Controller
 {
     use ResponseTrait, DateTimeTrait;
 
+    private $project_shape;
+    private $steps_shape;
+
+    public function __construct()
+    {
+        $this->project_shape = [
+            'title' => '',
+            'description' => '',
+            'deadline' => date('Y-m-d')
+        ];
+        $this->steps_shape = [
+            [
+                'title' => '',
+                'price' => '',
+                'currency_id' => [
+                    'id' => 1,
+                    'name' => config("params.currencies.1")
+                ],
+                'payment_type' => [
+                    'id' => 1,
+                    'name' => config("params.payment_types.1")
+                ]
+            ]
+        ];
+    }
+
     //* Fetch all projects with deadline and paid amount in percentage
     public function index(Request $request)
     {
@@ -143,25 +169,8 @@ class ProjectController extends Controller
         return [
             'payment_types' => $payment_types_res,
             'currencies' => $currencies_res,
-            'project' => [
-                'title' => '',
-                'description' => '',
-                'deadline' => date('Y-m-d')
-            ],
-            'steps' => [
-                [
-                    'title' => '',
-                    'price' => '',
-                    'currency_id' => [
-                        'id' => 1,
-                        'name' => config("params.currencies.1")
-                    ],
-                    'payment_type' => [
-                        'id' => 1,
-                        'name' => config("params.payment_types.1")
-                    ]
-                ]
-            ]
+            'project' => $this->project_shape,
+            'steps' => $this->steps_shape
         ];
     }
 
@@ -187,7 +196,14 @@ class ProjectController extends Controller
             'project.description' => 'nullable|min:10',
             'project.deadline' => 'required|date|date_format:Y-m-d',
             'steps' => 'required|array',
-            'steps.*.price' => 'required',
+            'steps.*.price' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    if ($value > 999999999) {
+                        $fail('The ' . $attribute . ' is too big.');
+                    }
+                },
+            ],
             'steps.*.currency_id.id' => [
                 'required',
                 Rule::in(array_keys(config('params.currencies')))
@@ -198,6 +214,11 @@ class ProjectController extends Controller
             ],
             'steps.*.title' => 'required|string|min:3|max:255'
         ]);
+    }
+
+    //* Get all payments for project
+    public function getPayments(Request $request)
+    {
     }
 
     /*
