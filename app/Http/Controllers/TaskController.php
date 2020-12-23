@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\User;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -10,17 +11,20 @@ use Illuminate\Support\Facades\DB;
 class TaskController extends Controller
 {
     use ResponseTrait;
+
     //* Fetch all tasks
     public function index()
     {
         $tasks = Task::all();
         return $this->successResponse($tasks);
     }
+
     //* Show task by its id
     public function show(Task $id)
     {
         return $this->successResponse($id);
     }
+
     //* Create task with validation
     public function store(Request $request)
     {
@@ -31,17 +35,20 @@ class TaskController extends Controller
         foreach ($tasks as $key => $task) {
             $tasks[$key]['step_id'] = $request->step_id;
         }
-
-        Task::updateOrCreate($tasks);
+        info($tasks);
+        $user = User::where('id', $request->user_id)->first();
+        $user->tasks()->createMany($tasks);
 
         return $this->successResponse([], 201, "Successfully created");
     }
+
     //* Update task by its id
     public function update(Request $request, Task $id)
     {
         $id->update($request->all());
         return $this->successResponse($id);
     }
+    
     //* Delete task by its id
     public function destroy($id)
     {
@@ -56,7 +63,6 @@ class TaskController extends Controller
             'step_id' => 'required|integer',
             'tasks' => 'required|array',
             'tasks.*.title' => 'required|string|min:3|max:255',
-            'tasks.*.step_id' => 'required|integer',
             'tasks.*.deadline' => 'required|date|date_format:Y-m-d'
         ]);
     }

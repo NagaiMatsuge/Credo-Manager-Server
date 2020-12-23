@@ -11,13 +11,14 @@ class Task extends Model
 
     protected $fillable = [
         'title',
-        'project_id',
-        'price',
-        'currency_id',
-        'payment_type',
-        'payment_date',
         'finished',
         'approved',
-        'deadline'
+        'deadline',
+        'step_id'
     ];
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
+    }
 }

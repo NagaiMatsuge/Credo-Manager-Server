@@ -24,6 +24,17 @@ class CreateTasksTable extends Migration
 
             $table->foreign('step_id')->references('id')->on('steps')->onDelete('cascade');
         });
+
+        Schema::create('user_task', function (Blueprint $table){
+            $table->id();
+            $table->uuid('user_id');
+            $table->unsignedBigInteger('task_id');
+            $table->timestamps();
+
+            $table->unique(['user_id', 'task_id']);
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
+        });
     }
 
     /**

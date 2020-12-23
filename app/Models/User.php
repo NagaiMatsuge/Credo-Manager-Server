@@ -8,7 +8,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use App\Traits\UuidsTrait;
-use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
 use App\Traits\UserQuery;
 
@@ -60,4 +59,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'work_start_time' => 'date:hh:mm',
         'work_end_time' => 'date:hh:mm',
     ];
+
+    public function tasks()
+    {
+        return $this->morphToMany(Task::class, '');
+    }
 }
