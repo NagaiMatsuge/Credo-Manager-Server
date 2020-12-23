@@ -148,7 +148,7 @@ class ProjectController extends Controller
     }
 
     //* Get the currencies and payment methods
-    private function getPaymentAndCurrencies()
+    private function getPaymentAndCurrencies($includeShapes = true)
     {
         $payment_types = config('params.payment_types');
         $payment_types_res = [];
@@ -166,13 +166,17 @@ class ProjectController extends Controller
                 'name' => $val
             ];
         }
-        return [
+        $res = [
             'payment_types' => $payment_types_res,
             'currencies' => $currencies_res,
-            'project' => $this->project_shape,
-            'steps' => $this->steps_shape
         ];
+        if ($includeShapes) {
+            $res['project'] = $this->project_shape;
+            $res['steps'] = $this->steps_shape;
+        }
+        return $res;
     }
+
 
     public function getProjectSteps(Project $project)
     {
@@ -217,8 +221,10 @@ class ProjectController extends Controller
     }
 
     //* Get all payments for project
-    public function getPayments(Request $request)
+    public function getPayments(Request $request, $id)
     {
+        $paymentsOfProject = DB::table("payments")->whereRaw('payments.step_id in (select steps.id from steps where steps.project_id=?)', [$id])->paginate(5)->toArray();
+        return $this->successResponse(array_merge($paymentsOfProject, $this->getPaymentAndCurrencies(false)));
     }
 
     /*

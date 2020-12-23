@@ -11,5 +11,5 @@ Route::group(['prefix' => 'projects'], function () {
     Route::delete('/delete/{id}', [ProjectController::class, 'destroy'])->where(['id' => '[0-9]+']);
     Route::get('/create', [ProjectController::class, 'getCredentials']);
     Route::get('/{project}/steps', [ProjectController::class, 'getProjectSteps'])->where(['id' => '[0-9]+']);
-
+    Route::get('/{id}/payments', [ProjectController::class, 'getPayments'])->where(['id' => '[0-9]+']);
 });
