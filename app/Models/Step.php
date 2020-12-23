@@ -19,5 +19,5 @@ class Step extends Model
         'payment_date'
     ];
 
-    protected $timestamps = false;
+    public $timestamps = false;
 }
