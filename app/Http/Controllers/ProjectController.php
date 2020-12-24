@@ -68,7 +68,7 @@ class ProjectController extends Controller
 
         DB::transaction(function () use ($request) {
             $project = $request->project;
-            if ($request->has('project.photo')) {
+            if ($request->has('project.photo') and $request->input('project.photo') !== null) {
                 $project['photo'] = $request->file('project.photo')->store('projects', 'public');
             }
 
