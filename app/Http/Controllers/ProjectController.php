@@ -11,10 +11,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use App\Traits\DateTimeTrait;
+use App\Traits\UploadTrait;
 
 class ProjectController extends Controller
 {
-    use ResponseTrait, DateTimeTrait;
+    use ResponseTrait, DateTimeTrait, UploadTrait;
 
     private $project_shape;
     private $steps_shape;
@@ -69,7 +70,7 @@ class ProjectController extends Controller
         DB::transaction(function () use ($request) {
             $project = $request->project;
             if ($request->has('project.photo') and $request->input('project.photo') !== null) {
-                $project['photo'] = $request->file('project.photo')->store('projects', 'public');
+                $project['photo'] = $this->uploadFile($request->input('project.photo'), 'projects');
             }
 
             $project = Project::create($project);
@@ -98,8 +99,8 @@ class ProjectController extends Controller
 
             if ($request->input('project.photo') !== null) {
                 if ($oldProject->photo)
-                    Storage::disk('public')->delete('uploads/' . $oldProject->photo);
-                $project['photo'] = $request->file('project.photo')->store('projects', 'public');
+                    Storage::disk('public')->delete($oldProject->photo);
+                $project['photo'] = $this->uploadFile($request->input('project.photo'), 'projects');
             }
             unset($project['id']);
 
@@ -137,7 +138,7 @@ class ProjectController extends Controller
     //* Delete project by its id    
     public function destroy($id)
     {
-        $delete = DB::table('projects')->where('id', $id)->delete();
+        $delete = Project::where('id', $id)->delete();
         return $this->successResponse($delete);
     }
 
@@ -192,7 +193,7 @@ class ProjectController extends Controller
     public function makeValidation(Request $request)
     {
         $request->validate([
-            'project.photo' => 'nullable|image',
+            'project.photo' => 'nullable|string',
             'project.color' => [
                 Rule::requiredIf(function () use ($request) {
                     return !($request->has('project.photo')) and ($request->input('project.photo') == null);

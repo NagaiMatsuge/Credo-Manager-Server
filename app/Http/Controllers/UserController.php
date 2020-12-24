@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
@@ -10,10 +9,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use App\Traits\UploadTrait;
 
 class UserController extends Controller
 {
-    use ResponseTrait;
+    use ResponseTrait, UploadTrait;
 
     //* Return All users with their role
     public function index(Request $request)
@@ -37,8 +37,10 @@ class UserController extends Controller
         $data = $request->except(['role', 'photo', 'password']);
 
         if ($request->has('photo')) {
-            $image = $request->file('photo')->store('avatars', 'public');
-            $data['photo'] = $image;
+            $data['photo'] = $this->uploadFile($request->input('photo'), 'avatars');
+            if ($user->photo) {
+                Storage::disk('public')->delete($user->photo);
+            }
         }
         if ($request->has('password'))
             $data['password'] = Hash::make($request->password);
@@ -77,14 +79,14 @@ class UserController extends Controller
                 Rule::in(config('params.roles'))
             ],
             'color' => 'nullable|string',
-            'photo' => 'nullable|image'
+            'photo' => 'nullable|string'
         ]);
     }
 
     public function settingUpdate(Request $request, $id)
     {
         $request->validate([
-            'photo' => 'nullable|image',
+            'photo' => 'nullable|string',
             'new_password' => 'nullable|min:8',
             'name' => 'required|min:3',
             'phone' => 'nullable',
@@ -100,8 +102,8 @@ class UserController extends Controller
 
         if ($request->has('photo')) {
             if ($user->photo)
-                Storage::disk('public')->delete('uploads/' . $user->photo);
-            $image = $request->file('photo')->store('avatars', 'public');
+                Storage::disk('public')->delete($user->photo);
+            $image = $this->uploadFile($request->input('photo'), 'avatars');
             $data['photo'] = $image;
         }
 
