@@ -193,7 +193,7 @@ class ProjectController extends Controller
     public function makeValidation(Request $request)
     {
         $request->validate([
-            'project.photo' => 'nullable|string|max:1000',
+            'project.photo' => 'nullable|string',
             'project.color' => [
                 Rule::requiredIf(function () use ($request) {
                     return !($request->has('project.photo')) and ($request->input('project.photo') == null);
