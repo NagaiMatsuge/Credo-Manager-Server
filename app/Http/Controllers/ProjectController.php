@@ -227,7 +227,7 @@ class ProjectController extends Controller
     //* Get all payments for project
     public function getPayments(Request $request, $id)
     {
-        $paymentsOfProject = DB::table("payments")->whereRaw('payments.step_id in (select steps.id from steps where steps.project_id=?)', [$id])->paginate(5)->toArray();
+        $paymentsOfProject = DB::table("payments")->whereRaw('payments.step_id in (select steps.id, steps.title from steps where steps.project_id=?)', [$id])->paginate(5)->toArray();
         return $this->successResponse(array_merge($paymentsOfProject, $this->getPaymentAndCurrencies(false)));
     }
 
