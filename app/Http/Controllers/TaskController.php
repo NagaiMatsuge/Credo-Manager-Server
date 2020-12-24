@@ -37,7 +37,7 @@ class TaskController extends Controller
         }
         info($tasks);
         $user = User::where('id', $request->user_id)->first();
-        $user->tasks()->createMany($tasks);
+        $user->tasks()->createMany($tasks); 
 
         return $this->successResponse([], 201, "Successfully created");
     }
