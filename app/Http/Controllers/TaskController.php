@@ -35,8 +35,7 @@ class TaskController extends Controller
         foreach ($tasks as $key => $task) {
             $tasks[$key]['step_id'] = $request->step_id;
         }
-        info($tasks);
-        $user = User::where('id', $request->user_id)->first();
+         $user = User::where('id', $request->user_id)->first();
         $user->tasks()->createMany($tasks); 
 
         return $this->successResponse([], 201, "Successfully created");
