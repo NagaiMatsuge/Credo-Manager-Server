@@ -10,6 +10,7 @@ use Laravel\Passport\HasApiTokens;
 use App\Traits\UuidsTrait;
 use Spatie\Permission\Traits\HasRoles;
 use App\Traits\UserQuery;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -63,5 +64,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function tasks()
     {
         return $this->belongsToMany(Task::class);
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        self::deleting(function ($model) {
+            if ($model->photo)
+                Storage::disk('public')->delete($model->photo);
+        });
     }
 }
