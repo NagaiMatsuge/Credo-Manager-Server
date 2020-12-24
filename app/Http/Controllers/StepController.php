@@ -17,8 +17,7 @@ class StepController extends Controller
     //* Fetch all steps with pagination
     public function index(Request $request)
     {
-        $steps = Step::paginate(8);
-        return $this->successResponse($steps);
+        return StepResource::collection(Step::paginate(8));
     }
 
     //* Show step by its id
