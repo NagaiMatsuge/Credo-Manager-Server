@@ -43,6 +43,13 @@ return [
         '4' => 'Денежные переводы',
         '5' => 'Другое'
     ],
+    'payment_image_urls' => [
+        '1' => 'Qiwi.svg',
+        '2' => 'YandexMoney.svg',
+        '3' => 'perechisleniye.svg',
+        '4' => 'money-transfer.svg',
+        '5' => ''
+    ],
     'response_messages' => [
         'auth/too-many-requests' => 'Превышен лимит на запрос смены пароля',
         'auth/email-already-in-use' => 'Пользователь с таким Email уже зарегистрирован',
