@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use Illuminate\Support\Facades\Storage;
 use Ramsey\Uuid\Uuid;
 
 trait UuidsTrait
@@ -16,6 +17,10 @@ trait UuidsTrait
             if (empty($model->{$model->getKeyName()})) {
                 $model->{$model->getKeyName()} = Uuid::uuid4()->toString();
             }
+        });
+        self::deleting(function ($model) {
+            if ($model->photo)
+                Storage::disk('public')->delete($model->photo);
         });
     }
 

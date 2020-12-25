@@ -65,14 +65,4 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(Task::class);
     }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        self::deleting(function ($model) {
-            if ($model->photo)
-                Storage::disk('public')->delete($model->photo);
-        });
-    }
 }
