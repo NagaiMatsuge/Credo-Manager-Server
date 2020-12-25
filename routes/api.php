@@ -9,6 +9,7 @@ require_once __DIR__ . "/MicroApiRoutes/servers.php";
 require_once __DIR__ . "/MicroApiRoutes/params.php";
 require_once __DIR__ . "/MicroApiRoutes/steps.php";
 require_once __DIR__ . "/MicroApiRoutes/payments.php";
+require_once __DIR__ . "/MicroApiRoutes/messages.php";
 
 
 /*

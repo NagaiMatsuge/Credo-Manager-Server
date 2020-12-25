@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class PaymentController extends Controller
 {
@@ -67,9 +68,15 @@ class PaymentController extends Controller
             'comment' => 'required|string|min:3',
             'payment_date' => 'required|date',
             'step_id' => 'required|integer',
-            'currency_id' => 'required|integer',
-            'amount' => 'required',
-            'payment_type' => 'required|integer'
+            'currency_id' => [
+                'required',
+                Rule::in(array_keys(config('params.currencies')))
+            ],
+            'amount' => 'required|max:13',
+            'payment_type' => [
+                'required',
+                Rule::in(array_keys(config('params.payment_types')))
+            ]
         ]);
     }
 }
