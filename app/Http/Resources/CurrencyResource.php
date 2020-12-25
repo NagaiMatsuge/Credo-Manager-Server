@@ -21,7 +21,7 @@ class CurrencyResource extends JsonResource
             'step' => [
                 'id' => $this->step_id,
                 'title' => $this->step_title,
-                'debt' => $this->step_debt
+                'debt' => $this->debt_left
             ],
             'currency' => [
                 'id' => $this->currency_id,
