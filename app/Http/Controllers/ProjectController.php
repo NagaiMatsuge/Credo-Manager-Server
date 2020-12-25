@@ -149,7 +149,7 @@ class ProjectController extends Controller
             'steps.*.price' => [
                 'required',
                 function ($attribute, $value, $fail) {
-                    if ($value > 999999999) {
+                    if ($value > 999999999999) {
                         $fail('The ' . $attribute . ' is too big.');
                     }
                 },
