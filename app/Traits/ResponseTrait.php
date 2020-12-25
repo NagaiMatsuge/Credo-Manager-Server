@@ -25,4 +25,13 @@ trait ResponseTrait
             'message' => $message
         ])->header('Access-Control-Allow-Origin', '*');
     }
+
+    public function successPagination($data = [], int $status_c = 200, $message = ''){
+        return [
+            'success' => true,
+            'error' => false, 
+            'status_code' => $status_c,
+            'message' => $message
+        ];
+    }
 }

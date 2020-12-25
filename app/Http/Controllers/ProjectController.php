@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CurrencyCollection;
+use App\Http\Resources\CurrencyResource;
+use App\Http\Resources\PaymentResource;
 use App\Http\Resources\StepResource;
+use App\Models\Payment;
 use App\Models\Project;
 use App\Models\Step;
 use App\Traits\ResponseTrait;
@@ -12,37 +16,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use App\Traits\DateTimeTrait;
 use App\Traits\UploadTrait;
+use App\Traits\getPaymentAndCurrenciesTrair;
 
 class ProjectController extends Controller
 {
-    use ResponseTrait, DateTimeTrait, UploadTrait;
-
-    private $project_shape;
-    private $steps_shape;
-
-    public function __construct()
-    {
-        $this->project_shape = [
-            'title' => '',
-            'description' => '',
-            'deadline' => date('Y-m-d'),
-            'photo' => null
-        ];
-        $this->steps_shape = [
-            [
-                'title' => '',
-                'price' => '',
-                'currency_id' => [
-                    'id' => 1,
-                    'name' => config("params.currencies.1")
-                ],
-                'payment_type' => [
-                    'id' => 1,
-                    'name' => config("params.payment_types.1")
-                ]
-            ]
-        ];
-    }
+    use ResponseTrait, DateTimeTrait, UploadTrait, getPaymentAndCurrenciesTrair;
 
     //* Fetch all projects with deadline and paid amount in percentage
     public function index(Request $request)
@@ -54,12 +32,6 @@ class ProjectController extends Controller
             $projects['data'][$key]->deadline = $date[2] . ' ' . config('params.month_format.' . $date[1]) . ' ' .  $date[0];
         }
         return $this->successResponse($projects);
-    }
-
-    //* Show project by its id
-    public function show(Project $id)
-    {
-        return $this->successResponse($id);
     }
 
     //* Create project and tasks with validation    
@@ -150,36 +122,6 @@ class ProjectController extends Controller
     }
 
     //* Get the currencies and payment methods
-    private function getPaymentAndCurrencies($includeShapes = true)
-    {
-        $payment_types = config('params.payment_types');
-        $payment_types_res = [];
-        foreach ($payment_types as $key => $val) {
-            $payment_types_res[] = [
-                'id' => $key,
-                'name' => $val
-            ];
-        }
-        $currencies = config('params.currencies');
-        $currencies_res = [];
-        foreach ($currencies as $key => $val) {
-            $currencies_res[] = [
-                'id' => $key,
-                'name' => $val
-            ];
-        }
-        $res = [
-            'payment_types' => $payment_types_res,
-            'currencies' => $currencies_res,
-        ];
-        if ($includeShapes) {
-            $res['project'] = $this->project_shape;
-            $res['steps'] = $this->steps_shape;
-        }
-        return $res;
-    }
-
-
     public function getProjectSteps(Project $project)
     {
         $steps = $project->step()->get();
@@ -227,10 +169,9 @@ class ProjectController extends Controller
     //* Get all payments for project
     public function getPayments(Request $request, $id)
     {
-        $paymentsOfProject = DB::table("payments")->whereRaw('payments.step_id in (select steps.id from steps where steps.project_id=?)', [$id])->paginate(5)->toArray();
+        $paymentsOfProject = Payment::select('payments.*', DB::raw('(select title from steps where steps.id=payments.step_id) as step_title'), DB::raw('(select debt from steps where steps.id=payments.step_id) as step_debt'))->whereRaw('payments.step_id in (select steps.id from steps where steps.project_id=?)', [$id])->paginate(5);
 
-        return $this->successResponse(array_merge($paymentsOfProject, $this->getPaymentAndCurrencies(false)));
-
+        return (CurrencyResource::collection($paymentsOfProject)->additional($this->successPagination()));
     }
 
     //* Archive or dearchive the project
@@ -242,37 +183,4 @@ class ProjectController extends Controller
         DB::table('projects')->where('id', $id)->update(['archive' => $request->archive]);
         return $this->successResponse([], 200, "Successfully Updated");
     }
-
-    /*
-public function index(Request $request)
-    {
-        $projects = Project::select('projects.*',  DB::raw('(select count(id) from tasks where tasks.project_id = projects.id AND tasks.approved=1) as approved_tasks'), DB::raw('(select count(id) from tasks where tasks.project_id=projects.id) as num_tasks'))->paginate(5)->toArray();
-
-        $tasks = DB::select("select price, debt, project_id from tasks");
-        foreach ($projects['data'] as $key => $project) {
-            $id = $project['id'];
-            $tasksOfProject = [];
-            foreach ($tasks as $task) {
-                if ($task->project_id == $id) {
-                    $tasksOfProject[] = $task;
-                }
-            }
-            $debtPercent = 0;
-            $taskCount = 0;
-            foreach ($tasksOfProject as $t) {
-                $taskCount++;
-                $debtPercent += ($t->price - $t->debt) * 100 / $t->price;
-            }
-            if ($taskCount === 0) {
-                $projects['data'][$key]['paid_in_percentage'] = null;
-            } else {
-                $projects['data'][$key]['paid_in_percentage'] = ($debtPercent * 100) / ($taskCount * 100);
-            }
-            $date = explode("-", $project['deadline']);
-            $projects['data'][$key]['deadline'] = $date[2] . ' ' . config('params.month_format.' . $date[1]) . ' ' .  $date[0];
-        }
-
-        return $this->successResponse($projects);
-    }
-    */
 }
