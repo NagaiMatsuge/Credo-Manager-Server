@@ -68,7 +68,7 @@ class PaymentController extends Controller
             'payment_date' => 'required|date',
             'step_id' => 'required|integer',
             'currency_id' => 'required|integer',
-            'amount' => 'required',
+            'amount' => 'required|max:13',
             'payment_type' => 'required|integer'
         ]);
     }
