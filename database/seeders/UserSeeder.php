@@ -15,6 +15,13 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
+        // 'roles' [
+        //     'Admin',
+        //     'Manager',
+        //     'Backend Developer',
+        //     'Frontend Developer',
+        //     'UI\UX Designer',
+        // ]
         $users[] = User::create([
             'name' => 'Ruslan',
             'email' => 'menrusamen19992@gmail.com',
@@ -40,20 +47,8 @@ class UserSeeder extends Seeder
             'color' => '#FCB573'
         ]);
         $users[] = User::create([
-            'name' => 'Shohrux',
-            'email' => 'shohrukh.mamirov@gmail.com',
-            'email_verified_at' => now(),
-            'password' => Hash::make('password'),
-            'work_start_time' => '9:00',
-            'work_end_time' => '18:00',
-            'pause_start_time' => '13:00',
-            'pause_end_time' => '14:00',
-            'working_days' => [1, 2, 3, 4, 5],
-            'color' => '#FC73AD'
-        ]);
-        $users[] = User::create([
-            'name' => 'Ruslan2',
-            'email' => 'menrusamen1999@gmail.com',
+            'name' => 'Ruslan',
+            'email' => 'Admin@gmail.com',
             'email_verified_at' => now(),
             'password' => Hash::make('password'),
             'work_start_time' => '9:00',
@@ -65,8 +60,8 @@ class UserSeeder extends Seeder
         ]);
 
         $roles = config('params.roles');
-        foreach ($users as $user) {
-            $user->syncRoles($roles[rand(0, 4)]);
-        }
+        $users[0]->syncRoles($roles[3]);
+        $users[2]->syncRoles($roles[2]);
+        $users[0]->syncRoles($roles[0]);
     }
 }
