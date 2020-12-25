@@ -69,7 +69,7 @@ class ProjectController extends Controller
             $oldProject = Project::where('id', $id)->first();
             $project = $request->project;
 
-            if ($request->input('project.photo') !== null) {
+            if ($request->has('project.photo')) {
                 if ($oldProject->photo)
                     Storage::disk('public')->delete($oldProject->photo);
                 $project['photo'] = $this->uploadFile($request->input('project.photo'), 'projects');
@@ -169,7 +169,7 @@ class ProjectController extends Controller
     //* Get all payments for project
     public function getPayments(Request $request, $id)
     {
-        $paymentsOfProject = DB::table('payments as t2')->select('t2.*', DB::raw('(select t3.price from steps as t3 where t3.id=t2.step_id) as total_sum'), DB::raw('(select sum(t1.amount) from payments as t1 where t1.payment_date <= t2.payment_date and t1.step_id=t2.step_id group by t1.step_id) as minus_sum'), DB::raw('(select total_sum - minus_sum) as debt_left'), DB::raw('(select t5.title from steps as t5 where t5.id=t2.step_id) as step_title'))->whereRaw('t2.step_id in (select t4.id from steps as t4 where t4.project_id=?)', [$id])->orderBy('t2.payment_date', 'asc')->paginate(8);
+        $paymentsOfProject = DB::table('payments as t2')->select('t2.*', DB::raw('(select t3.price from steps as t3 where t3.id=t2.step_id) as total_sum'), DB::raw('(select sum(t1.amount) from payments as t1 where t1.payment_date <= t2.payment_date and t1.step_id=t2.step_id group by t1.step_id) as minus_sum'), DB::raw('(select total_sum - minus_sum) as debt_left'), DB::raw('(select t5.title from steps as t5 where t5.id=t2.step_id) as step_title'))->whereRaw('t2.step_id in (select t4.id from steps as t4 where t4.project_id=?)', [$id])->orderBy('t2.payment_date', 'desc')->paginate(8);
 
         return (CurrencyResource::collection($paymentsOfProject)->additional($this->successPagination()));
     }
