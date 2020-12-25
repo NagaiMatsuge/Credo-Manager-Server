@@ -61,7 +61,7 @@ class UserSeeder extends Seeder
 
         $roles = config('params.roles');
         $users[0]->syncRoles($roles[3]);
-        $users[2]->syncRoles($roles[2]);
-        $users[0]->syncRoles($roles[0]);
+        $users[1]->syncRoles($roles[2]);
+        $users[3]->syncRoles($roles[0]);
     }
 }
