@@ -1,7 +1,8 @@
 <?php
+
 namespace App\Traits;
 
-trait getPaymentAndCurrenciesTrair 
+trait getPaymentAndCurrenciesTrait
 {
     //* Get the currencies and payment methods
     private function getPaymentAndCurrencies($includeShapes = true)
@@ -49,4 +50,5 @@ trait getPaymentAndCurrenciesTrair
             ];
         }
         return $res;
-    }}
+    }
+}

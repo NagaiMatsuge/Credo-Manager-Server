@@ -16,11 +16,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use App\Traits\DateTimeTrait;
 use App\Traits\UploadTrait;
-use App\Traits\getPaymentAndCurrenciesTrair;
+use App\Traits\getPaymentAndCurrenciesTrait;
 
 class ProjectController extends Controller
 {
-    use ResponseTrait, DateTimeTrait, UploadTrait, getPaymentAndCurrenciesTrair;
+    use ResponseTrait, DateTimeTrait, UploadTrait, getPaymentAndCurrenciesTrait;
 
     //* Fetch all projects with deadline and paid amount in percentage
     public function index(Request $request)
