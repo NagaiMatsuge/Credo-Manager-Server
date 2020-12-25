@@ -44,11 +44,11 @@ return [
         '5' => 'Другое'
     ],
     'payment_image_urls' => [
-        '1' => 'Qiwi.svg',
-        '2' => 'YandexMoney.svg',
-        '3' => 'perechisleniye.svg',
-        '4' => 'money-transfer.svg',
-        '5' => ''
+        '1' => 'system/payment_types/Qiwi.svg',
+        '2' => 'system/payment_types/YandexMoney.svg',
+        '3' => 'system/payment_types/perechisleniye.svg',
+        '4' => 'system/payment_types/money-transfer.svg',
+        '5' => null
     ],
     'response_messages' => [
         'auth/too-many-requests' => 'Превышен лимит на запрос смены пароля',

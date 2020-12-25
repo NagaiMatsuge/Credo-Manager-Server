@@ -31,7 +31,7 @@ class CurrencyResource extends JsonResource
             'payment_type' => [
                 'id' => $this->payment_type,
                 'name' => config("params.payment_types.$this->payment_type"),
-                'url' => 'system/payment_types/' . config("params.payment_image_urls.$this->payment_type")
+                'url' => config("params.payment_image_urls.$this->payment_type")
             ],
         ];
     }
