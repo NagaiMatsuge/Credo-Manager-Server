@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewMessage;
 use App\Models\Message;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ class MessageController extends Controller
     {
         $validation = $this->makeValidation($request);
         $create = Message::create($validation);
+        event(new NewMessage($request->user_id, $request->text));
 
         return $this->successResponse($create);
     }
