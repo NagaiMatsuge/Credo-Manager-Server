@@ -71,7 +71,14 @@ class PaymentController extends Controller
                 'required',
                 Rule::in(array_keys(config('params.currencies')))
             ],
-            'amount' => 'required|max:13',
+            'amount' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    if ($value > 999999999999) {
+                        $fail('The ' . $attribute . ' is too big.');
+                    }
+                },
+            ],
             'payment_type' => [
                 'required',
                 Rule::in(array_keys(config('params.payment_types')))
