@@ -16,8 +16,7 @@ class PaymentController extends Controller
     //* Fetch all Payments with pagination
     public function index(Request $request)
     {
-        $payment = Payment::paginate(8);
-        return $this->successResponse(PaymentResource::collection($payment));
+        return PaymentResource::collection(Payment::paginate(8));
     }
 
     //* Show Payment by its id
