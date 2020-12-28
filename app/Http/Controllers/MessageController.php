@@ -29,11 +29,26 @@ class MessageController extends Controller
     //* Create message
     public function store(Request $request)
     {
-        $validation = $this->makeValidation($request);
-        $create = Message::create($validation);
+        $this->makeValidation($request);
+
+        DB::transaction(function () use($request) {
+
+            $file = $request->file;
+            if($request->has('files')) {
+                $file['file'] = $this->uploadFile($request->input('files'), 'message_files');
+            }
+            DB::table('message_files')->insert($file);
+
+            $task = $request->task;
+            foreach($task as $key => $val){
+                $task[$key]['task_id'] = $task->id;
+            }
+            $task = Message::create($task);
+        });
+
         event(new NewMessage($request->user_id, $request->text));
 
-        return $this->successResponse($create);
+        return $this->successResponse([], 201, 'Successfully created');
     }
 
     //* Update message by its id
@@ -56,7 +71,7 @@ class MessageController extends Controller
             'user_id' => 'required',
             'text' => 'nullable',
             'task_id' => 'required',
-            'file' => [
+            'files' => [
                 Rule::requiredIf(function () use ($request) {
                     return !($request->has('text')) and ($request->input('text') == null);
                 }),
