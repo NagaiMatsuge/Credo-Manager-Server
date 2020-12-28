@@ -12,5 +12,5 @@ Route::group(['prefix' => 'projects'], function () {
     Route::get('/create', [ProjectController::class, 'getCredentials']);
     Route::get('/{project}/steps', [ProjectController::class, 'getProjectSteps'])->where(['id' => '[0-9]+']);
     Route::get('/{id}/payments', [ProjectController::class, 'getPayments'])->where(['id' => '[0-9]+']);
-    Route::get('/{id}/archive', [ProjectController::class, 'archive'])->where(['id' => '[0-9]+']);
+    Route::put('/{id}/archive', [ProjectController::class, 'archive'])->where(['id' => '[0-9]+']);
 });
