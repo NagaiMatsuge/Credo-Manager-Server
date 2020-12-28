@@ -180,7 +180,7 @@ class ProjectController extends Controller
         $request->validate([
             'status' => 'required|boolean'
         ]);
-        DB::table('projects')->where('id', $id)->update(['archived' => $request->archive]);
+        DB::table('projects')->where('id', $id)->update(['archived' => $request->status]);
         return $this->successResponse([], 200, "Successfully Updated");
     }
 }
