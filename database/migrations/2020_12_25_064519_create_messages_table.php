@@ -18,7 +18,6 @@ class CreateMessagesTable extends Migration
             $table->uuid('user_id');
             $table->text('text')->nullable();
             $table->unsignedBigInteger('task_id');
-            $table->string('file')->nullable();
             $table->timestamps();
 
             $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
