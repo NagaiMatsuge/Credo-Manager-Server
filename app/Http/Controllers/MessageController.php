@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Events\NewMessage;
 use App\Models\Message;
 use App\Traits\ResponseTrait;
+use App\Traits\UploadTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class MessageController extends Controller
 {
-    use ResponseTrait;
+    use ResponseTrait, UploadTrait;
 
     //* Fetch all messages
     public function index(Request $request)
@@ -30,20 +31,17 @@ class MessageController extends Controller
     public function store(Request $request)
     {
         $this->makeValidation($request);
-
-        DB::transaction(function () use($request) {
-
-            $file = $request->file;
+        $uploaded_files =[];
+        DB::transaction(function () use($request, $uploaded_files) {
+            $message = Message::create($request->except(['files']));
+            $files = $request->files;
             if($request->has('files')) {
-                $file['file'] = $this->uploadFile($request->input('files'), 'message_files');
+                foreach($files as $key => $file){
+                    $uploaded_files[]['file'] = $this->uploadFile($request->input('files'), 'message_files');
+                    $uploaded_files[]['message_id'] = $message->id;
+                }
+                DB::table("message_files")->insert($uploaded_files);
             }
-            DB::table('message_files')->insert($file);
-
-            $task = $request->task;
-            foreach($task as $key => $val){
-                $task[$key]['task_id'] = $task->id;
-            }
-            $task = Message::create($task);
         });
 
         event(new NewMessage($request->user_id, $request->text));
@@ -69,13 +67,13 @@ class MessageController extends Controller
     {
         return $request->validate([
             'user_id' => 'required',
-            'text' => 'nullable',
-            'task_id' => 'required',
+            'text' => 'nullable|string',
+            'task_id' => 'required|integer',
             'files' => [
                 Rule::requiredIf(function () use ($request) {
                     return !($request->has('text')) and ($request->input('text') == null);
                 }),
-                'string'
+                'array'
             ],
         ]);
     }
