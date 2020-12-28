@@ -55,3 +55,4 @@ Thumbs.db
 /public/storage
 /public/uploads
 laravel-echo-server.json
+echo-pm2.json
