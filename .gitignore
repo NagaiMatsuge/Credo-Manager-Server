@@ -56,3 +56,4 @@ Thumbs.db
 /public/uploads
 laravel-echo-server.json
 echo-pm2.json
+laravel-echo-server.lock
