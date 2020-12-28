@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Message;
 use App\Models\Task;
 use App\Models\User;
 use App\Traits\ResponseTrait;
@@ -64,5 +65,12 @@ class TaskController extends Controller
             'tasks.*.title' => 'required|string|min:3|max:255',
             'tasks.*.deadline' => 'required|date|date_format:Y-m-d'
         ]);
+    }
+
+    //* Show messages that belongs to task_id
+    public function showMessages(Task $id)
+    {
+        $msg = $id->messages()->get();
+        return $this->successResponse($msg);
     }
 }

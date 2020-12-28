@@ -34,6 +34,13 @@ class MessageController extends Controller
         return $this->successResponse($create);
     }
 
+    //* Update message by its id
+    public function update(Request $request, Message $message)
+    {
+        $validation = $this->makeValidation($request);
+        $message->update($validation);
+        return $this->successResponse($message);
+    }
     //* Delete message
     public function destroy(Message $message)
     {
