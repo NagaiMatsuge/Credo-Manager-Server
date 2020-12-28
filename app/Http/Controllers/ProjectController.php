@@ -29,12 +29,17 @@ class ProjectController extends Controller
             'archive' => 'nullable|boolean'
         ]);
         $projects = DB::table('projects')->select('projects.*', DB::raw('(SELECT COUNT(tasks.id) FROM tasks WHERE tasks.step_id IN (SELECT id FROM steps WHERE steps.project_id=projects.id)) as task_count'), DB::raw('(SELECT COUNT(tasks.id) FROM tasks WHERE tasks.step_id IN (SELECT id FROM steps WHERE steps.project_id=projects.id AND tasks.approved=1)) as approved_count'), DB::raw('(SELECT SUM(t1.percent)/ COUNT(t1.percent) AS paid_percent FROM (SELECT ((steps.price - steps.debt) * 100 / steps.price) AS percent FROM steps WHERE steps.project_id=projects.id) AS t1) AS paid_percent'))->where('archived', $request->archive ?? false)->paginate(10);
+        $counts = DB::select("select (select count(projects.id) from projects where projects.archived=1) as count_archived, (select count(projects.id) from projects where projects.archived=0) as count_not_archived");
         $projects = $projects->toArray();
         foreach ($projects['data'] as $key => $project) {
             $date = explode("-", $project->deadline);
             $projects['data'][$key]->deadline = $date[2] . ' ' . config('params.month_format.' . $date[1]) . ' ' .  $date[0];
         }
-        return $this->successResponse($projects);
+        $counts = [
+            'count_archived' => $counts[0]->count_archived,
+            'count_not_archived' => $counts[0]->count_not_archived,
+        ];
+        return $this->successResponse(array_merge($projects, $counts));
     }
 
     //* Create project and tasks with validation    
