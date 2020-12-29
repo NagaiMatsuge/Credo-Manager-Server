@@ -18,6 +18,11 @@ class TaskController extends Controller
     public function index()
     {
         $tasks = Task::all();
+        $tasks->transform(function($item){
+            $item->active = false;
+            $item->hide = false;
+            return $item;
+        });
         return $this->successResponse($tasks);
     }
 
