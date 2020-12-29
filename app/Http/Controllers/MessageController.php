@@ -27,7 +27,7 @@ class MessageController extends Controller
         return $this->successResponse($message);
     }
 
-    //* Create message
+    //* Create message and message file
     public function store(Request $request)
     {
         $this->makeValidation($request);
