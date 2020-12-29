@@ -45,7 +45,8 @@ class TaskController extends Controller
     //* Update task by its id
     public function update(Request $request, Task $id)
     {
-        $id->update($request->all());
+        $validation = $this->makeValidation($request);
+        $id->update($validation);
         return $this->successResponse($id);
     }
     
@@ -59,7 +60,7 @@ class TaskController extends Controller
     //* Validate the request for tasks
     public function makeValidation(Request $request)
     {
-        $request->validate([
+        return $request->validate([
             'step_id' => 'required|integer',
             'tasks' => 'required|array',
             'tasks.*.title' => 'required|string|min:3|max:255',
