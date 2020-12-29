@@ -10,4 +10,5 @@ Route::group(['prefix' => 'tasks'], function () {
     Route::put('/update/{id}', [TaskController::class, 'update'])->where(['id' => '[0-9]+']);
     Route::delete('/delete/{id}', [TaskController::class, 'destroy'])->where(['id' => '[0-9]+']);
     Route::get('/{id}/messages', [TaskController::class, 'showMessages'])->where(['id' => '[0-9]+']);
+    Route::get('/data', [TaskController::class, 'getCredentials']);
 });

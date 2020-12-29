@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Message;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use App\Traits\ResponseTrait;
@@ -36,8 +37,8 @@ class TaskController extends Controller
         foreach ($tasks as $key => $task) {
             $tasks[$key]['step_id'] = $request->step_id;
         }
-         $user = User::where('id', $request->user_id)->first();
-        $user->tasks()->createMany($tasks); 
+        $user = User::where('id', $request->user_id)->first();
+        $user->tasks()->createMany($tasks);
 
         return $this->successResponse([], 201, "Successfully created");
     }
@@ -49,7 +50,7 @@ class TaskController extends Controller
         $id->update($validation);
         return $this->successResponse($id);
     }
-    
+
     //* Delete task by its id
     public function destroy($id)
     {
@@ -73,5 +74,13 @@ class TaskController extends Controller
     {
         $msg = $id->messages()->get();
         return $this->successResponse($msg);
+    }
+
+    //* Get data for filtering
+    public function getCredentials(Request $request)
+    {
+        $projects = DB::table('projects')->select('id', 'title')->get();
+        $users = DB::table('users')->select('id', 'name')->get();
+        return $this->successResponse(['users' => $users, 'projects' => $projects]);
     }
 }
