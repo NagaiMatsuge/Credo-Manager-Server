@@ -52,21 +52,21 @@ class TaskSeeder extends Seeder
         ];
         $tasks[] = [
             'title' => 'Процент оплаты нужны для проектов',
-            'step_id' => 3,
+            'step_id' => 4,
             'finished' => 0,
             'approved' => 0,
             'deadline' => now()->addDays(3)
         ];
         $tasks[] = [
             'title' => 'Настроить платежную систему',
-            'step_id' => 3,
+            'step_id' => 4,
             'finished' => 0,
             'approved' => 0,
             'deadline' => now()->addDays(3)
         ];
         $tasks[] = [
             'title' => 'У проектов должны быть иконки',
-            'step_id' => 3,
+            'step_id' => 5,
             'finished' => 0,
             'approved' => 0,
             'deadline' => now()->addDays(3)
