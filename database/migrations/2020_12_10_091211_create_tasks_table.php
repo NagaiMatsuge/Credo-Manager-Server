@@ -28,8 +28,8 @@ class CreateTasksTable extends Migration
             $table->id();
             $table->uuid('user_id');
             $table->unsignedBigInteger('task_id');
-            $table->string('time');
-            $table->boolean('unlim')->comment(' is time fixed');
+            $table->time('time')->comment('number of minites');
+            $table->boolean('unlim')->comment('is time fixed');
             $table->boolean('tick')->default(false)->comment('is time ticking');
             $table->boolean('active')->default(false);
             $table->timestamps();
