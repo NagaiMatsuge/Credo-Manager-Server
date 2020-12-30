@@ -18,14 +18,13 @@ class TaskController extends Controller
     public function index()
     {
         // ------------------------Users ------------------------------------
-        $users = DB::table('users as t19')->select(DB::raw('(select t11.name from roles as t11 where t11.id=(select t12.role_id from model_has_roles as t12 where t12.model_uuid=t19.id))as user_role'), DB::raw('(select t13.id from (select t14.id from users as t14 where t14.id=t19.id) as t13) as user_id'), DB::raw('(select t15.name from (select t16.name from users as t16 where t16.id=t19.id) as t15) as user_name'), DB::raw('(select t17.photo from (select t18.photo from users as t18 where t18.id=t19.id) as t17) as user_photo'), DB::raw('(1) as worked'))->paginate(4)->toArray();
+        $users = DB::table('users as t19')->select(DB::raw('(select t11.name from roles as t11 where t11.id=(select t12.role_id from model_has_roles as t12 where t12.model_uuid=t19.id))as user_role'), 't19.id as user_id', 't19.name as user_name', 't19.photo as user_photo', DB::raw('(1) as worked'), 't19.color as user_color')->paginate(4)->toArray();
         // ------------------------Users ------------------------------------
 
         // ------------------------Tasks ------------------------------------
 
         $tasks = DB::table('task_user as t20')->select(DB::raw('(select t2.id from tasks as t2 where t2.id=t20.task_id) as task_id, t20.active as status, (select t3.title from tasks as t3 where t3.id=t20.task_id) as title'), DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t20.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t20.task_id)) as t7)) as project_title'), 't20.user_id')->get()->toArray();
         // ------------------------Users ------------------------------------
-
         $res = [];
         foreach ($users['data'] as $user) {
             $res[$user->user_id] = [
@@ -34,7 +33,8 @@ class TaskController extends Controller
                     'name' => $user->user_name,
                     'role' => $user->user_role,
                     'photo' => $user->user_photo,
-                    'worked' => $user->worked
+                    'worked' => $user->worked,
+                    'color' => $user->user_color
                 ],
                 'active' => false,
                 'hide' => false
@@ -48,7 +48,9 @@ class TaskController extends Controller
                                 'id' => $task->project_id,
                                 'title' => $task->project_title
                             ],
-                            'title' => $task->title
+                            'title' => $task->title,
+                            'time' => '00:00',
+                            'unlimited' => true
                         ];
                     } else {
                         $res[$user->user_id]['tasks']['inactive'][] = [
@@ -57,13 +59,16 @@ class TaskController extends Controller
                                 'id' => $task->project_id,
                                 'title' => $task->project_title
                             ],
-                            'title' => $task->title
+                            'title' => $task->title,
+                            'time' => '00:00',
+                            'unlimited' => true
                         ];
                     }
                 }
             }
         }
-        return $this->successResponse($res);
+        unset($users['data']);
+        return $this->successResponse($res, 200, '', ['name' => 'links', 'data' => $users]);
     }
 
     //* Show task by its id

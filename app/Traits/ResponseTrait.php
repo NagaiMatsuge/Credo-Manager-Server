@@ -4,15 +4,18 @@ namespace App\Traits;
 
 trait ResponseTrait
 {
-    public function successResponse($data = [], int $status_c = 200, $message = '')
+    public function successResponse($data = [], int $status_c = 200, $message = '', array $additional = null)
     {
-        return response()->json([
+        $res = [
             'data' => $data,
             'success' => true,
             'error' => false,
             'status_code' => $status_c,
-            'message' => $message
-        ])->header('Access-Control-Allow-Origin', '*');
+            'message' => $message,
+        ];
+        if ($additional)
+            $res[$additional['name']] = $additional['data'];
+        return response()->json($res)->header('Access-Control-Allow-Origin', '*');
     }
 
     public function errorResponse($message, int $status_c = 400)
@@ -26,10 +29,11 @@ trait ResponseTrait
         ])->header('Access-Control-Allow-Origin', '*');
     }
 
-    public function successPagination($data = [], int $status_c = 200, $message = ''){
+    public function successPagination($data = [], int $status_c = 200, $message = '')
+    {
         return [
             'success' => true,
-            'error' => false, 
+            'error' => false,
             'status_code' => $status_c,
             'message' => $message
         ];
