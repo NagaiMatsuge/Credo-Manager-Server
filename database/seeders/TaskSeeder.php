@@ -20,56 +20,48 @@ class TaskSeeder extends Seeder
             'step_id' => 2,
             'finished' => 1,
             'approved' => 1,
-            'deadline' => now()->addMonth(3)
         ];
         $tasks[] = [
             'title' => 'Пагинатсия на сайте',
             'step_id' => 2,
             'finished' => 1,
             'approved' => 1,
-            'deadline' => now()->addMonth(2)
         ];
         $tasks[] = [
             'title' => 'Добавить цвета для проекта',
             'step_id' => 1,
             'finished' => 0,
             'approved' => 0,
-            'deadline' => now()->addMonth(1)
         ];
         $tasks[] = [
             'title' => 'Сделать сайт адаптивным',
             'step_id' => 1,
             'finished' => 1,
             'approved' => 1,
-            'deadline' => now()->addMonth(4)->addDays(3)
         ];
         $tasks[] = [
             'title' => 'Изменить цветь иконок',
             'step_id' => 1,
             'finished' => 0,
             'approved' => 0,
-            'deadline' => now()->addDays(3)
         ];
         $tasks[] = [
             'title' => 'Процент оплаты нужны для проектов',
             'step_id' => 4,
             'finished' => 0,
             'approved' => 0,
-            'deadline' => now()->addDays(3)
         ];
         $tasks[] = [
             'title' => 'Настроить платежную систему',
             'step_id' => 4,
             'finished' => 0,
             'approved' => 0,
-            'deadline' => now()->addDays(3)
         ];
         $tasks[] = [
             'title' => 'У проектов должны быть иконки',
             'step_id' => 5,
             'finished' => 0,
             'approved' => 0,
-            'deadline' => now()->addDays(3)
         ];
 
 
