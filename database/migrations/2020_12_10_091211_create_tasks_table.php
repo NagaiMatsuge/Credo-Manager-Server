@@ -19,7 +19,6 @@ class CreateTasksTable extends Migration
             $table->unsignedBigInteger('step_id');
             $table->boolean('finished')->default(false);
             $table->boolean('approved')->default(false)->comment('Only can be approved by Admin');
-            $table->dateTime('deadline');
             $table->timestamps();
 
             $table->foreign('step_id')->references('id')->on('steps')->onDelete('cascade');
@@ -29,6 +28,9 @@ class CreateTasksTable extends Migration
             $table->id();
             $table->uuid('user_id');
             $table->unsignedBigInteger('task_id');
+            $table->string('time');
+            $table->boolean('unlim')->comment('is time fixed');
+            $table->boolean('tick')->comment('is time ticking');
             $table->boolean('active')->default(false);
             $table->timestamps();
 
