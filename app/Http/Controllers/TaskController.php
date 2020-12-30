@@ -19,7 +19,6 @@ class TaskController extends Controller
     //* Fetch all tasks
     public function index(Request $request)
     {
-        return $this->showToAdmin($request);
         if ($request->user->hasRole('Admin')) {
             return $this->showToAdmin($request);
         } else {
