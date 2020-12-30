@@ -17,13 +17,13 @@ class TaskController extends Controller
     //* Fetch all tasks
     public function index()
     {
-        $tasks = Task::all();
-        $tasks->transform(function($item){
-            $item->active = false;
-            $item->hide = false;
-            return $item;
-        });
-        return $this->successResponse($tasks);
+        DB::table('task_user')->select(DB::raw('()'));
+        // $tasks->transform(function ($item) {
+        //     $item->active = false;
+        //     $item->hide = false;
+        //     return $item;
+        // });
+        return $this->successResponse([1]);
     }
 
     //* Show task by its id
