@@ -9,13 +9,26 @@ use App\Models\User;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
     use ResponseTrait;
 
     //* Fetch all tasks
-    public function index()
+    public function index(Request $request)
+    {
+        return $this->showToAdmin($request);
+        if ($request->user->hasRole('Admin')) {
+            return $this->showToAdmin($request);
+        } else {
+            return $this->showToUser($request);
+        }
+    }
+
+    //* Show List of tasks to Admin
+    public function showToAdmin(Request $request)
     {
         // ------------------------Users ------------------------------------
         $users = DB::table('users as t19')->select(DB::raw('(select t11.name from roles as t11 where t11.id=(select t12.role_id from model_has_roles as t12 where t12.model_uuid=t19.id))as user_role'), 't19.id as user_id', 't19.name as user_name', 't19.photo as user_photo', DB::raw('(1) as worked'), 't19.color as user_color')->paginate(4)->toArray();
@@ -73,6 +86,59 @@ class TaskController extends Controller
         return $this->successResponse($res, 200, '', ['name' => 'links', 'data' => $users]);
     }
 
+    //* Show list of tasks to User
+    public function showToUser(Request $request)
+    {
+        $userTasks = DB::table('task_user as t1')->select(DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t1.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t1.task_id)) as t7)) as project_title'), 't1.task_id as task_id', 't1.active as active', DB::raw('(select t3.title from tasks as t3 where t3.id=t1.task_id) as task_title'), DB::raw('(select t10.finished from tasks as t10 where t10.id=t1.task_id) as task_finished'), 't1.time', 't1.unlim as unlimited', 't1.tick')->where('t1.user_id', $request->user->id)->get()->toArray();
+
+        $res = [];
+        foreach ($userTasks as $task) {
+            if (!$task->task_finished) {
+                if ($task->active) {
+                    $res['tasks']['active'][] = [
+                        'id' => $task->task_id,
+                        'project' => [
+                            'id' => $task->project_id,
+                            'title' => $task->project_title
+                        ],
+                        'title' => $task->task_title,
+                        'time' => $task->time,
+                        'unlimited' => $task->unlimited,
+                        'tick' => $task->tick
+                    ];
+                } else {
+                    $res['tasks']['inactive'][] = [
+                        'id' => $task->task_id,
+                        'project' => [
+                            'id' => $task->project_id,
+                            'title' => $task->project_title
+                        ],
+                        'title' => $task->task_title,
+                        'time' => $task->time,
+                        'unlimited' => $task->unlimited,
+                        'tick' => $task->tick
+                    ];
+                }
+            }
+        }
+        $res['active'] = false;
+        $res['hide'] = false;
+
+        return $this->successResponse($res);
+    }
+    /*
+    active           $
+    task_id          $
+    project_id       $
+    project_title    $
+    task_title       $
+    task_time        $
+    task_unlimited   $
+    task_tick        $
+
+    active
+    hide
+*/
     //* Show task by its id
     public function show(Task $id)
     {
@@ -96,11 +162,11 @@ class TaskController extends Controller
     }
 
     //* Update task by its id
-    public function update(Request $request, Task $id)
+    public function update(Request $request, Task $task)
     {
-        $validation = $this->makeValidation($request);
-        $id->update($validation);
-        return $this->successResponse($id);
+        $validation = $this->makeValidation($request, true);
+        $task->update($validation);
+        return $this->successResponse($task);
     }
 
     //* Delete task by its id
@@ -111,13 +177,29 @@ class TaskController extends Controller
     }
 
     //* Validate the request for tasks
-    public function makeValidation(Request $request)
+    public function makeValidation(Request $request, $for_update = false)
     {
         return $request->validate([
-            'step_id' => 'required|integer',
-            'tasks' => 'required|array',
-            'tasks.*.title' => 'required|string|min:3|max:255',
-            'tasks.*.deadline' => 'required|date|date_format:Y-m-d'
+            'step_id' => [
+                Rule::requiredIf(!$for_update),
+                'integer'
+            ],
+            'title' => [
+                Rule::requiredIf(!$for_update),
+                'string',
+                'min:3',
+                'max:255',
+            ],
+            'active' => 'nullable|boolean',
+            'time' => 'required|integer',
+            'unlim' => [
+                Rule::requiredIf(!$for_update),
+                'boolean'
+            ],
+            'tick' => [
+                Rule::requiredIf($for_update),
+                'boolean'
+            ]
         ]);
     }
 
