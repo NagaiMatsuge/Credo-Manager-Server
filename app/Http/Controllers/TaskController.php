@@ -129,8 +129,15 @@ class TaskController extends Controller
     //* Get data for filtering
     public function getCredentials(Request $request)
     {
-        $projects = DB::table('projects')->select('id', 'title')->get();
-        $users = DB::table('users')->select('id', 'name')->get();
-        return $this->successResponse(['users' => $users, 'projects' => $projects]);
+        $projects = DB::table('projects')->select('id', 'title');
+        if($request->title) {
+            $projects = $projects->where('title', 'like', '%' . $request->title . '%');
+        }
+
+        $users = DB::table('users')->select('id', 'name');
+        if($request->name) {
+            $users = $users->where('name', 'like', '%' . $request->name . '%');
+        }
+        return $this->successResponse(['users' => $users->paginate(5), 'projects' => $projects->paginate(5)]);
     }
 }
