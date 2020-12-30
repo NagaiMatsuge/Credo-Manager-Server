@@ -23,7 +23,7 @@ class TaskController extends Controller
 
         // ------------------------Tasks ------------------------------------
 
-        $tasks = DB::table('task_user as t20')->select(DB::raw('(select t2.id from tasks as t2 where t2.id=t20.task_id) as task_id, t20.active as status, (select t3.title from tasks as t3 where t3.id=t20.task_id) as title'), DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t20.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t20.task_id)) as t7)) as project_title'), 't20.user_id')->get()->toArray();
+        $tasks = DB::table('task_user as t20')->select(DB::raw('(select t2.id from tasks as t2 where t2.id=t20.task_id) as task_id, t20.active as status, (select t3.title from tasks as t3 where t3.id=t20.task_id) as title'), DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t20.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t20.task_id)) as t7)) as project_title'), 't20.user_id', 't20.unlim as unlimited', 't20.tick', 't20.time')->get()->toArray();
         // ------------------------Users ------------------------------------
         $res = [];
         foreach ($users['data'] as $user) {
@@ -49,8 +49,9 @@ class TaskController extends Controller
                                 'title' => $task->project_title
                             ],
                             'title' => $task->title,
-                            'time' => '00:00',
-                            'unlimited' => true
+                            'time' => $task->time,
+                            'unlimited' => $task->unlimited,
+                            'tick' => $task->tick
                         ];
                     } else {
                         $res[$user->user_id]['tasks']['inactive'][] = [
@@ -60,8 +61,9 @@ class TaskController extends Controller
                                 'title' => $task->project_title
                             ],
                             'title' => $task->title,
-                            'time' => '00:00',
-                            'unlimited' => true
+                            'time' => $task->time,
+                            'unlimited' => $task->unlimited,
+                            'tick' => $task->tick
                         ];
                     }
                 }
