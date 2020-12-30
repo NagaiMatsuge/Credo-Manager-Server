@@ -19,7 +19,7 @@ class TaskController extends Controller
     //* Fetch all tasks
     public function index(Request $request)
     {
-        if ($request->user->hasRole('Admin')) {
+        if ($request->user()->hasRole('Admin')) {
             return $this->showToAdmin($request);
         } else {
             return $this->showToUser($request);
@@ -88,7 +88,7 @@ class TaskController extends Controller
     //* Show list of tasks to User
     public function showToUser(Request $request)
     {
-        $userTasks = DB::table('task_user as t1')->select(DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t1.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t1.task_id)) as t7)) as project_title'), 't1.task_id as task_id', 't1.active as active', DB::raw('(select t3.title from tasks as t3 where t3.id=t1.task_id) as task_title'), DB::raw('(select t10.finished from tasks as t10 where t10.id=t1.task_id) as task_finished'), 't1.time', 't1.unlim as unlimited', 't1.tick')->where('t1.user_id', $request->user->id)->get()->toArray();
+        $userTasks = DB::table('task_user as t1')->select(DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t1.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t1.task_id)) as t7)) as project_title'), 't1.task_id as task_id', 't1.active as active', DB::raw('(select t3.title from tasks as t3 where t3.id=t1.task_id) as task_title'), DB::raw('(select t10.finished from tasks as t10 where t10.id=t1.task_id) as task_finished'), 't1.time', 't1.unlim as unlimited', 't1.tick')->where('t1.user_id', $request->user()->id)->get()->toArray();
 
         $res = [];
         foreach ($userTasks as $task) {
@@ -213,12 +213,12 @@ class TaskController extends Controller
     public function getCredentials(Request $request)
     {
         $projects = DB::table('projects')->select('id', 'title');
-        if($request->title) {
+        if ($request->title) {
             $projects = $projects->where('title', 'like', '%' . $request->title . '%');
         }
 
         $users = DB::table('users')->select('id', 'name');
-        if($request->name) {
+        if ($request->name) {
             $users = $users->where('name', 'like', '%' . $request->name . '%');
         }
         return $this->successResponse(['users' => $users->paginate(5), 'projects' => $projects->paginate(5)]);
