@@ -162,8 +162,6 @@ class TaskController extends Controller
     //* Update task by its id As Admin or Manager
     public function update(Request $request, $id)
     {
-        $res = dd(array_merge($request->only(['time']), $request->only(['active', 'finished'])));
-        dd($res);
         $this->makeValidation($request, true);
 
         DB::transaction(function () use ($request, $id) {
