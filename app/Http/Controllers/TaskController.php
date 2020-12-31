@@ -159,25 +159,42 @@ class TaskController extends Controller
         return $this->successResponse([], 201, "Successfully created");
     }
 
-    //* Update task by its id
+    //* Update task by its id As Admin or Manager
     public function update(Request $request, $id)
     {
+        $res = dd(array_merge($request->only(['time']), $request->only(['active', 'finished'])));
+        dd($res);
         $this->makeValidation($request, true);
 
         DB::transaction(function () use ($request, $id) {
-
-            $taskUpdate = $request->only(['title', 'step_id', 'finished', 'approved']);
-            DB::table('tasks')->where('id', $id)->update($taskUpdate);
-            $taskUserUpdate = $request->only(['time', 'tick', 'active']);
-            $taskUserUpdate['unlim'] = $request->unlimited;
-            DB::table('task_user')->whereIn('user_id', $request->user_ids)->where('task_id', $id)->update($taskUserUpdate);
+            $authority = $request->user()->hasRole(['Admin', 'Manager']);
+            $taskUserUpdate = $request->only(['time']);
+            //Admin Can update title, step, approved, unlim but cannot change active state of the task
+            //User can change active state but cannot change unlimited
+            if ($authority) {
+                $taskUpdate = $request->only(['title', 'step_id', 'approved']);
+                DB::table('tasks')->where('id', $id)->update($taskUpdate);
+                if ($request->has('unlimited'))
+                    $taskUserUpdate['unlim'] = $request->unlimited;
+            } else {
+                $taskUserUpdate = array_merge($taskUserUpdate, $request->only(['active', 'finished', 'tick']));
+            }
+            //When the update is invoked by admin, execution touches all user_ids
+            //When update is invoked by user, execution touches only that user
+            DB::table('task_user')->when($authority, function ($query) use ($request) {
+                return $query->whereIn('user_id', $request->user_ids);
+            })->when(!$authority, function ($query) use ($request) {
+                return $query->where('user_id', $request->user()->id);
+            })->where('task_id', $id)->update($taskUserUpdate);
         });
         return $this->successResponse([], 200, 'Successfully updated');
     }
 
     //* Delete task by its id
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
+        if (!$request->user()->hasRole(['Admin', 'Manager']))
+            return $this->notAllowed();
         $delete = DB::table('tasks')->where('id', $id)->delete();
         return $this->successResponse($delete);
     }
@@ -191,7 +208,7 @@ class TaskController extends Controller
                 'integer'
             ],
             'user_ids' => [
-                Rule::requiredIf(!$for_update),
+                Rule::requiredIf($request->user()->hasRole(['Admin', 'Manager'])),
                 'array'
             ],
             'user_ids.*' => 'string',
@@ -239,5 +256,10 @@ class TaskController extends Controller
             $users = $users->where('name', 'like', '%' . $request->name . '%');
         }
         return $this->successResponse(['users' => $users->paginate(5), 'projects' => $projects->paginate(5)]);
+    }
+
+    //* Describe your method
+    public function updateAsUser(Request $request)
+    {
     }
 }
