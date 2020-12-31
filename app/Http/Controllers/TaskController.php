@@ -125,19 +125,7 @@ class TaskController extends Controller
 
         return $this->successResponse($res);
     }
-    /*
-    active           $
-    task_id          $
-    project_id       $
-    project_title    $
-    task_title       $
-    task_time        $
-    task_unlimited   $
-    task_tick        $
 
-    active
-    hide
-*/
     //* Show task by its id
     public function show(Task $id)
     {
@@ -147,25 +135,44 @@ class TaskController extends Controller
     //* Create task with validation
     public function store(Request $request)
     {
+        if (!$request->user()->hasRole(['Admin', 'Manager']))
+            return $this->notAllowed();
+
         $this->makeValidation($request);
-
-        $tasks = $request->tasks;
-
-        foreach ($tasks as $key => $task) {
-            $tasks[$key]['step_id'] = $request->step_id;
-        }
-        $user = User::where('id', $request->user_id)->first();
-        $user->tasks()->createMany($tasks);
-
+        DB::transaction(function () use ($request) {
+            $task = $request->only(['step_id', 'title']);
+            $newTask = Task::create($task);
+            $user_ids = $request->user_ids;
+            $userTasks = [];
+            foreach ($user_ids as $user_id) {
+                $userTasks[] = [
+                    'user_id' => $user_id,
+                    'task_id' => $newTask->id,
+                    'time' => $request->time ?? 0,
+                    'unlim' => $request->unlimited,
+                    'tick' => $request->tick,
+                    'created_at' => now()
+                ];
+            }
+            DB::table('task_user')->insert($userTasks);
+        });
         return $this->successResponse([], 201, "Successfully created");
     }
 
     //* Update task by its id
-    public function update(Request $request, Task $task)
+    public function update(Request $request, $id)
     {
-        $validation = $this->makeValidation($request, true);
-        $task->update($validation);
-        return $this->successResponse($task);
+        $this->makeValidation($request, true);
+
+        DB::transaction(function () use ($request, $id) {
+
+            $taskUpdate = $request->only(['title', 'step_id', 'finished', 'approved']);
+            DB::table('tasks')->where('id', $id)->update($taskUpdate);
+            $taskUserUpdate = $request->only(['time', 'tick', 'active']);
+            $taskUserUpdate['unlim'] = $request->unlimited;
+            DB::table('task_user')->whereIn('user_id', $request->user_ids)->where('task_id', $id)->update($taskUserUpdate);
+        });
+        return $this->successResponse([], 200, 'Successfully updated');
     }
 
     //* Delete task by its id
@@ -183,6 +190,11 @@ class TaskController extends Controller
                 Rule::requiredIf(!$for_update),
                 'integer'
             ],
+            'user_ids' => [
+                Rule::requiredIf(!$for_update),
+                'array'
+            ],
+            'user_ids.*' => 'string',
             'title' => [
                 Rule::requiredIf(!$for_update),
                 'string',
@@ -190,15 +202,20 @@ class TaskController extends Controller
                 'max:255',
             ],
             'active' => 'nullable|boolean',
-            'time' => 'required|integer',
-            'unlim' => [
+            'time' => [
+                Rule::requiredIf($request->unlimited == false),
+                'integer'
+            ],
+            'unlimited' => [
                 Rule::requiredIf(!$for_update),
                 'boolean'
             ],
             'tick' => [
-                Rule::requiredIf($for_update),
+                'nullable',
                 'boolean'
-            ]
+            ],
+            'finished' => 'nullable|boolean',
+            'approved' => 'nullable|boolean'
         ]);
     }
 

@@ -38,4 +38,15 @@ trait ResponseTrait
             'message' => $message
         ];
     }
+
+    //* User doesn't have enought permissions
+    public function notAllowed()
+    {
+        return response()->json([
+            'success' => false,
+            'error' => true,
+            'status_code' => 403,
+            'message' => 'Not-allowed'
+        ]);
+    }
 }
