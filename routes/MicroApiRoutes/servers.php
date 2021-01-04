@@ -3,7 +3,7 @@
 use App\Http\Controllers\ServerController;
 use Illuminate\Support\Facades\Route;
 
-Route::group(['prefix' => 'server'], function () {
+Route::group(['prefix' => 'server', 'middleware' => 'auth:api'], function () {
     Route::get('/', [ServerController::class, 'index']);
     Route::get('/{id}', [ServerController::class, 'show'])->where(['id' => '[0-9]+']);
     Route::post('/create', [ServerController::class, 'store']);

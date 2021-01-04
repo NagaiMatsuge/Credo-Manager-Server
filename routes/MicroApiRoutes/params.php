@@ -3,6 +3,6 @@
 use App\Http\Controllers\ParamsController;
 use Illuminate\Support\Facades\Route;
 
-Route::group(['prefix' => 'params'], function () {
+Route::group(['prefix' => 'params', 'middleware' => 'auth:api'], function () {
     Route::get('/roles', [ParamsController::class, 'getAllRoles']);
 });

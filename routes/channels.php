@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Message;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -14,5 +15,5 @@ use Illuminate\Support\Facades\Broadcast;
 */
 
 Broadcast::channel('new-message-to.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+    return (bool) Message::where('task_id', $id)->where('user_id', $user->id)->exists();
 });
