@@ -27,7 +27,6 @@ class MessageSeeder extends Seeder
                 'user_id' => $user_ids[rand(0, $user_ids_count - 1)],
                 'text' => Str::random(60),
                 'task_id' => $task_ids[rand(0, $task_ids_count - 1)],
-                'name' => Str::random(20),
                 'created_at' => now()
             ];
         }
