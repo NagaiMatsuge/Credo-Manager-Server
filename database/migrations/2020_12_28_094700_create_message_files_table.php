@@ -15,7 +15,8 @@ class CreateMessageFilesTable extends Migration
     {
         Schema::create('message_files', function (Blueprint $table) {
             $table->id();
-            $table->text('file');
+            $table->text('file')->comment('location');
+            $table->string('name')->comment('name to be displayed');
             $table->unsignedBigInteger('message_id');
             $table->timestamps();
 

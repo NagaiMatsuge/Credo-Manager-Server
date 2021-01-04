@@ -14,54 +14,41 @@ class MessageController extends Controller
 {
     use ResponseTrait, UploadTrait;
 
-    //* Fetch all messages
-    public function index(Request $request)
-    {
-        $msg = Message::all();
-        return $this->successResponse($msg);
-    }
-
-    //* Show message by its id
-    public function show(Message $message)
-    {
-        return $this->successResponse($message);
-    }
-
     //* Create message and message file
     public function store(Request $request)
     {
         $this->makeValidation($request);
-        $uploaded_files =[];
-        DB::transaction(function () use($request, $uploaded_files) {
-            $message = Message::create($request->except(['files']));
+        $uploaded_files = [];
+        DB::transaction(function () use ($request, $uploaded_files) {
+            $message = Message::create($request->except(array_merge(['files', 'user_id'], ['user_id' => $request->user()->id])));
             $files = $request->files;
-            if($request->has('files')) {
-                foreach($files as $key => $file){
-                    $uploaded_files[]['file'] = $this->uploadFile($request->input('files'), 'message_files');
-                    $uploaded_files[]['message_id'] = $message->id;
+            if ($request->files !== null) {
+                foreach ($files as $key => $file) {
+                    $uploaded_files[] = [
+                        'file' => $this->uploadFile($file['content'], 'message_files'),
+                        'message_id' => $message->id,
+                        'name' => $file['name']
+                    ];
                 }
                 DB::table("message_files")->insert($uploaded_files);
             }
         });
 
-        event(new NewMessage($request->user_id, $request->text));
+        event(new NewMessage($request->user_id, $request->text, $uploaded_files));
 
         return $this->successResponse([], 201, 'Successfully created');
     }
 
-    //* Update message by its id
-    public function update(Request $request, Message $message)
-    {
-        $validation = $this->makeValidation($request);
-        $message->update($validation);
-        return $this->successResponse($message);
-    }
     //* Delete message
-    public function destroy(Message $message)
+    public function destroy(Request $request, Message $message)
     {
-        $delete = DB::table('messages')->where('id', $message)->delete();
+        if ($message->user_id == $request->user()->id)
+            $delete = DB::table('messages')->where('id', $message)->delete();
+        else
+            return $this->notAllowed();
         return $this->successResponse($delete);
     }
+
     //* Validation
     public function makeValidation(Request $request)
     {
@@ -75,6 +62,50 @@ class MessageController extends Controller
                 }),
                 'array'
             ],
+            'files.*.name' => [
+                Rule::requiredIf(function () use ($request) {
+                    return $request->files !== null;
+                }),
+                'string'
+            ],
+            'files.*.content' => [
+                Rule::requiredIf(function () use ($request) {
+                    return $request->files !== null;
+                }),
+                'string'
+            ]
         ]);
+    }
+
+    //* Get all messages of the task
+    public function getMessagesForTask(Request $request, $id)
+    {
+        $messages = Message::leftJoin('users', 'messages.user_id', '=', 'users.id')->where('task_id', $id)->with('files')->paginate(30)->toArray();
+        $res = [];
+        $last_user_id = null;
+        foreach ($messages['data'] as $key => $message) {
+            if ($last_user_id == $message['user_id']) {
+                $res[count($res) - 1]['content'][] = [
+                    'text' => $message['text'],
+                    'file' => $message['files']
+                ];
+            } else {
+                $res[] = [
+                    'user_id' => $message['user_id'],
+                    'photo' => $message['photo'],
+                    'color' => $message['color'],
+                    'name' => $message['name'],
+                    'content' => [
+                        [
+                            'text' => $message['text'],
+                            'file' => $message['files']
+                        ]
+                    ]
+                ];
+            }
+            $last_user_id = $message['user_id'];
+        }
+        $messages['data'] = $res;
+        return response()->json(array_merge($messages, $this->successPagination()));
     }
 }

@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             StepSeeder::class,
             TaskSeeder::class,
             TaskUserSeeder::class,
+            MessageSeeder::class,
             PaymentSeeder::class
         ]);
     }

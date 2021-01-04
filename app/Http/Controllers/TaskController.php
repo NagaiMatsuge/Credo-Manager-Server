@@ -234,13 +234,6 @@ class TaskController extends Controller
         ]);
     }
 
-    //* Show messages that belongs to task_id
-    public function showMessages(Task $id)
-    {
-        $msg = $id->messages()->get();
-        return $this->successResponse($msg);
-    }
-
     //* Get data for filtering
     public function getCredentials(Request $request)
     {
@@ -254,10 +247,5 @@ class TaskController extends Controller
             $users = $users->where('name', 'like', '%' . $request->name . '%');
         }
         return $this->successResponse(['users' => $users->paginate(5), 'projects' => $projects->paginate(5)]);
-    }
-
-    //* Describe your method
-    public function updateAsUser(Request $request)
-    {
     }
 }
