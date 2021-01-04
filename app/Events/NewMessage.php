@@ -47,6 +47,6 @@ class NewMessage implements ShouldBroadcast
      */
     public function broadcastWith()
     {
-        return ['message' => $this->message, 'files' => $this->files];
+        return ['message' => $this->message, 'files' => $this->files, 'user_id' => $this->id];
     }
 }
