@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('new-message-to.{id}', function ($user, $id) {
-    return (bool) Message::where('task_id', $id)->where('user_id', $user->id)->exists();
-});
+// Broadcast::routes();
+
+// Broadcast::channel('to.{id}', function ($user, $id) {
+//     return (bool) true;
+// });
+
+//Message::where('task_id', $id)->where('user_id', $user->id)->exists()

@@ -1,6 +1,11 @@
 <?php
 
 // Authentication Routes
+
+use App\Events\NewMessage;
+use Illuminate\Support\Facades\Route;
+
+
 require_once __DIR__ . "/Auth/auth.php";
 require_once __DIR__ . "/MicroApiRoutes/users.php";
 require_once __DIR__ . "/MicroApiRoutes/projects.php";
