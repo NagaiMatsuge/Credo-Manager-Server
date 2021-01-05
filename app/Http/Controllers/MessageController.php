@@ -20,7 +20,7 @@ class MessageController extends Controller
         $this->makeValidation($request);
         $uploaded_files = [];
         DB::transaction(function () use ($request, $uploaded_files) {
-            $message = Message::create($request->except(array_merge(['files', 'user_id'], ['user_id' => $request->user()->id])));
+            $message = Message::create(array_merge($request->except(['files', 'user_id']), ['user_id' => $request->user()->id]));
             $files = $request->files;
             if ($request->files !== null) {
                 foreach ($files as $key => $file) {
@@ -53,7 +53,6 @@ class MessageController extends Controller
     public function makeValidation(Request $request)
     {
         return $request->validate([
-            'user_id' => 'required',
             'text' => 'nullable|string',
             'task_id' => 'required|integer',
             'files' => [
