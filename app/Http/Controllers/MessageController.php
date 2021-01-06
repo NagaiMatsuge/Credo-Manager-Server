@@ -36,10 +36,12 @@ class MessageController extends Controller
 
             $unread_messages = [];
             foreach ($user_ids as $user_id) {
-                $unread_messages[] = [
-                    'user_id' => $user_id,
-                    'message_id' => $message->id
-                ];
+                if ($user_id !== $request->user()->id) {
+                    $unread_messages[] = [
+                        'user_id' => $user_id,
+                        'message_id' => $message->id
+                    ];
+                }
                 broadcast(new NewMessage($request->task_id, $request->text, $uploaded_files, $request->user(), $user_id));
             }
             DB::table('unread_messages')->insert($unread_messages);
