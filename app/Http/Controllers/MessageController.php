@@ -81,7 +81,7 @@ class MessageController extends Controller
     //* Get all messages of the task
     public function getMessagesForTask(Request $request, $id)
     {
-        $messages = Message::leftJoin('users', 'messages.user_id', '=', 'users.id')->where('task_id', $id)->with('files')->orderBy('messages.created_at', 'desc')->paginate(30)->toArray();
+        $messages = Message::leftJoin('users', 'messages.user_id', '=', 'users.id')->where('task_id', $id)->with('files')->orderBy('messages.created_at', 'asc')->paginate(30)->toArray();
         $res = [];
         $last_user_id = null;
         foreach ($messages['data'] as $key => $message) {
