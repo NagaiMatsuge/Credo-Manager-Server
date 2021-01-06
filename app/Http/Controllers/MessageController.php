@@ -32,17 +32,17 @@ class MessageController extends Controller
                 }
                 DB::table("message_files")->insert($uploaded_files);
             }
-        $user_ids = DB::table('task_user')->where('task_id', $request->task_id)->get()->unique('user_id')->pluck('user_id');
+            $user_ids = DB::table('task_user')->where('task_id', $request->task_id)->get()->unique('user_id')->pluck('user_id');
 
-        $unread_messages = [];
-        foreach ($user_ids as $user_id) {
-            $unread_messages[] = [
-                'user_id' => $user_id,
-                'task_id' => $request->task_id
-            ];
-            broadcast(new NewMessage($request->task_id, $request->text, $uploaded_files, $request->user(), $user_id));
-        }
-        DB::table('unread_messages')->insert($unread_messages);
+            $unread_messages = [];
+            foreach ($user_ids as $user_id) {
+                $unread_messages[] = [
+                    'user_id' => $user_id,
+                    'message_id' => $message->id
+                ];
+                broadcast(new NewMessage($request->task_id, $request->text, $uploaded_files, $request->user(), $user_id));
+            }
+            DB::table('unread_messages')->insert($unread_messages);
         });
         return $this->successResponse([], 201, 'Successfully created');
     }
@@ -108,7 +108,7 @@ class MessageController extends Controller
                             'text' => $messages['data'][$i]['text'],
                             'file' => $messages['data'][$i]['files']
                         ]
-                        ]
+                    ]
                 ];
             }
             $last_user_id = $messages['data'][$i]['user_id'];
