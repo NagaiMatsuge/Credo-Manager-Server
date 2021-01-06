@@ -41,7 +41,7 @@ class NewMessage implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('new-message-to-' . $this->user->id);
+        return new Channel('new-message-to-' . $this->task_id);
     }
 
     /**
