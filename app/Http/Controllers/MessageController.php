@@ -33,9 +33,9 @@ class MessageController extends Controller
                 DB::table("message_files")->insert($uploaded_files);
             }
         });
-        $user_ids = DB::table('task_user')->where('task_id', $request->task_id)->get()->pluck('user_id');
+        $user_ids = DB::table('task_user')->where('task_id', $request->task_id)->get()->unique('user_id')->pluck('user_id');
         foreach ($user_ids as $user_id) {
-            broadcast(new NewMessage($request->task_id, $request->text, $uploaded_files, $request->user(), $user_id))->toOthers();
+            broadcast(new NewMessage($request->task_id, $request->text, $uploaded_files, $request->user(), $user_id));
         }
 
         return $this->successResponse([$user_ids], 201, 'Successfully created');
