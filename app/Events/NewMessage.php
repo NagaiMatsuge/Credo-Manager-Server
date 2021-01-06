@@ -21,17 +21,20 @@ class NewMessage implements ShouldBroadcast
 
     public $user;
 
+    public $to_user;
+
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($task_id, $message, $files, $user)
+    public function __construct($task_id, $message, $files, $user, $to_user)
     {
         $this->task_id = $task_id;
         $this->message = $message;
         $this->files = $files;
         $this->user = $user;
+        $this->to_user = $to_user;
     }
 
     /**
@@ -41,7 +44,7 @@ class NewMessage implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('new-message-to-' . $this->task_id);
+        return new Channel('new-message-to-' . $this->to_user);
     }
 
     /**
