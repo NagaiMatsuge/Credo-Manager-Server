@@ -88,7 +88,7 @@ class TaskController extends Controller
     //* Show list of tasks to User
     public function showToUser(Request $request)
     {
-        $userTasks = DB::table('task_user as t1')->select(DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t1.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t1.task_id)) as t7)) as project_title'), 't1.task_id as task_id', 't1.active as active', DB::raw('(select t3.title from tasks as t3 where t3.id=t1.task_id) as task_title'), DB::raw('(select t10.finished from tasks as t10 where t10.id=t1.task_id) as task_finished'), 't1.time', 't1.unlim as unlimited', 't1.tick')->where('t1.user_id', $request->user()->id)->get()->toArray();
+        $userTasks = DB::table('task_user as t1')->select(DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t1.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t1.task_id)) as t7)) as project_title'), 't1.task_id as task_id', 't1.active as active', DB::raw('(select t3.title from tasks as t3 where t3.id=t1.task_id) as task_title'), DB::raw('(select t10.finished from tasks as t10 where t10.id=t1.task_id) as task_finished'), 't1.time', 't1.unlim as unlimited', 't1.tick', DB::raw('(select count(t12.id) from unread_messages as t12 where t12.user_id=t1.user_id and t12.message_id in (select t13.id from messages as t13 where t13.task_id=t1.task_id)) as unread_count'))->where('t1.user_id', $request->user()->id)->get()->toArray();
 
         $res = [];
         foreach ($userTasks as $task) {
@@ -103,7 +103,8 @@ class TaskController extends Controller
                         'title' => $task->task_title,
                         'time' => $task->time,
                         'unlimited' => $task->unlimited,
-                        'tick' => $task->tick
+                        'tick' => $task->tick,
+                        'unread_count' => $task->unread_count
                     ];
                 } else {
                     $res['tasks']['inactive'][] = [
@@ -115,7 +116,8 @@ class TaskController extends Controller
                         'title' => $task->task_title,
                         'time' => $task->time,
                         'unlimited' => $task->unlimited,
-                        'tick' => $task->tick
+                        'tick' => $task->tick,
+                        'unread_count' => $task->unread_count
                     ];
                 }
             }

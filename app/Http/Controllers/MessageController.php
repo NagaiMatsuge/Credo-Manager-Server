@@ -32,13 +32,18 @@ class MessageController extends Controller
                 }
                 DB::table("message_files")->insert($uploaded_files);
             }
-        });
         $user_ids = DB::table('task_user')->where('task_id', $request->task_id)->get()->pluck('user_id');
+        $unread_messages = [];
         foreach ($user_ids as $user_id) {
+            $unread_messages[] = [
+                'user_id' => $user_id,
+                'task_id' => $request->task_id
+            ];
             broadcast(new NewMessage($request->task_id, $request->text, $uploaded_files, $request->user(), $user_id))->toOthers();
         }
-
-        return $this->successResponse([$user_ids], 201, 'Successfully created');
+        DB::table('unread_messages')->insert($unread_messages);
+        });
+        return $this->successResponse([], 201, 'Successfully created');
     }
 
     //* Delete message
@@ -101,12 +106,21 @@ class MessageController extends Controller
                             'text' => $message['text'],
                             'file' => $message['files']
                         ]
-                    ]
+                        ]
                 ];
             }
             $last_user_id = $message['user_id'];
         }
         $messages['data'] = $res;
         return response()->json(array_merge($messages, $this->successPagination()));
+    }
+
+    public function userHasReadMessage(Request $request)
+    {
+        $request->validate([
+            'task_id' => 'integer|required'
+        ]);
+        $res = DB::table('unread_messages')->where('user_id', $request->user()->id)->whereIn('message_id', DB::raw('(select messages.id from messages where messages.task_id=?)', [$request->task_id]))->delete();
+        return $this->successResponse($res);
     }
 }
