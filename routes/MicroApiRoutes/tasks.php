@@ -12,4 +12,5 @@ Route::group(['prefix' => 'tasks', 'middleware' => 'auth:api'], function () {
     Route::delete('/delete/{id}', [TaskController::class, 'destroy'])->where(['id' => '[0-9]+']);
     Route::get('/{id}/messages', [MessageController::class, 'getMessagesForTask'])->where(['id' => '[0-9]+']);
     Route::get('/data', [TaskController::class, 'getCredentials']);
+    Route::get('/users', [TaskController::class, 'getUserListForCreatingTask']);
 });

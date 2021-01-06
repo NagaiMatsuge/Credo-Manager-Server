@@ -10,7 +10,7 @@ return [
         'Manager',
         'Backend Developer',
         'Frontend Developer',
-        'UI\UX Designer',
+        'Designer',
     ],
     'month_format' => [
         '01' => 'январь',

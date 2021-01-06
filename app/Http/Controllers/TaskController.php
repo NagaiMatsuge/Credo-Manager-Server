@@ -248,4 +248,22 @@ class TaskController extends Controller
         }
         return $this->successResponse(['users' => $users->paginate(5), 'projects' => $projects->paginate(5)]);
     }
+
+    //* Get Sorted users for creating tasks
+    public function getUserListForCreatingTask(Request $request)
+    {
+        $users = User::allUsersWithRoles();
+        $res = [
+            'developers' => [],
+            'designers' => []
+        ];
+        foreach ($users as $user) {
+            if (strpos($user->role, 'designer') !== false) {
+                $res['designers'][] = $user;
+            } else if (strpos($user->role, 'admin') == false && strpos($user->role, 'manager') == false) {
+                $res['developers'][] = $user;
+            }
+        }
+        return $this->successResponse($res);
+    }
 }
