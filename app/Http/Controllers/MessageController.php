@@ -34,7 +34,7 @@ class MessageController extends Controller
             }
         });
 
-        event(new NewMessage($request->task_id, $request->text, $uploaded_files, $request->user()->id));
+        event(new NewMessage($request->task_id, $request->text, $uploaded_files, $request->user()));
 
         return $this->successResponse([], 201, 'Successfully created');
     }
