@@ -124,7 +124,7 @@ class MessageController extends Controller
         $request->validate([
             'task_id' => 'integer|required'
         ]);
-        $res = DB::table('unread_messages')->where('user_id', $request->user()->id)->whereIn('message_id', DB::raw('(select messages.id from messages where messages.task_id=?)', [$request->task_id]))->delete();
+        $res = DB::table('unread_messages')->where('user_id', $request->user()->id)->whereRaw('message_id in (select messages.id from messages where messages.task_id=?)', [$request->task_id])->delete();
         return $this->successResponse($res);
     }
 }
