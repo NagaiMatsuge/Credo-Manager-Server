@@ -34,6 +34,7 @@ class MessageController extends Controller
             }
         });
         $user_ids = DB::table('task_user')->where('task_id', $request->task_id)->get()->pluck('user_id');
+        info($user_ids);
         foreach ($user_ids as $user_id) {
             event(new NewMessage($request->task_id, $request->text, $uploaded_files, $request->user(), $user_id));
         }
