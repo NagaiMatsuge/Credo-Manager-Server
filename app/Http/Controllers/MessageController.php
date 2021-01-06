@@ -84,29 +84,30 @@ class MessageController extends Controller
         $messages = Message::leftJoin('users', 'messages.user_id', '=', 'users.id')->where('task_id', $id)->orderBy('messages.created_at', 'desc')->with('files')->paginate(30)->toArray();
         $res = [];
         $last_user_id = null;
-        foreach ($messages['data'] as $key => $message) {
-            if ($last_user_id == $message['user_id']) {
+        $count = count($messages['data']) - 1;
+        for ($i = $count; $i >= 0; $i--) {
+            if ($last_user_id == $messages['data'][$i]['user_id']) {
                 $res[count($res) - 1]['content'][] = [
-                    'text' => $message['text'],
-                    'file' => $message['files']
+                    'text' => $messages['data'][$i]['text'],
+                    'file' => $messages['data'][$i]['files']
                 ];
             } else {
                 $res[] = [
-                    'user_id' => $message['user_id'],
-                    'photo' => $message['photo'],
-                    'color' => $message['color'],
-                    'name' => $message['name'],
+                    'user_id' => $messages['data'][$i]['user_id'],
+                    'photo' => $messages['data'][$i]['photo'],
+                    'color' => $messages['data'][$i]['color'],
+                    'name' => $messages['data'][$i]['name'],
                     'content' => [
                         [
-                            'text' => $message['text'],
-                            'file' => $message['files']
+                            'text' => $messages['data'][$i]['text'],
+                            'file' => $messages['data'][$i]['files']
                         ]
                     ]
                 ];
             }
-            $last_user_id = $message['user_id'];
+            $last_user_id = $messages['data'][$i]['user_id'];
         }
         $messages['data'] = $res;
-        return response()->json(array_merge(array_reverce($messages), $this->successPagination()));
+        return response()->json(array_merge($messages, $this->successPagination()));
     }
 }
