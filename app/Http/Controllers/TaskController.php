@@ -303,4 +303,28 @@ class TaskController extends Controller
         }
         return $this->successResponse($res);
     }
+
+    public function clock(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $lastWatcher = DB::table('task_watchers as t1')->where('t1.task_id', $request->task_id)->whereRaw('created_at=(select max(t2.created_at) from task_watchers as t2 where t2.task_id=t1.task_id and t2.user_id=t1.user_id)')->where('t1.user_id', $user_id)->first();
+
+        if($lastWatcher && $lastWatcher->stopped_at == null){
+            DB::table('task_watchers')->where('id', $lastWatcher->id)->update(['stopped_at'=> now()]);
+            $res = [
+                'ticking' => false
+            ] ;
+        }else{
+            $lastWatcher = [
+                'task_id' => $request->task_id,
+                'user_id' => $user_id,
+                'created_at' => now()
+            ]; 
+            DB::table('task_watchers')->insert($lastWatcher);
+            $res = [
+                'ticking' => true
+            ];
+        }
+        return response()->json($res);
+    }
 }
