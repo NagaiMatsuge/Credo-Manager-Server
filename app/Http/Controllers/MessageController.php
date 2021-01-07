@@ -36,9 +36,10 @@ class MessageController extends Controller
             }
             $user_ids = DB::table('task_user')->where('task_id', $request->task_id)->get()->unique('user_id')->pluck('user_id')->toArray();
             $admin_manager_ids = User::role(['Admin', 'Manager'])->get()->pluck('id')->toArray();
-            $user_ids = array_merge($user_ids, $admin_manager_ids);
+            $user_ids = array_unique(array_merge($user_ids, $admin_manager_ids));
 
             $unread_messages = [];
+            dd($user_ids);
             foreach ($user_ids as $user_id) {
                 if ($user_id !== $auth_user_id) {
                     $unread_messages[] = [
