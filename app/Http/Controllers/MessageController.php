@@ -39,7 +39,6 @@ class MessageController extends Controller
             $user_ids = array_unique(array_merge($user_ids, $admin_manager_ids));
 
             $unread_messages = [];
-            dd($user_ids);
             foreach ($user_ids as $user_id) {
                 if ($user_id !== $auth_user_id) {
                     $unread_messages[] = [
