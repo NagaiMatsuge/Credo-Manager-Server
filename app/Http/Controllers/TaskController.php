@@ -34,8 +34,42 @@ class TaskController extends Controller
         // ------------------------Users ------------------------------------
 
         // ------------------------Tasks ------------------------------------
+        // $tasks = DB::table('task_user as t20')
+        //             ->select(
+        //                 DB::raw(
+        //                     '(select t2.id from tasks as t2 where t2.id=t20.task_id) as task_id, t20.active as status, (select t3.title from tasks as t3 where t3.id=t20.task_id) as title'
+        //                 ), 
+        //                 DB::raw(
+        //                     '(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t20.task_id)) as t4) as project_id'
+        //                 ), 
+        //                 DB::raw(
+        //                     '(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t20.task_id)) as t7)) as project_title'
+        //                 ), 
+        //                 't20.user_id', 
+        //                 't20.unlim as unlimited', 
+        //                 't20.tick', 
+        //                 't20.time', 
+        //                 DB::raw(
+        //                     '(select count(t22.id) from unread_messages as t22 where t22.user_id=? and t22.message_id in (select t23.id from messages as t23 where t23.task_id=t20.task_id)) as unread_count', [$request->user()->id]
+        //                 ))
+        //                 ->get()
+        //                 ->toArray();
 
-        $tasks = DB::table('task_user as t20')->select(DB::raw('(select t2.id from tasks as t2 where t2.id=t20.task_id) as task_id, t20.active as status, (select t3.title from tasks as t3 where t3.id=t20.task_id) as title'), DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t20.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t20.task_id)) as t7)) as project_title'), 't20.user_id', 't20.unlim as unlimited', 't20.tick', 't20.time')->get()->toArray();
+        $tasks = DB::table('task_user as t20')
+            ->selectRaw(
+                '
+                            (select t2.id from tasks as t2 where t2.id=t20.task_id) as task_id, t20.active as status, (select t3.title from tasks as t3 where t3.id=t20.task_id) as title,
+                            (select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t20.task_id)) as t4) as project_id,
+                            (select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t20.task_id)) as t7)) as project_title,
+                            t20.user_id,
+                            t20.unlim as unlimited,
+                            t20.tick,
+                            t20.time,
+                            (select count(t22.id) from unread_messages as t22 where t22.user_id=? and t22.message_id in (select t23.id from messages as t23 where t23.task_id=t20.task_id)) as unread_count
+                        ',
+                [$request->user()->id]
+            )->get()
+            ->toArray();
         // ------------------------Users ------------------------------------
         $res = [];
         foreach ($users['data'] as $user) {
@@ -63,7 +97,8 @@ class TaskController extends Controller
                             'title' => $task->title,
                             'time' => $task->time,
                             'unlimited' => $task->unlimited,
-                            'tick' => $task->tick
+                            'tick' => $task->tick,
+                            'unread_count' => $task->unread_count
                         ];
                     } else {
                         $res[$user->user_id]['tasks']['inactive'][] = [
@@ -75,7 +110,8 @@ class TaskController extends Controller
                             'title' => $task->title,
                             'time' => $task->time,
                             'unlimited' => $task->unlimited,
-                            'tick' => $task->tick
+                            'tick' => $task->tick,
+                            'unread_count' => $task->unread_count
                         ];
                     }
                 }
@@ -171,21 +207,27 @@ class TaskController extends Controller
             $taskUserUpdate = $request->only(['time']);
             //Admin Can update title, step, approved, unlim but cannot change active state of the task
             //User can change active state but cannot change unlimited
+            $taskUpdate = [];
             if ($authority) {
                 $taskUpdate = $request->only(['title', 'step_id', 'approved']);
-                DB::table('tasks')->where('id', $id)->update($taskUpdate);
                 if ($request->has('unlimited'))
                     $taskUserUpdate['unlim'] = $request->unlimited;
             } else {
-                $taskUserUpdate = array_merge($taskUserUpdate, $request->only(['active', 'finished', 'tick']));
+                $taskUpdate = $request->only(['finished']);
+                $taskUserUpdate = array_merge($taskUserUpdate, $request->only(['active', 'tick']));
             }
+            if (!empty($taskUpdate))
+                DB::table('tasks')->where('id', $id)->update($taskUpdate);
+
             //When the update is invoked by admin, execution touches all user_ids
             //When update is invoked by user, execution touches only that user
-            DB::table('task_user')->when($authority, function ($query) use ($request) {
-                return $query->whereIn('user_id', $request->user_ids);
-            })->when(!$authority, function ($query) use ($request) {
-                return $query->where('user_id', $request->user()->id);
-            })->where('task_id', $id)->update($taskUserUpdate);
+            if (!empty($taskUserUpdate)) {
+                DB::table('task_user')->when($authority, function ($query) use ($request) {
+                    return $query->whereIn('user_id', $request->user_ids);
+                })->when(!$authority, function ($query) use ($request) {
+                    return $query->where('user_id', $request->user()->id);
+                })->where('task_id', $id)->update($taskUserUpdate);
+            }
         });
         return $this->successResponse([], 200, 'Successfully updated');
     }
@@ -220,8 +262,9 @@ class TaskController extends Controller
             ],
             'active' => 'nullable|boolean',
             'time' => [
-                Rule::requiredIf($request->unlimited == false),
-                'integer'
+                Rule::requiredIf($request->unlimited == false && !$for_update),
+                'integer',
+                'max:1000000000'
             ],
             'unlimited' => [
                 Rule::requiredIf(!$for_update),
