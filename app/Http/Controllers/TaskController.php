@@ -34,26 +34,6 @@ class TaskController extends Controller
         // ------------------------Users ------------------------------------
 
         // ------------------------Tasks ------------------------------------
-        // $tasks = DB::table('task_user as t20')
-        //             ->select(
-        //                 DB::raw(
-        //                     '(select t2.id from tasks as t2 where t2.id=t20.task_id) as task_id, t20.active as status, (select t3.title from tasks as t3 where t3.id=t20.task_id) as title'
-        //                 ), 
-        //                 DB::raw(
-        //                     '(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t20.task_id)) as t4) as project_id'
-        //                 ), 
-        //                 DB::raw(
-        //                     '(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t20.task_id)) as t7)) as project_title'
-        //                 ), 
-        //                 't20.user_id', 
-        //                 't20.unlim as unlimited', 
-        //                 't20.tick', 
-        //                 't20.time', 
-        //                 DB::raw(
-        //                     '(select count(t22.id) from unread_messages as t22 where t22.user_id=? and t22.message_id in (select t23.id from messages as t23 where t23.task_id=t20.task_id)) as unread_count', [$request->user()->id]
-        //                 ))
-        //                 ->get()
-        //                 ->toArray();
 
         $tasks = DB::table('task_user as t20')
             ->selectRaw(
@@ -83,7 +63,11 @@ class TaskController extends Controller
                     'color' => $user->user_color
                 ],
                 'active' => false,
-                'hide' => false
+                'hide' => false,
+                'tasks' => [
+                    'active' => [],
+                    'inactive' => []
+                ]
             ];
             foreach ($tasks as $task) {
                 if ($task->user_id == $user->user_id) {
@@ -126,7 +110,12 @@ class TaskController extends Controller
     {
         $userTasks = DB::table('task_user as t1')->select(DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t1.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t1.task_id)) as t7)) as project_title'), 't1.task_id as task_id', 't1.active as active', DB::raw('(select t3.title from tasks as t3 where t3.id=t1.task_id) as task_title'), DB::raw('(select t10.finished from tasks as t10 where t10.id=t1.task_id) as task_finished'), 't1.time', 't1.unlim as unlimited', 't1.tick', DB::raw('(select count(t12.id) from unread_messages as t12 where t12.user_id=t1.user_id and t12.message_id in (select t13.id from messages as t13 where t13.task_id=t1.task_id)) as unread_count'))->where('t1.user_id', $request->user()->id)->get()->toArray();
 
-        $res = [];
+        $res = [
+            'tasks' => [
+                'active' => [],
+                'inactive' => []
+            ]
+        ];
         foreach ($userTasks as $task) {
             if (!$task->task_finished) {
                 if ($task->active) {
@@ -266,9 +255,10 @@ class TaskController extends Controller
                 'integer',
                 'max:1000000000'
             ],
-            'unlimited' => [
+            'type' => [
                 Rule::requiredIf(!$for_update),
-                'boolean'
+                'integer',
+                Rule::in(array_keys(config('params.task_types')))
             ],
             'tick' => [
                 'nullable',
