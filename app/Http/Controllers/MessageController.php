@@ -46,7 +46,7 @@ class MessageController extends Controller
                         'message_id' => $message->id
                     ];
                 }
-                broadcast(new NewMessage($request->task_id, $request->text, $uploaded_files, $request->user()->id, $user_id));
+                broadcast(new NewMessage($request->task_id, $request->text, $uploaded_files, $request->user(), $user_id));
             }
             DB::table('unread_messages')->insert($unread_messages);
         });
