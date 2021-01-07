@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\NewMessage;
 use App\Models\Message;
+use App\Models\User;
 use App\Traits\ResponseTrait;
 use App\Traits\UploadTrait;
 use Illuminate\Http\Request;
@@ -20,7 +21,8 @@ class MessageController extends Controller
         $this->makeValidation($request);
         $uploaded_files = [];
         DB::transaction(function () use ($request, $uploaded_files) {
-            $message = Message::create(array_merge($request->except(['files', 'user_id']), ['user_id' => $request->user()->id]));
+            $auth_user_id = $request->user()->id;
+            $message = Message::create(array_merge($request->except(['files', 'user_id']), ['user_id' => $auth_user_id]));
             $files = $request->files;
             if ($request->files !== null) {
                 foreach ($files as $key => $file) {
@@ -32,17 +34,19 @@ class MessageController extends Controller
                 }
                 DB::table("message_files")->insert($uploaded_files);
             }
-            $user_ids = DB::table('task_user')->where('task_id', $request->task_id)->get()->unique('user_id')->pluck('user_id');
+            $user_ids = DB::table('task_user')->where('task_id', $request->task_id)->get()->unique('user_id')->pluck('user_id')->toArray();
+            $admin_manager_ids = User::role(['Admin', 'Manager'])->get()->pluck('id')->toArray();
+            $user_ids = array_merge($user_ids, $admin_manager_ids);
 
             $unread_messages = [];
             foreach ($user_ids as $user_id) {
-                if ($user_id !== $request->user()->id) {
+                if ($user_id !== $auth_user_id) {
                     $unread_messages[] = [
                         'user_id' => $user_id,
                         'message_id' => $message->id
                     ];
                 }
-                broadcast(new NewMessage($request->task_id, $request->text, $uploaded_files, $request->user(), $user_id));
+                broadcast(new NewMessage($request->task_id, $request->text, $uploaded_files, $auth_user_id, $user_id));
             }
             DB::table('unread_messages')->insert($unread_messages);
         });
