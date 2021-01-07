@@ -42,9 +42,10 @@ class TaskController extends Controller
                             (select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t20.task_id)) as t4) as project_id,
                             (select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t20.task_id)) as t7)) as project_title,
                             t20.user_id,
-                            t20.unlim as unlimited,
+                            t20.type as type,
                             t20.tick,
                             t20.time,
+                            t20.deadline,
                             (select count(t22.id) from unread_messages as t22 where t22.user_id=? and t22.message_id in (select t23.id from messages as t23 where t23.task_id=t20.task_id)) as unread_count
                         ',
                 [$request->user()->id]
@@ -62,8 +63,8 @@ class TaskController extends Controller
                     'worked' => $user->worked,
                     'color' => $user->user_color
                 ],
-                'active' => false,
-                'hide' => false,
+                'active' => true,
+                'hide' => true,
                 'tasks' => [
                     'active' => [],
                     'inactive' => []
@@ -80,9 +81,10 @@ class TaskController extends Controller
                             ],
                             'title' => $task->title,
                             'time' => $task->time,
-                            'unlimited' => $task->unlimited,
+                            'type' => $task->type,
                             'tick' => $task->tick,
-                            'unread_count' => $task->unread_count
+                            'unread_count' => $task->unread_count,
+                            'deadline' => $task->deadline
                         ];
                     } else {
                         $res[$user->user_id]['tasks']['inactive'][] = [
@@ -93,9 +95,10 @@ class TaskController extends Controller
                             ],
                             'title' => $task->title,
                             'time' => $task->time,
-                            'unlimited' => $task->unlimited,
+                            'type' => $task->type,
                             'tick' => $task->tick,
-                            'unread_count' => $task->unread_count
+                            'unread_count' => $task->unread_count,
+                            'deadline' => $task->deadline
                         ];
                     }
                 }
@@ -108,7 +111,7 @@ class TaskController extends Controller
     //* Show list of tasks to User
     public function showToUser(Request $request)
     {
-        $userTasks = DB::table('task_user as t1')->select(DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t1.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t1.task_id)) as t7)) as project_title'), 't1.task_id as task_id', 't1.active as active', DB::raw('(select t3.title from tasks as t3 where t3.id=t1.task_id) as task_title'), DB::raw('(select t10.finished from tasks as t10 where t10.id=t1.task_id) as task_finished'), 't1.time', 't1.unlim as unlimited', 't1.tick', DB::raw('(select count(t12.id) from unread_messages as t12 where t12.user_id=t1.user_id and t12.message_id in (select t13.id from messages as t13 where t13.task_id=t1.task_id)) as unread_count'))->where('t1.user_id', $request->user()->id)->get()->toArray();
+        $userTasks = DB::table('task_user as t1')->select(DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t1.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t1.task_id)) as t7)) as project_title'), 't1.task_id as task_id', 't1.active as active', DB::raw('(select t3.title from tasks as t3 where t3.id=t1.task_id) as task_title'), DB::raw('(select t10.finished from tasks as t10 where t10.id=t1.task_id) as task_finished'), 't1.time', 't1.type', 't1.deadline', 't1.tick', DB::raw('(select count(t12.id) from unread_messages as t12 where t12.user_id=t1.user_id and t12.message_id in (select t13.id from messages as t13 where t13.task_id=t1.task_id)) as unread_count'))->where('t1.user_id', $request->user()->id)->get()->toArray();
 
         $res = [
             'tasks' => [
@@ -127,9 +130,10 @@ class TaskController extends Controller
                         ],
                         'title' => $task->task_title,
                         'time' => $task->time,
-                        'unlimited' => $task->unlimited,
+                        'type' => $task->type,
                         'tick' => $task->tick,
-                        'unread_count' => $task->unread_count
+                        'unread_count' => $task->unread_count,
+                        'deadline' => $task->deadline
                     ];
                 } else {
                     $res['tasks']['inactive'][] = [
@@ -140,23 +144,18 @@ class TaskController extends Controller
                         ],
                         'title' => $task->task_title,
                         'time' => $task->time,
-                        'unlimited' => $task->unlimited,
+                        'type' => $task->type,
                         'tick' => $task->tick,
-                        'unread_count' => $task->unread_count
+                        'unread_count' => $task->unread_count,
+                        'deadline' => $task->deadline
                     ];
                 }
             }
         }
-        $res['active'] = false;
-        $res['hide'] = false;
+        $res['active'] = true;
+        $res['hide'] = true;
 
         return $this->successResponse($res);
-    }
-
-    //* Show task by its id
-    public function show(Task $id)
-    {
-        return $this->successResponse($id);
     }
 
     //* Create task with validation
@@ -176,8 +175,9 @@ class TaskController extends Controller
                     'user_id' => $user_id,
                     'task_id' => $newTask->id,
                     'time' => $request->time ?? 0,
-                    'unlim' => $request->unlimited,
+                    'type' => $request->type,
                     'tick' => $request->tick,
+                    'deadline' => $request->deadline ?? null,
                     'created_at' => now()
                 ];
             }
@@ -194,16 +194,15 @@ class TaskController extends Controller
         DB::transaction(function () use ($request, $id) {
             $authority = $request->user()->hasRole(['Admin', 'Manager']);
             $taskUserUpdate = $request->only(['time']);
-            //Admin Can update title, step, approved, unlim but cannot change active state of the task
-            //User can change active state but cannot change unlimited
+            //Admin Can update title, step, approved, type but cannot change active state of the task
+            //User can change active state but cannot change type
             $taskUpdate = [];
             if ($authority) {
                 $taskUpdate = $request->only(['title', 'step_id', 'approved']);
-                if ($request->has('unlimited'))
-                    $taskUserUpdate['unlim'] = $request->unlimited;
+                $taskUserUpdate = array_merge($taskUserUpdate, $request->only(['active', 'type', 'deadline']));
             } else {
                 $taskUpdate = $request->only(['finished']);
-                $taskUserUpdate = array_merge($taskUserUpdate, $request->only(['active', 'tick']));
+                $taskUserUpdate = array_merge($taskUserUpdate, $request->only(['tick']));
             }
             if (!empty($taskUpdate))
                 DB::table('tasks')->where('id', $id)->update($taskUpdate);
@@ -251,7 +250,7 @@ class TaskController extends Controller
             ],
             'active' => 'nullable|boolean',
             'time' => [
-                Rule::requiredIf($request->unlimited == false && !$for_update),
+                Rule::requiredIf(!$for_update),
                 'integer',
                 'max:1000000000'
             ],
@@ -265,7 +264,10 @@ class TaskController extends Controller
                 'boolean'
             ],
             'finished' => 'nullable|boolean',
-            'approved' => 'nullable|boolean'
+            'approved' => 'nullable|boolean',
+            'deadline' => [
+                Rule::requiredIf($request->type == array_search('deadline', config('params.task_types'))),
+            ]
         ]);
     }
 

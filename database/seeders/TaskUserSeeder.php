@@ -23,7 +23,8 @@ class TaskUserSeeder extends Seeder
             'created_at' => now(),
             'time' => 45,
             'tick' => true,
-            'unlim' => true
+            'type' => 1,
+            'deadline' => null
         ];
         $taskUser[] = [
             'user_id' => $userIds[0],
@@ -32,7 +33,8 @@ class TaskUserSeeder extends Seeder
             'created_at' => now(),
             'time' => 456,
             'tick' => false,
-            'unlim' => true
+            'type' => 2,
+            'deadline' => '2021-01-27'
         ];
         $taskUser[] = [
             'user_id' => $userIds[1],
@@ -41,7 +43,9 @@ class TaskUserSeeder extends Seeder
             'created_at' => now(),
             'time' => 375,
             'tick' => true,
-            'unlim' => false
+            'type' => 1,
+            'deadline' => null
+
         ];
         $taskUser[] = [
             'user_id' => $userIds[1],
@@ -50,7 +54,9 @@ class TaskUserSeeder extends Seeder
             'created_at' => now(),
             'time' => 360,
             'tick' => false,
-            'unlim' => true
+            'type' => 1,
+            'deadline' => null
+
         ];
         $taskUser[] = [
             'user_id' => $userIds[2],
@@ -59,25 +65,30 @@ class TaskUserSeeder extends Seeder
             'created_at' => now(),
             'time' => 700,
             'tick' => false,
-            'unlim' => true
+            'type' => 1,
+            'deadline' => null
+
         ];
         $taskUser[] = [
             'user_id' => $userIds[2],
             'task_id' => 8,
             'active' => false,
             'created_at' => now(),
-            'time' => 455,
             'tick' => false,
-            'unlim' => false
+            'type' => 3,
+            'deadline' => null,
+            'time' => 0,
+
         ];
         $taskUser[] = [
             'user_id' => $userIds[2],
             'task_id' => 2,
             'active' => false,
             'created_at' => now(),
-            'time' => 600,
             'tick' => false,
-            'unlim' => true
+            'type' => 3,
+            'deadline' => null,
+            'time' => 0,
         ];
         DB::table("task_user")->insert($taskUser);
     }
