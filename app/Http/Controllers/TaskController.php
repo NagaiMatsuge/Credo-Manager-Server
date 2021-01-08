@@ -253,36 +253,39 @@ class TaskController extends Controller
 
     public function clock(Request $request)
     {
+        if (!$request->user()->hasRole(['Admin', 'Manager']))
+            return $this->notAllowed();
+
         $request->validate([
-            'task_id' => 'required|integer'
+            'task_id' => 'nullable|integer',
+            'user_id' => 'required|string'
         ]);
-        $user_id = $request->user()->id;
 
-        $lastWatcher = DB::table('task_watchers as t1')->where('t1.task_id', $request->task_id)->whereRaw('created_at=(select max(t2.created_at) from task_watchers as t2 where t2.task_id=t1.task_id and t2.user_id=t1.user_id)')->where('t1.user_id', $user_id)->first();
-        $task = DB::table('task_user')->select('type')->where('user_id', $user_id)->where('task_id', $request->task_id)->first();
-
-        if (!$task)
-            return $this->errorResponse('task/not-found');
-
-        if (!in_array($task->type, ["1", "3"]))
-            return $this->errorResponse('task-type/mismatch');
-
-        if (!$lastWatcher)
-            return $this->successResponse($this->createTaskWatcher($request, $user_id));
-
-        if ($lastWatcher->stopped_at == null) {
-            DB::transaction(function () use ($lastWatcher, $user_id, $request) {
-                DB::table('task_watchers')->where('id', $lastWatcher->id)->update(['stopped_at' => now()]);
-                DB::table('task_user')->where('user_id', $user_id)->where('task_id', $request->task_id)->update(['tick' => false]);
-            });
-
-            $res = [
-                'tick' => false
-            ];
-        } else {
-            $res = $this->createTaskWatcher($request, $user_id);
+        $user_id = $request->user_id;
+        if (!$request->has('task_id')) {
+            DB::table('task_user')->where('user_id', $user_id)->update(['active' => false]);
+            DB::table('task_watchers')->where('user_id', $user_id)->where('stopped_at', null)->update([
+                'stopped_at' => now()
+            ]);
+            return $this->successResponse([]);
         }
-        return $this->successResponse($res);
+
+        DB::transaction(function () use ($user_id, $request) {
+
+            $lastWatcher = DB::table('task_watchers as t1')->where('t1.task_id', $request->task_id)->whereRaw('created_at=(select max(t2.created_at) from task_watchers as t2 where t2.task_id=t1.task_id and t2.user_id=t1.user_id)')->where('t1.user_id', $user_id)->first();
+            $active_task = DB::table('task_user')->where('user_id', $user_id)->where('active', true)->first();
+
+            if ($active_task) {
+                DB::table('task_user')->where('user_id', $user_id)->where('active', true)->update(['active' => false]);
+                DB::table('task_watchers')->where('id', $lastWatcher->id)->update(['stopped_at' => now()]);
+            }
+            $this->createTaskWatcher($request, $user_id);
+
+            DB::table('task_user')->where('user_id', $user_id)->where('task_id', $request->task_id)->update([
+                'active' => true
+            ]);
+        });
+        return $this->successResponse([]);
     }
 
     private function createTaskWatcher(Request $request, $user_id)
@@ -292,12 +295,7 @@ class TaskController extends Controller
             'user_id' => $user_id,
             'created_at' => now()
         ];
-        DB::transaction(function () use ($lastWatcher, $request, $user_id) {
-            DB::table('task_watchers')->insert($lastWatcher);
-            DB::table('task_user')->where('user_id', $user_id)->where('task_id', $request->task_id)->update([
-                'tick' => true
-            ]);
-        });
+        DB::table('task_watchers')->insert($lastWatcher);
 
         $res = [
             'tick' => true

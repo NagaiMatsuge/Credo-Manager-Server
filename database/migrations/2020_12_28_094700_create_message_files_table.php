@@ -17,6 +17,7 @@ class CreateMessageFilesTable extends Migration
             $table->id();
             $table->text('file')->comment('location');
             $table->string('name')->comment('name to be displayed');
+            $table->string('size')->comment('size of the file');
             $table->unsignedBigInteger('message_id');
             $table->timestamps();
 

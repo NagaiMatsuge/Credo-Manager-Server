@@ -30,7 +30,8 @@ class MessageController extends Controller
                     $uploaded_files[] = [
                         'file' => $this->uploadFile($file['content'], 'message_files'),
                         'message_id' => $message->id,
-                        'name' => $file['name']
+                        'name' => $file['name'],
+                        'size' => $file['size']
                     ];
                 }
                 DB::table("message_files")->insert($uploaded_files);
@@ -94,6 +95,9 @@ class MessageController extends Controller
                     }
                 },
             ],
+            'file.*.size' => [
+                'string'
+            ]
         ]);
     }
 
