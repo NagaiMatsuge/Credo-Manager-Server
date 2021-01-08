@@ -23,8 +23,8 @@ class MessageController extends Controller
         DB::transaction(function () use ($request, $uploaded_files) {
             $auth_user_id = $request->user()->id;
             $message = Message::create(array_merge($request->except(['files', 'user_id']), ['user_id' => $auth_user_id]));
-            $files = $request->files;
-            if ($request->files !== null) {
+            $files = $request->input('files');
+            if (!empty($files)) {
                 foreach ($files as $key => $file) {
                     $uploaded_files[] = [
                         'file' => $this->uploadFile($file['content'], 'message_files'),

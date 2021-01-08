@@ -20,7 +20,7 @@ class CreateMessageFilesTable extends Migration
             $table->unsignedBigInteger('message_id');
             $table->timestamps();
 
-            $table->foreign('message_id')->references('id')->on('message_files')->onDelete('cascade');
+            $table->foreign('message_id')->references('id')->on('messages')->onDelete('cascade');
         });
     }
 
