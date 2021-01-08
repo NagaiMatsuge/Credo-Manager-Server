@@ -31,7 +31,6 @@ class CreateTasksTable extends Migration
             $table->integer('time')->default(0)->comment('number of minites');
             $table->tinyInteger('type')->comment('1 clock, 2 deadline, 3 unlimeted');
             $table->dateTime('deadline')->nullable();
-            $table->boolean('tick')->default(false)->comment('is time ticking');
             $table->boolean('active')->default(false);
             $table->timestamps();
 

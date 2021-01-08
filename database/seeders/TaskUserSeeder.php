@@ -19,10 +19,9 @@ class TaskUserSeeder extends Seeder
         $taskUser[] = [
             'user_id' => $userIds[0],
             'task_id' => 1,
-            'active' => true,
+            'active' => false,
             'created_at' => now(),
             'time' => 45,
-            'tick' => true,
             'type' => 1,
             'deadline' => null
         ];
@@ -32,17 +31,15 @@ class TaskUserSeeder extends Seeder
             'active' => false,
             'created_at' => now(),
             'time' => 456,
-            'tick' => false,
             'type' => 2,
             'deadline' => '2021-01-27'
         ];
         $taskUser[] = [
             'user_id' => $userIds[1],
             'task_id' => 4,
-            'active' => true,
+            'active' => false,
             'created_at' => now(),
             'time' => 375,
-            'tick' => true,
             'type' => 1,
             'deadline' => null
 
@@ -53,7 +50,6 @@ class TaskUserSeeder extends Seeder
             'active' => false,
             'created_at' => now(),
             'time' => 360,
-            'tick' => false,
             'type' => 1,
             'deadline' => null
 
@@ -61,10 +57,9 @@ class TaskUserSeeder extends Seeder
         $taskUser[] = [
             'user_id' => $userIds[2],
             'task_id' => 7,
-            'active' => true,
+            'active' => false,
             'created_at' => now(),
             'time' => 700,
-            'tick' => false,
             'type' => 1,
             'deadline' => null
 
@@ -74,7 +69,6 @@ class TaskUserSeeder extends Seeder
             'task_id' => 8,
             'active' => false,
             'created_at' => now(),
-            'tick' => false,
             'type' => 3,
             'deadline' => null,
             'time' => 0,
@@ -85,7 +79,6 @@ class TaskUserSeeder extends Seeder
             'task_id' => 2,
             'active' => false,
             'created_at' => now(),
-            'tick' => false,
             'type' => 3,
             'deadline' => null,
             'time' => 0,

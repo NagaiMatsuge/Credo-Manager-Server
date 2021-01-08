@@ -59,7 +59,6 @@ class TaskController extends Controller
                         'title' => $task->title,
                         'time' => $task->time,
                         'type' => $task->type,
-                        'tick' => $task->tick,
                         'unread_count' => $task->unread_count,
                         'deadline' => $task->deadline,
                         'time_spent' => (int)$task->time_spent
@@ -93,7 +92,6 @@ class TaskController extends Controller
                 'title' => $task->task_title,
                 'time' => $task->time,
                 'type' => $task->type,
-                'tick' => $task->tick,
                 'unread_count' => $task->unread_count,
                 'deadline' => $task->deadline,
                 'time_spent' => (int)$task->time_spent
@@ -149,7 +147,6 @@ class TaskController extends Controller
                 $taskUserUpdate = array_merge($taskUserUpdate, $request->only(['active', 'type', 'deadline']));
             } else {
                 $taskUpdate = $request->only(['finished']);
-                $taskUserUpdate = array_merge($taskUserUpdate, $request->only(['tick']));
             }
             if (!empty($taskUpdate))
                 DB::table('tasks')->where('id', $id)->update($taskUpdate);
@@ -205,10 +202,6 @@ class TaskController extends Controller
                 Rule::requiredIf(!$for_update),
                 'integer',
                 Rule::in(array_keys(config('params.task_types')))
-            ],
-            'tick' => [
-                'nullable',
-                'boolean'
             ],
             'finished' => 'nullable|boolean',
             'approved' => 'nullable|boolean',

@@ -19,13 +19,13 @@ class TaskSeeder extends Seeder
             'title' => 'Наверстать страницу проекты',
             'step_id' => 2,
             'finished' => 1,
-            'approved' => 1,
+            'approved' => 0,
         ];
         $tasks[] = [
             'title' => 'Пагинатсия на сайте',
             'step_id' => 2,
             'finished' => 1,
-            'approved' => 1,
+            'approved' => 0,
         ];
         $tasks[] = [
             'title' => 'Добавить цвета для проекта',
@@ -37,7 +37,7 @@ class TaskSeeder extends Seeder
             'title' => 'Сделать сайт адаптивным',
             'step_id' => 1,
             'finished' => 1,
-            'approved' => 1,
+            'approved' => 0,
         ];
         $tasks[] = [
             'title' => 'Изменить цветь иконок',

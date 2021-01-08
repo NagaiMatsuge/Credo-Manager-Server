@@ -19,7 +19,6 @@ trait Query
         t1.time,
         t1.type,
         t1.deadline,
-        t1.tick,
         (select count(t12.id) from unread_messages as t12 where t12.user_id=t1.user_id and t12.message_id in (select t13.id from messages as t13 where t13.task_id=t1.task_id)) as unread_count,
         (select sum(t16.tt)/60 from (select t15.stopped_at - t15.created_at as tt from task_watchers as t15 where t15.user_id=t1.user_id and t15.task_id=t1.task_id and t15.stopped_at is not null) as t16) as time_spent
         from task_user as t1 where t1.user_id=?) as t30 where t30.task_approved=0', [$user_id]);
@@ -33,7 +32,6 @@ trait Query
         (select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t20.task_id)) as t7)) as project_title,
         t20.user_id,
         t20.type as type,
-        t20.tick,
         t20.time,
         t20.deadline,
         (select sum(t24.tt)/60 from (select t25.stopped_at - t25.created_at as tt from task_watchers as t25 where t25.user_id=t20.user_id and t25.task_id=t20.task_id) as t24 ) as time_spent,
