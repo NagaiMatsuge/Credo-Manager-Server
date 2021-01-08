@@ -122,9 +122,8 @@ class TaskController extends Controller
                 $userTasks[] = [
                     'user_id' => $user_id,
                     'task_id' => $newTask->id,
-                    'time' => $request->time ?? 0,
+                    'time' => $request->time,
                     'type' => $request->type,
-                    'tick' => $request->tick,
                     'deadline' => $request->deadline ?? null,
                     'created_at' => now()
                 ];
