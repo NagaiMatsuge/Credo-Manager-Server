@@ -86,8 +86,14 @@ class MessageController extends Controller
                 Rule::requiredIf(function () use ($request) {
                     return $request->files !== null;
                 }),
-                'string'
-            ]
+                'string',
+                function ($attribute, $value, $fail) {
+                    $size = (int)(strlen(rtrim($value, '=')) * 0.75);
+                    if ($size > 2000000) {
+                        $fail('The ' . $attribute . ' is too large.');
+                    }
+                },
+            ],
         ]);
     }
 
