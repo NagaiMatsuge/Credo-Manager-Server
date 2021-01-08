@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\NewMessage;
 use App\Models\Message;
+use App\Models\MessageFile;
 use App\Models\User;
 use App\Traits\ResponseTrait;
 use App\Traits\UploadTrait;
@@ -93,7 +94,17 @@ class MessageController extends Controller
     //* Get all messages of the task
     public function getMessagesForTask(Request $request, $id)
     {
-        $messages = Message::leftJoin('users', 'messages.user_id', '=', 'users.id')->where('task_id', $id)->orderBy('messages.created_at', 'desc')->with('files')->paginate(30)->toArray();
+        $messages = Message::leftJoin('users', 'messages.user_id', '=', 'users.id')->select('messages.*', 'users.name', 'users.email', 'users.photo', 'users.color')->where('task_id', $id)->orderBy('messages.created_at', 'desc')->paginate(30)->toArray();
+        $message_ids = array_column($messages['data'], 'id');
+        $message_files = MessageFile::whereIn('message_id', $message_ids)->get();
+        foreach ($messages['data'] as $key => $message) {
+            $messages['data'][$key]['files'] = [];
+            foreach ($message_files as $message_file) {
+                if ($message_file['message_id'] == $message['id']) {
+                    $messages['data'][$key]['files'][] = $message_file;
+                }
+            }
+        }
         $res = [];
         $last_user_id = null;
         $count = count($messages['data']) - 1;
@@ -101,7 +112,7 @@ class MessageController extends Controller
             if ($last_user_id == $messages['data'][$i]['user_id']) {
                 $res[count($res) - 1]['content'][] = [
                     'text' => $messages['data'][$i]['text'],
-                    'file' => $messages['data'][$i]['files']
+                    'files' => $messages['data'][$i]['files']
                 ];
             } else {
                 $res[] = [
@@ -112,7 +123,7 @@ class MessageController extends Controller
                     'content' => [
                         [
                             'text' => $messages['data'][$i]['text'],
-                            'file' => $messages['data'][$i]['files']
+                            'files' => $messages['data'][$i]['files']
                         ]
                     ]
                 ];

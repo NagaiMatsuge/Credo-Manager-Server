@@ -21,6 +21,6 @@ class Message extends Model
      */
     public function files()
     {
-        return $this->hasMany(MessageFile::class);
+        return $this->hasMany(MessageFile::class, 'message_id', 'id');
     }
 }
