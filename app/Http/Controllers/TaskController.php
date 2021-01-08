@@ -35,22 +35,18 @@ class TaskController extends Controller
 
         // ------------------------Tasks ------------------------------------
 
-        $tasks = DB::table('task_user as t20')
-            ->selectRaw(
-                '
-                            (select t2.id from tasks as t2 where t2.id=t20.task_id) as task_id, t20.active as status, (select t3.title from tasks as t3 where t3.id=t20.task_id) as title,
-                            (select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t20.task_id)) as t4) as project_id,
-                            (select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t20.task_id)) as t7)) as project_title,
-                            t20.user_id,
-                            t20.type as type,
-                            t20.tick,
-                            t20.time,
-                            t20.deadline,
-                            (select count(t22.id) from unread_messages as t22 where t22.user_id=? and t22.message_id in (select t23.id from messages as t23 where t23.task_id=t20.task_id)) as unread_count
-                        ',
-                [$request->user()->id]
-            )->get()
-            ->toArray();
+        $tasks = DB::select('select t25.* from (select (select t2.id from tasks as t2 where t2.id=t20.task_id) as task_id, t20.active as status, (select t3.title from tasks as t3 where t3.id=t20.task_id) as title,
+        (select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t20.task_id)) as t4) as project_id,
+        (select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t20.task_id)) as t7)) as project_title,
+        t20.user_id,
+        t20.type as type,
+        t20.tick,
+        t20.time,
+        t20.deadline,
+        (select sum(t24.tt)/60 from (select t25.stopped_at - t25.created_at as tt from task_watchers as t25 where t25.user_id=t20.user_id and t25.task_id=t20.task_id) as t24 ) as time_spent,
+        (select count(t22.id) from unread_messages as t22 where t22.user_id=? and t22.message_id in (select t23.id from messages as t23 where t23.task_id=t20.task_id)) as unread_count,
+        (select t26.approved from tasks as t26 where t26.id=t20.task_id) as task_approved
+        from task_user as t20) as t25 where t25.task_approved=0', [$request->user()->id]);
         // ------------------------Users ------------------------------------
         $res = [];
         foreach ($users['data'] as $user) {
@@ -84,7 +80,8 @@ class TaskController extends Controller
                             'type' => $task->type,
                             'tick' => $task->tick,
                             'unread_count' => $task->unread_count,
-                            'deadline' => $task->deadline
+                            'deadline' => $task->deadline,
+                            'time_spent' => (int)$task->time_spent
                         ];
                     } else {
                         $res[$user->user_id]['tasks']['inactive'][] = [
@@ -98,7 +95,8 @@ class TaskController extends Controller
                             'type' => $task->type,
                             'tick' => $task->tick,
                             'unread_count' => $task->unread_count,
-                            'deadline' => $task->deadline
+                            'deadline' => $task->deadline,
+                            'time_spent' => (int)$task->time_spent
                         ];
                     }
                 }
@@ -111,7 +109,21 @@ class TaskController extends Controller
     //* Show list of tasks to User
     public function showToUser(Request $request)
     {
-        $userTasks = DB::table('task_user as t1')->select(DB::raw('(select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t1.task_id)) as t4) as project_id'), DB::raw('(select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t1.task_id)) as t7)) as project_title'), 't1.task_id as task_id', 't1.active as active', DB::raw('(select t3.title from tasks as t3 where t3.id=t1.task_id) as task_title'), DB::raw('(select t10.finished from tasks as t10 where t10.id=t1.task_id) as task_finished'), 't1.time', 't1.type', 't1.deadline', 't1.tick', DB::raw('(select count(t12.id) from unread_messages as t12 where t12.user_id=t1.user_id and t12.message_id in (select t13.id from messages as t13 where t13.task_id=t1.task_id)) as unread_count'))->where('t1.user_id', $request->user()->id)->get()->toArray();
+        $userTasks = DB::select('select t30.* from (select
+        (select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t1.task_id)) as t4) as project_id,
+        (select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t1.task_id)) as t7)) as project_title,
+        t1.task_id as task_id,
+        t1.active as active,
+        (select t3.title from tasks as t3 where t3.id=t1.task_id) as task_title,
+        (select t10.finished from tasks as t10 where t10.id=t1.task_id) as task_finished,
+        (select t17.approved from tasks as t17 where t17.id=t1.task_id) as task_approved,
+        t1.time,
+        t1.type,
+        t1.deadline,
+        t1.tick,
+        (select count(t12.id) from unread_messages as t12 where t12.user_id=t1.user_id and t12.message_id in (select t13.id from messages as t13 where t13.task_id=t1.task_id)) as unread_count,
+        (select sum(t16.tt)/60 from (select t15.stopped_at - t15.created_at as tt from task_watchers as t15 where t15.user_id=t1.user_id and t15.task_id=t1.task_id and t15.stopped_at is not null) as t16) as time_spent
+        from task_user as t1 where t1.user_id=?) as t30 where t30.task_approved=0', [$request->user()->id]);
 
         $res = [
             'tasks' => [
@@ -120,36 +132,36 @@ class TaskController extends Controller
             ]
         ];
         foreach ($userTasks as $task) {
-            if (!$task->task_finished) {
-                if ($task->active) {
-                    $res['tasks']['active'][] = [
-                        'id' => $task->task_id,
-                        'project' => [
-                            'id' => $task->project_id,
-                            'title' => $task->project_title
-                        ],
-                        'title' => $task->task_title,
-                        'time' => $task->time,
-                        'type' => $task->type,
-                        'tick' => $task->tick,
-                        'unread_count' => $task->unread_count,
-                        'deadline' => $task->deadline
-                    ];
-                } else {
-                    $res['tasks']['inactive'][] = [
-                        'id' => $task->task_id,
-                        'project' => [
-                            'id' => $task->project_id,
-                            'title' => $task->project_title
-                        ],
-                        'title' => $task->task_title,
-                        'time' => $task->time,
-                        'type' => $task->type,
-                        'tick' => $task->tick,
-                        'unread_count' => $task->unread_count,
-                        'deadline' => $task->deadline
-                    ];
-                }
+            if ($task->active) {
+                $res['tasks']['active'][] = [
+                    'id' => $task->task_id,
+                    'project' => [
+                        'id' => $task->project_id,
+                        'title' => $task->project_title
+                    ],
+                    'title' => $task->task_title,
+                    'time' => $task->time,
+                    'type' => $task->type,
+                    'tick' => $task->tick,
+                    'unread_count' => $task->unread_count,
+                    'deadline' => $task->deadline,
+                    'time_spent' => (int)$task->time_spent
+                ];
+            } else {
+                $res['tasks']['inactive'][] = [
+                    'id' => $task->task_id,
+                    'project' => [
+                        'id' => $task->project_id,
+                        'title' => $task->project_title
+                    ],
+                    'title' => $task->task_title,
+                    'time' => $task->time,
+                    'type' => $task->type,
+                    'tick' => $task->tick,
+                    'unread_count' => $task->unread_count,
+                    'deadline' => $task->deadline,
+                    'time_spent' => $task->time_spent
+                ];
             }
         }
         $res['active'] = true;
@@ -306,25 +318,55 @@ class TaskController extends Controller
 
     public function clock(Request $request)
     {
+        $request->validate([
+            'task_id' => 'required|integer'
+        ]);
         $user_id = $request->user()->id;
-        $lastWatcher = DB::table('task_watchers as t1')->where('t1.task_id', $request->task_id)->whereRaw('created_at=(select max(t2.created_at) from task_watchers as t2 where t2.task_id=t1.task_id and t2.user_id=t1.user_id)')->where('t1.user_id', $user_id)->first();
 
-        if($lastWatcher && $lastWatcher->stopped_at == null){
-            DB::table('task_watchers')->where('id', $lastWatcher->id)->update(['stopped_at'=> now()]);
+        $lastWatcher = DB::table('task_watchers as t1')->where('t1.task_id', $request->task_id)->whereRaw('created_at=(select max(t2.created_at) from task_watchers as t2 where t2.task_id=t1.task_id and t2.user_id=t1.user_id)')->where('t1.user_id', $user_id)->first();
+        $task = DB::table('task_user')->select('type')->where('user_id', $user_id)->where('task_id', $request->task_id)->first();
+
+        if (!$task)
+            return $this->errorResponse('task/not-found');
+
+        if (!in_array($task->type, ["1", "3"]))
+            return $this->errorResponse('task-type/mismatch');
+
+        if (!$lastWatcher)
+            return $this->successResponse($this->createTaskWatcher($request, $user_id));
+
+        if ($lastWatcher->stopped_at == null) {
+            DB::transaction(function () use ($lastWatcher, $user_id, $request) {
+                DB::table('task_watchers')->where('id', $lastWatcher->id)->update(['stopped_at' => now()]);
+                DB::table('task_user')->where('user_id', $user_id)->where('task_id', $request->task_id)->update(['tick' => false]);
+            });
+
             $res = [
-                'ticking' => false
-            ] ;
-        }else{
-            $lastWatcher = [
-                'task_id' => $request->task_id,
-                'user_id' => $user_id,
-                'created_at' => now()
-            ]; 
-            DB::table('task_watchers')->insert($lastWatcher);
-            $res = [
-                'ticking' => true
+                'tick' => false
             ];
+        } else {
+            $res = $this->createTaskWatcher($request, $user_id);
         }
-        return response()->json($res);
+        return $this->successResponse($res);
+    }
+
+    private function createTaskWatcher(Request $request, $user_id)
+    {
+        $lastWatcher = [
+            'task_id' => $request->task_id,
+            'user_id' => $user_id,
+            'created_at' => now()
+        ];
+        DB::transaction(function () use ($lastWatcher, $request, $user_id) {
+            DB::table('task_watchers')->insert($lastWatcher);
+            DB::table('task_user')->where('user_id', $user_id)->where('task_id', $request->task_id)->update([
+                'tick' => true
+            ]);
+        });
+
+        $res = [
+            'tick' => true
+        ];
+        return $res;
     }
 }
