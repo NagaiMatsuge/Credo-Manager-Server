@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Tasks\Query;
 
 class Task extends Model
 {
-    use HasFactory;
+    use HasFactory, Query;
 
     protected $fillable = [
         'title',
