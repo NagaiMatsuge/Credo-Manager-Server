@@ -42,7 +42,7 @@ class ProjectController extends Controller
         return $this->successResponse(array_merge($projects, $counts));
     }
 
-    //* Create project and tasks with validation    
+    //* Create project and steps with validation    
     public function store(Request $request)
     {
         $this->makeValidation($request);

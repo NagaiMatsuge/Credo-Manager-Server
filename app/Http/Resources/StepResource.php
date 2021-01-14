@@ -16,7 +16,7 @@ class StepResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'title' => $this->title,
+            'name' => $this->title,
             'project_id' => $this->project_id,
             'price' => $this->price,
             'debt' => $this->debt,
