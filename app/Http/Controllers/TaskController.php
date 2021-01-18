@@ -260,7 +260,7 @@ class TaskController extends Controller
             DB::table('task_watchers')->where('user_id', $user_id)->where('stopped_at', null)->update([
                 'stopped_at' => now()
             ]);
-            return $this->successResponse([]);
+            return $this->successResponse(['tick' => false]);
         }
 
         DB::transaction(function () use ($user_id, $request) {
@@ -278,7 +278,7 @@ class TaskController extends Controller
                 'active' => true
             ]);
         });
-        return $this->successResponse([]);
+        return $this->successResponse(['tick' => true]);
     }
 
     private function createTaskWatcher(Request $request, $user_id)
