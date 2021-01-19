@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -115,6 +116,16 @@ class Handler extends ExceptionHandler
                     'status_code' => 401
                 ]);
             }
+        }
+
+        if ($exception instanceof Exception && $request->wantsJson()) {
+            return response()->json([
+                'data' => [],
+                'message' => $exception->getMessage(),
+                'success' => false,
+                'error' => true,
+                'status_code' => 400
+            ]);
         }
         return parent::render($request, $exception);
     }
