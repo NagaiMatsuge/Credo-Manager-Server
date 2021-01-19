@@ -9,6 +9,7 @@ use App\Patterns\Builders\DbAccess\DbAccessFacade;
 use App\Patterns\Builders\FtpAccess\FtpAccessFacade;
 use App\Patterns\Builders\Server\ServerFacade;
 use App\Traits\ResponseTrait;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -52,7 +53,7 @@ class ServerController extends Controller
             $ftp_create = $ftp->create($email);
             if (!$ftp_create['success']) {
                 //This throw is needed to revert datbase changes back, don't remove it!
-                throw new ModelNotFoundException();
+                throw new Exception($ftp_create['message']);
                 return;
             }
             $db = DbAccessFacade::setUser($data['db_access']['login'])
@@ -65,7 +66,7 @@ class ServerController extends Controller
                 //Delete the user
                 $ftp->delete($email);
                 //This throw is needed to revert datbase changes back, don't remove it!
-                throw new ModelNotFoundException();
+                throw new Exception($db_create['message']);
                 return;
             }
 
@@ -76,7 +77,7 @@ class ServerController extends Controller
                 //Delete database access
                 $db->delete($email);
                 //This throw is needed to revert datbase changes back, don't remove it!
-                throw new ModelNotFoundException();
+                throw new Exception($server['message']);
                 return;
             }
         });
@@ -106,9 +107,7 @@ class ServerController extends Controller
     }
 
     //* Delete server, ftp_access, db_access by server's id    
-    public function destroy($id)
+    public function destroy(Request $request)
     {
-        $delete = DB::table('servers')->where('id', $id)->delete();
-        return $this->successResponse($delete);
     }
 }
