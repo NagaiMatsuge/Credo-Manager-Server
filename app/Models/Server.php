@@ -12,4 +12,14 @@ class Server extends Model
         'title',
         'host'
     ];
+
+    public function ftp_access()
+    {
+        return $this->hasMany(FtpAccess::class, 'server_id', 'id');
+    }
+
+    public function db_access()
+    {
+        return $this->hasMany(DbAccess::class, 'server_id', 'id');
+    }
 }

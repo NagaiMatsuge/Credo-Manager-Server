@@ -107,14 +107,11 @@ class ServerController extends Controller
     }
 
     //* Delete server, ftp_access, db_access by server's id    
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $request->validate([
-            'server_id' => 'requried|integer'
-        ]);
-        DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($id) {
             $serverDetails = Server::with('ftp_access')->with('db_access')->get();
-            Server::where('id', $request->server_id)->delete();
+            Server::where('id', $id)->delete();
             $ftp_user = $serverDetails['ftp_access']['login'];
             $db_user = $serverDetails['db_access']['login'];
             $db_name = $serverDetails['db_access']['db_name'];
