@@ -229,15 +229,15 @@ class TaskController extends Controller
     //* Get Sorted users for creating tasks
     public function getUserListForCreatingTask(Request $request)
     {
-        $users = User::allUsersWithRoles();
+        $users = User::allUsersWithRoles()->get();
         $res = [
             'developers' => [],
             'designers' => []
         ];
         foreach ($users as $user) {
-            if (strpos($user->role, 'designer') !== false) {
+            if (strstr(strtolower($user->role), 'designer')) {
                 $res['designers'][] = $user;
-            } else if (strpos($user->role, 'admin') == false && strpos($user->role, 'manager') == false) {
+            } else if ((strstr(strtolower($user->role), 'admin') == false) && (strstr(strtolower($user->role), 'manager') == false)) {
                 $res['developers'][] = $user;
             }
         }

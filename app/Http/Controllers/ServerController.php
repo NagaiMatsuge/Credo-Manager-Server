@@ -109,5 +109,23 @@ class ServerController extends Controller
     //* Delete server, ftp_access, db_access by server's id    
     public function destroy(Request $request)
     {
+        $request->validate([
+            'server_id' => 'requried|integer'
+        ]);
+        DB::transaction(function () use ($request) {
+            $serverDetails = Server::with('ftp_access')->with('db_access')->get();
+            Server::where('id', $request->server_id)->delete();
+            $ftp_user = $serverDetails['ftp_access']['login'];
+            $db_user = $serverDetails['db_access']['login'];
+            $db_name = $serverDetails['db_access']['db_name'];
+            $server_host = $serverDetails['host'];
+            $ftp_delete = FtpAccessFacade::setUser($ftp_user)->delete();
+            if (!$ftp_delete['success']) throw new Exception($ftp_delete['message']);
+            $db_delete = DbAccessFacade::setUser($db_user)->setDatabaseName($db_name)->delete();
+            if (!$db_delete['success']) throw new Exception($db_delete['message']);
+            $server_delete = ServerFacade::setHost($server_host)->delete();
+            if (!$server_delete['success']) throw new Exception($server_delete['message']);
+        });
+        return $this->successResponse([]);
     }
 }
