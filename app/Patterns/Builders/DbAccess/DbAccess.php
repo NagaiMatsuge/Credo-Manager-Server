@@ -2,6 +2,7 @@
 
 namespace App\Patterns\Builders\DbAccess;
 
+use App\Helpers\Logger;
 
 class DbAccess
 {
@@ -34,14 +35,14 @@ class DbAccess
         return $this;
     }
 
-    public function create()
+    public function create($email)
     {
         if ((!$this->database) || (!$this->username)) return ["success" => false, "message" => "Database or username is not set!"];
         $shellCommand = "sudo mysql_create_db_user -t=create -d=$this->database -u=$this->username ";
         if ($this->host) $shellCommand .= $shellCommand . "-h=$this->host ";
         if ($this->password) $shellCommand .= $shellCommand . "-p=$this->password";
         $result = shell_exec($shellCommand);
-        info($result);
+        Logger::serverChange($result, $email, "Creating Database");
         $success_message = "User creation completed!";
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
@@ -50,14 +51,14 @@ class DbAccess
         }
     }
 
-    public function delete()
+    public function delete($email)
     {
         if ((!$this->database) && (!$this->username)) return ["success" => false, "message" => "Database or username is not set!"];
         $shellCommand = "sudo mysql_create_db_user -t=delete ";
         if ($this->database) $shellCommand .= "-d=$this->database";
         if ($this->username) $shellCommand .= "-u=$this->username";
         $result = shell_exec($shellCommand);
-        info($result);
+        Logger::serverChange($result, $email, "Deleting Database");
         $success_message = "Complete!";
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];

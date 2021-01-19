@@ -3,6 +3,7 @@
 // Authentication Routes
 
 use App\Events\NewMessage;
+use App\Helpers\Logger;
 use App\Patterns\Builders\DbAccess\DbAccessFacade;
 use App\Patterns\Builders\FtpAccess\FtpAccessFacade;
 use App\Patterns\Builders\Server\ServerFacade;
@@ -31,11 +32,6 @@ require_once __DIR__ . "/MicroApiRoutes/messages.php";
 */
 
 Route::get('/test', function () {
-    $var = DbAccessFacade::setUser("bobur")
-        ->setPassword("password")
-        ->setHost("localhost")
-        ->setDatabaseName("hello_world")->create();
-    $server = ServerFacade::setUser("bobur")->setDir("/home/bobur")->create();
-    $ftp = FtpAccessFacade::setUser("bobur")->setPassword("password")->create();
-    dd($var, $server, $ftp);
+    Logger::serverChange("Some info", "Some Email", "Test test");
+    return 1;
 });

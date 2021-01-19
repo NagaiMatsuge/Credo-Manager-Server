@@ -2,6 +2,8 @@
 
 namespace App\Patterns\Builders\FtpAccess;
 
+use App\Helpers\Logger;
+
 class FtpAccess
 {
     private $username;
@@ -19,13 +21,13 @@ class FtpAccess
         return $this;
     }
 
-    public function create()
+    public function create($email)
     {
         if ((!$this->username) || (!$this->password)) return ["success" => false, "message" => "You have to provide username and password"];
         $shellScript = "sudo create_sft_user create $this->username $this->password";
         $success_message = "The account is setup";
         $result = shell_exec($shellScript);
-        info($result);
+        Logger::serverChange($result, $email, "Creating Ftp");
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
         } else {
@@ -33,11 +35,11 @@ class FtpAccess
         }
     }
 
-    public function delete()
+    public function delete($email)
     {
         if (!$this->username) return ["success" => false, "message" => "You have to provide username"];
         $result = shell_exec("sudo create_sft_user delete $this->username");
-        info($result);
+        Logger::serverChange($result, $email, "Deleting Ftp");
         $success_message = "Deleted user";
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];

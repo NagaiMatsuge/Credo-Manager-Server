@@ -44,12 +44,13 @@ class ServerController extends Controller
 
         $data = $request->input();
         $error = null;
-        DB::transaction(function () use ($data) {
+        DB::transaction(function () use ($data, $request) {
+            $email = $request->user()->email;
             $server = Server::create($data['server']);
             FtpAccess::create(array_merge($data['ftp_access'], ['server_id' => $server->id]));
             DbAccess::create(array_merge($data['db_access'], ['server_id' => $server->id]));
             $ftp = FtpAccessFacade::setUser($data['ftp_access']['login'])->setPassword($data['ftp_access']['password']);
-            $ftp_create = $ftp->create();
+            $ftp_create = $ftp->create($email);
             if (!$ftp_create['success']) {
                 $error = $ftp['message'];
                 //This throw is needed to revert datbase changes back, don't remove it!
@@ -60,11 +61,11 @@ class ServerController extends Controller
                 ->setPassword($data['db_access']['password'])
                 ->setHost($data['db_access']['server_name'])
                 ->setDatabaseName($data['db_access']['db_name']);
-            $db_create = $db->create();
+            $db_create = $db->create($email);
 
             if (!$db_create['success']) {
                 //Delete the user
-                $ftp_delete = $ftp->delete();
+                $ftp_delete = $ftp->delete($email);
                 if (!$ftp_delete["success"]) info($ftp_delete['message']);
                 $error = $db['message'];
                 //This throw is needed to revert datbase changes back, don't remove it!
@@ -72,13 +73,13 @@ class ServerController extends Controller
                 return;
             }
 
-            $server = ServerFacade::setUser($data['server']['host'])->setDir("/home//" + $data["ftp_access"]["login"])->create();
+            $server = ServerFacade::setUser($data['server']['host'])->setDir("/home//" + $data["ftp_access"]["login"])->create($email);
             if (!$server['success']) {
                 //Delete the user
-                $ftp_delete = $ftp->delete();
+                $ftp_delete = $ftp->delete($email);
                 if (!$ftp_delete["success"]) info($ftp_delete['message']);
                 //Delete database access
-                $db_delete = $db->delete();
+                $db_delete = $db->delete($email);
                 if (!$db_delete["success"]) info($db_delete['message']);
                 $error = $db['message'];
                 //This throw is needed to revert datbase changes back, don't remove it!
