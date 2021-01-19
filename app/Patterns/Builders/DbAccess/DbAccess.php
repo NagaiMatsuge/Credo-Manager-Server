@@ -55,7 +55,7 @@ class DbAccess
     {
         if ((!$this->database) && (!$this->username)) return ["success" => false, "message" => "Database or username is not set!"];
         $shellCommand = "sudo mysql_create_db_user -t=delete ";
-        if ($this->database) $shellCommand .= "-d=$this->database";
+        if ($this->database) $shellCommand .= "-d=$this->database ";
         if ($this->username) $shellCommand .= "-u=$this->username";
         $result = shell_exec($shellCommand);
         Logger::serverChange($result, $email, "Deleting Database");
