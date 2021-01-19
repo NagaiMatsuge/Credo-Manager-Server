@@ -25,6 +25,7 @@ class Server
         $shellScript = "sudo virtualhost create $this->host ";
         if ($this->dir) $shellScript .= $this->dir;
         $result = shell_exec($shellScript);
+        info($result);
         $success_message = "Complete!";
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
@@ -39,6 +40,7 @@ class Server
         $shellScript = "sudo virtualhost delete $this->host";
         $success_message = "Complete!";
         $result = shell_exec($shellScript);
+        info($result);
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
         } else {

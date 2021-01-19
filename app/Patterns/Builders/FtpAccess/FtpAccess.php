@@ -25,6 +25,7 @@ class FtpAccess
         $shellScript = "sudo create_sft_user create $this->username $this->password";
         $success_message = "The account is setup";
         $result = shell_exec($shellScript);
+        info($result);
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
         } else {
@@ -36,6 +37,7 @@ class FtpAccess
     {
         if (!$this->username) return ["success" => false, "message" => "You have to provide username"];
         $result = shell_exec("sudo create_sft_user delete $this->username");
+        info($result);
         $success_message = "Deleted user";
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];

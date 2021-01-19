@@ -37,10 +37,11 @@ class DbAccess
     public function create()
     {
         if ((!$this->database) || (!$this->username)) return ["success" => false, "message" => "Database or username is not set!"];
-        $shellCommand = "mysql_create_db_user -d=$this->database -u=$this->username ";
-        if ($this->host) $shellCommand . "-h=$this->host ";
-        if ($this->password) $shellCommand . "-p=$this->password";
+        $shellCommand = "sudo mysql_create_db_user -t=create -d=$this->database -u=$this->username ";
+        if ($this->host) $shellCommand .= $shellCommand . "-h=$this->host ";
+        if ($this->password) $shellCommand .= $shellCommand . "-p=$this->password";
         $result = shell_exec($shellCommand);
+        info($result);
         $success_message = "User creation completed!";
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
@@ -51,6 +52,17 @@ class DbAccess
 
     public function delete()
     {
-        if ((!$this->database) || (!$this->username)) return ["success" => false, "message" => "Database or username is not set!"];
+        if ((!$this->database) && (!$this->username)) return ["success" => false, "message" => "Database or username is not set!"];
+        $shellCommand = "sudo mysql_create_db_user -t=delete ";
+        if ($this->database) $shellCommand .= "-d=$this->database";
+        if ($this->username) $shellCommand .= "-u=$this->username";
+        $result = shell_exec($shellCommand);
+        info($result);
+        $success_message = "Complete!";
+        if (strpos($result, $success_message) !== false) {
+            return ["success" => true];
+        } else {
+            return ["sucess" => false, "message" => $result];
+        }
     }
 }
