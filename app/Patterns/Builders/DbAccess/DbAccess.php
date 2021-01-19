@@ -48,4 +48,9 @@ class DbAccess
             return ["sucess" => false, "message" => $result];
         }
     }
+
+    public function delete()
+    {
+        if ((!$this->database) || (!$this->username)) return ["success" => false, "message" => "Database or username is not set!"];
+    }
 }

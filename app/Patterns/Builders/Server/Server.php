@@ -4,12 +4,12 @@ namespace App\Patterns\Builders\Server;
 
 class Server
 {
-    private $username;
+    private $host;
     private $dir;
 
-    public function setUser($username)
+    public function setHost($host)
     {
-        $this->username = $username;
+        $this->host = $host;
         return $this;
     }
 
@@ -21,10 +21,24 @@ class Server
 
     public function create()
     {
-        if ((!$this->dir) || (!$this->username)) return ["success" => false, "message" => "You have to provide username and directory"];
-        $shellScript = "virtualhost create $this->username $this->dir";
+        if (!$this->host) return ["success" => false, "message" => "You have to provide hostname"];
+        $shellScript = "sudo virtualhost create $this->host ";
+        if ($this->dir) $shellScript .= $this->dir;
         $result = shell_exec($shellScript);
-        $success_message = "Compelte!";
+        $success_message = "Complete!";
+        if (strpos($result, $success_message) !== false) {
+            return ["success" => true];
+        } else {
+            return ["sucess" => false, "message" => $result];
+        }
+    }
+
+    public function delete()
+    {
+        if (!$this->host) return ["success" => false, "message" => "You have to provide hostname"];
+        $shellScript = "sudo virtualhost delete $this->host";
+        $success_message = "Complete!";
+        $result = shell_exec($shellScript);
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
         } else {
