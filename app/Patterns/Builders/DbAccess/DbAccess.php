@@ -39,15 +39,15 @@ class DbAccess
     {
         if ((!$this->database) || (!$this->username)) return ["success" => false, "message" => "Database or username is not set!"];
         $shellCommand = "sudo mysql_create_db_user -t=create -d=$this->database -u=$this->username ";
-        if ($this->host) $shellCommand .= $shellCommand . "-h=$this->host ";
-        if ($this->password) $shellCommand .= $shellCommand . "-p=$this->password";
+        if ($this->host) $shellCommand .= "-h=$this->host ";
+        if ($this->password) $shellCommand .= "-p=$this->password";
         $result = shell_exec($shellCommand);
         Logger::serverChange($result, $email, "Creating Database");
         $success_message = "User creation completed!";
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
         } else {
-            return ["sucess" => false, "message" => $result];
+            return ["success" => false, "message" => $result];
         }
     }
 
@@ -63,7 +63,7 @@ class DbAccess
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
         } else {
-            return ["sucess" => false, "message" => $result];
+            return ["success" => false, "message" => $result];
         }
     }
 }

@@ -32,7 +32,7 @@ class Server
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
         } else {
-            return ["sucess" => false, "message" => $result];
+            return ["success" => false, "message" => $result];
         }
     }
 
@@ -46,7 +46,7 @@ class Server
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
         } else {
-            return ["sucess" => false, "message" => $result];
+            return ["success" => false, "message" => $result];
         }
     }
 }

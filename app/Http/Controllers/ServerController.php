@@ -29,9 +29,9 @@ class ServerController extends Controller
     {
         $request->validate([
             'server.title' => 'required|min:3|max:255',
-            'server.host' => 'required|integer|unique:servers,host',
+            'server.host' => 'required|string|unique:servers,host',
             'ftp_access.title' => 'required|min:3|max:255',
-            'ftp_access.host' => 'required|integer',
+            'ftp_access.host' => 'required|string',
             'ftp_access.login' => 'required',
             'ftp_access.password' => 'required|string',
             'ftp_access.description' => 'nullable|min:10',
@@ -43,7 +43,6 @@ class ServerController extends Controller
         ]);
 
         $data = $request->input();
-        $error = null;
         DB::transaction(function () use ($data, $request) {
             $email = $request->user()->email;
             $server = Server::create($data['server']);
@@ -52,7 +51,6 @@ class ServerController extends Controller
             $ftp = FtpAccessFacade::setUser($data['ftp_access']['login'])->setPassword($data['ftp_access']['password']);
             $ftp_create = $ftp->create($email);
             if (!$ftp_create['success']) {
-                $error = $ftp['message'];
                 //This throw is needed to revert datbase changes back, don't remove it!
                 throw new ModelNotFoundException();
                 return;
@@ -65,30 +63,24 @@ class ServerController extends Controller
 
             if (!$db_create['success']) {
                 //Delete the user
-                $ftp_delete = $ftp->delete($email);
-                if (!$ftp_delete["success"]) info($ftp_delete['message']);
-                $error = $db['message'];
+                $ftp->delete($email);
                 //This throw is needed to revert datbase changes back, don't remove it!
                 throw new ModelNotFoundException();
                 return;
             }
 
-            $server = ServerFacade::setUser($data['server']['host'])->setDir("/home//" + $data["ftp_access"]["login"])->create($email);
+            $server = ServerFacade::setHost($data['server']['host'])->create($email);
             if (!$server['success']) {
                 //Delete the user
-                $ftp_delete = $ftp->delete($email);
-                if (!$ftp_delete["success"]) info($ftp_delete['message']);
+                $ftp->delete($email);
                 //Delete database access
-                $db_delete = $db->delete($email);
-                if (!$db_delete["success"]) info($db_delete['message']);
-                $error = $db['message'];
+                $db->delete($email);
                 //This throw is needed to revert datbase changes back, don't remove it!
                 throw new ModelNotFoundException();
                 return;
             }
         });
-        if ($error) return $this->successResponse([]);
-        else return $this->errorResponse([$error]);
+        return $this->successResponse([]);
     }
 
     //* Show server, ftp_access, db_access by server's id    

@@ -24,27 +24,27 @@ class FtpAccess
     public function create($email)
     {
         if ((!$this->username) || (!$this->password)) return ["success" => false, "message" => "You have to provide username and password"];
-        $shellScript = "sudo create_sft_user create $this->username $this->password";
+        $shellScript = "sudo create_sftp_user create $this->username $this->password";
         $success_message = "The account is setup";
         $result = shell_exec($shellScript);
         Logger::serverChange($result, $email, "Creating Ftp");
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
         } else {
-            return ["sucess" => false, "message" => $result];
+            return ["success" => false, "message" => $result];
         }
     }
 
     public function delete($email)
     {
         if (!$this->username) return ["success" => false, "message" => "You have to provide username"];
-        $result = shell_exec("sudo create_sft_user delete $this->username");
+        $result = shell_exec("sudo create_sftp_user delete $this->username");
         Logger::serverChange($result, $email, "Deleting Ftp");
         $success_message = "Deleted user";
         if (strpos($result, $success_message) !== false) {
             return ["success" => true];
         } else {
-            return ["sucess" => false, "message" => $result];
+            return ["success" => false, "message" => $result];
         }
     }
 }
