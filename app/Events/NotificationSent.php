@@ -20,16 +20,19 @@ class NotificationSent
 
     public $from_user;
 
+    public $publish_date;
+
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($user_id, $message, $from_user)
+    public function __construct($user_id, $message, $from_user, $publish_date)
     {
         $this->user_id = $user_id;
         $this->message = $message;
         $this->from_user = $from_user;
+        $this->publish_date = $publish_date;
     }
 
     /**
@@ -49,6 +52,6 @@ class NotificationSent
      */
     public function broadcastWith()
     {
-        return ['message' => $this->message, 'from_user' => $this->from_user];
+        return ['message' => $this->message, 'from_user' => $this->from_user, 'date' => $this->publish_date];
     }
 }

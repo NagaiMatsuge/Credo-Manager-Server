@@ -21,7 +21,10 @@ class DatabaseSeeder extends Seeder
             TaskSeeder::class,
             TaskUserSeeder::class,
             MessageSeeder::class,
-            PaymentSeeder::class
+            PaymentSeeder::class,
+            NoteSeeder::class,
+            NotificationSeeder::class,
+            NotificationUserSeeder::class
         ]);
     }
 }
