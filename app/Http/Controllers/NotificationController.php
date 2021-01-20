@@ -26,9 +26,7 @@ class NotificationController extends Controller
     //* Create notification
     public function store(Request $request)
     {
-        $this->makeValidation($request);
-        $auth_user_id = $request->user()->id;
-        $create = Notification::create(['user_id' => $auth_user_id]);
+        $create = Notification::create($this->makeValidation($request));
         return $this->successResponse($create);
     }
 
@@ -50,7 +48,7 @@ class NotificationController extends Controller
     {
         return $request->validate([
             'text' => 'required|string|min:3',
-            'publish_date' => 'required|date'
+            'publish_date' => 'required|date',
         ]);
     }
 }
