@@ -31,7 +31,17 @@ require_once __DIR__ . "/MicroApiRoutes/notes.php";
 */
 
 Route::get('/test', function () {
-    $notification = public_path();
+    $result = 'job 43 at Wed Jan 20 17:22:00 2021';
+    $word = 'job';
+    $end_word = 'at';
+    //Position of the job number in at
+    $pos = strpos($result, $word) + strlen($word) + 1;
+    $pos_end = strpos($result, $end_word) - 1;
+    $res = substr($result, $pos, $pos_end - $pos);
 
-    return response()->json($notification);
+    return response()->json([
+        'pos' => $pos,
+        'pos_end' => $pos_end,
+        'res' => $res
+    ]);
 });

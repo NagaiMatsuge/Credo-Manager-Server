@@ -15,7 +15,7 @@ class SendNotification extends Command
      *
      * @var string
      */
-    protected $signature = 'send:nofication {notification_id}';
+    protected $signature = 'send:notification {notification_id}';
 
     /**
      * The console command description.
@@ -54,15 +54,9 @@ class SendNotification extends Command
                 'name' => $notification->name,
             ];
             //Insert into database
-            $newNotifications = [];
             foreach ($user_ids as $user_id) {
-                $newNotifications[] = [
-                    'to_user' => $user_id,
-                    'notification_id' => $$notification_id
-                ];
                 broadcast(new NotificationSent($user_id, $notification->text, $from_user, $notification->publish_date));
             }
-            DB::table('notification_user')->insert($newNotifications);
         } catch (Exception $e) {
             Logger::cronError($e->getMessage(), $this->argument('notification_id'));
         }

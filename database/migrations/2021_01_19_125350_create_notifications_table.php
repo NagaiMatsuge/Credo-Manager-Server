@@ -19,6 +19,7 @@ class CreateNotificationsTable extends Migration
             $table->uuid('user_id');
             $table->text('text');
             $table->dateTime('publish_date');
+            $table->integer('job_number')->nullable()->comment("Job number at AT command linux");
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
