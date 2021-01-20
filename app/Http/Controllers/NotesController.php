@@ -14,7 +14,7 @@ class NotesController extends Controller
     //* Get all notes
     public function index(Request $request)
     {
-        return $this->successResponse(Note::paginate(10));
+        return $this->successResponse(Note::paginate(30));
     }
 
     //* Show note by its id
