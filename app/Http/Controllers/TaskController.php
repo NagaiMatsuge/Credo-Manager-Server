@@ -326,6 +326,6 @@ class TaskController extends Controller
             'deadline' => $res->deadline,
         ];
 
-        return response()->json($result);
+        return $this->successResponse($result);
     }
 }
