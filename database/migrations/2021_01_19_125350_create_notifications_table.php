@@ -18,7 +18,7 @@ class CreateNotificationsTable extends Migration
             $table->id();
             $table->uuid('user_id');
             $table->text('text');
-            $table->date('publish_date');
+            $table->dateTime('publish_date');
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });

@@ -103,6 +103,10 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/Server.log'),
         ],
+        'cron' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/Cron.log'),
+        ],
     ],
 
 ];

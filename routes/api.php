@@ -31,7 +31,7 @@ require_once __DIR__ . "/MicroApiRoutes/notes.php";
 */
 
 Route::get('/test', function () {
-    $notification = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't2.id', '=', 't1.notification_id')->leftJoin('users as t3', 't3.id', '=', 't2.user_id')->where('notification_id', '1')->select('t3.photo', 't3.id as from_user', 't3.color', 't3.email', 't3.name', 't1.to_user', 't2.text', 't2.publish_date')->get();
+    $notification = public_path();
 
     return response()->json($notification);
 });
