@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateNotificationsTable extends Migration
@@ -15,8 +16,20 @@ class CreateNotificationsTable extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
+            $table->uuid('user_id');
             $table->text('text');
+            $table->date('publish_date')->default(DB::raw("SELECT GETDATE()"));
             $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+        Schema::create('notification_user', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('to_user');
+            $table->unsignedBigInteger('notification_id');
+
+            $table->foreign('to_user')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('notification_id')->references('id')->on('notifications')->onDelete('cascade');
         });
     }
 

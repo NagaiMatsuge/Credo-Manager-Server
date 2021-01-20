@@ -2,11 +2,7 @@
 
 // Authentication Routes
 
-use App\Events\NewMessage;
 use App\Helpers\Logger;
-use App\Patterns\Builders\DbAccess\DbAccessFacade;
-use App\Patterns\Builders\FtpAccess\FtpAccessFacade;
-use App\Patterns\Builders\Server\ServerFacade;
 use Illuminate\Support\Facades\Route;
 
 require_once __DIR__ . "/Auth/auth.php";
@@ -18,6 +14,8 @@ require_once __DIR__ . "/MicroApiRoutes/params.php";
 require_once __DIR__ . "/MicroApiRoutes/steps.php";
 require_once __DIR__ . "/MicroApiRoutes/payments.php";
 require_once __DIR__ . "/MicroApiRoutes/messages.php";
+require_once __DIR__ . "/MicroApiRoutes/notifications.php";
+require_once __DIR__ . "/MicroApiRoutes/notes.php";
 
 
 /*
