@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,7 @@ class NotificationController extends Controller
     //* Get all notifications with pagination
     public function index(Request $request)
     {
-        return $this->successResponse(DB::table('notifications')->get());  
+        return $this->successResponse(Notification::paginate(10));  
     }
 
     //* Get notification by its id
@@ -25,20 +26,31 @@ class NotificationController extends Controller
     //* Create notification
     public function store(Request $request)
     {
-        $validate = $request->validate([
-            'text'=> 'required|string|min:3'
-        ]);
-        $create = DB::table('notifications')->insert($validate);
+        $this->makeValidation($request);
+        $auth_user_id = $request->user()->id;
+        $create = Notification::create(['user_id' => $auth_user_id]);
         return $this->successResponse($create);
     }
 
     //* Update notification by its id
     public function update(Request $request, $id)
     {
-        $validate = $request->validate([
-            'text'=> 'required|string|min:3'
-        ]);
-        $create = DB::table('notifications')->where('id', $id)->update($validate);
+        $create = DB::table('notifications')->where('id', $id)->update($this->makeValidation($request));
         return $this->successResponse($create);
+    }
+
+    //* Delete notification by its id
+    public function destroy($id)
+    {
+        return $this->successResponse(DB::table('notifications')->where('id', $id)->delete());
+    }
+
+    //* Validation function
+    public function makeValidation(Request $request)
+    {
+        return $request->validate([
+            'text' => 'required|string|min:3',
+            'publish_date' => 'required|date'
+        ]);
     }
 }
