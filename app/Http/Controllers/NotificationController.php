@@ -17,7 +17,7 @@ class NotificationController extends Controller
     //* Get all notifications with pagination
     public function index(Request $request)
     {
-        return $this->successResponse(Notification::paginate(10));
+        return $this->successResponse(Notification::paginate(30));
     }
 
     //* Get notification by its id
