@@ -229,6 +229,12 @@ class TaskController extends Controller
     //* Get Sorted users for creating tasks
     public function getUserListForCreatingTask(Request $request)
     {
+        $res = $this->userList();
+        return $this->successResponse($res);
+    }
+
+    private function userList()
+    {
         $users = User::allUsersWithRoles()->get();
         $res = [
             'developers' => [],
@@ -241,7 +247,7 @@ class TaskController extends Controller
                 $res['developers'][] = $user;
             }
         }
-        return $this->successResponse($res);
+        return $res;
     }
 
     public function clock(Request $request)
@@ -294,5 +300,32 @@ class TaskController extends Controller
             'tick' => true
         ];
         return $res;
+    }
+
+    public function show($id)
+    {
+        $res = DB::table("task_user as t1")->leftJoin("tasks as t2", "t1.task_id", "=", "t2.id")->leftJoin("steps as t3", "t2.step_id", "=", "t3.id")->leftJoin("projects as t4", "t4.id", "=", "t3.project_id")->where("t1.task_id", $id)->select('t1.*', 't2.*', "t3.title as step_title", "t3.project_id", "t4.title as project_title")->get()->toArray();
+
+
+        $user_ids = array_column($res, 'user_id');
+        $res = $res[0];
+        $result = [
+            'projects' => [
+                'id' => $res->project_id,
+                'title' => $res->project_title
+            ],
+            'step_ids' => [
+                'id' => $res->step_id,
+                'title' => $res->step_title
+            ],
+            'title' => $res->title,
+            'user_ids' => $user_ids,
+            'step_id' => $res->step_id,
+            'time' => $res->time,
+            'type' => $res->type,
+            'deadline' => $res->deadline,
+        ];
+
+        return response()->json($result);
     }
 }
