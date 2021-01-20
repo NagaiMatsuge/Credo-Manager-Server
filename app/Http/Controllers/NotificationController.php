@@ -26,7 +26,8 @@ class NotificationController extends Controller
     public function store(Request $request)
     {
         $validate = $request->validate([
-            'text'=> 'required|string|min:3'
+            'text' => 'required|string|min:3',
+            'publish_date' => 'required|date'
         ]);
         $create = DB::table('notifications')->insert($validate);
         return $this->successResponse($create);
@@ -40,5 +41,11 @@ class NotificationController extends Controller
         ]);
         $create = DB::table('notifications')->where('id', $id)->update($validate);
         return $this->successResponse($create);
+    }
+
+    //* Delete notification by its id
+    public function destroy($id)
+    {
+        return $this->successResponse(DB::table('notifications')->where('id', $id)->delete());
     }
 }
