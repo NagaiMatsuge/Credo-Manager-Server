@@ -10,7 +10,6 @@ use App\Patterns\Builders\FtpAccess\FtpAccessFacade;
 use App\Patterns\Builders\Server\ServerFacade;
 use App\Traits\ResponseTrait;
 use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
