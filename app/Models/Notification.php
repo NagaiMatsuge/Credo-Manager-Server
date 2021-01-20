@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Norification extends Model
+class Notification extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'text'
+        'user_id',
+        'text',
+        'publish_date'
     ];
 }
