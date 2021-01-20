@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\At;
-use App\Helpers\Logger;
 use App\Models\Notification;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
@@ -32,7 +31,7 @@ class NotificationController extends Controller
         $auth_user_id = $request->user()->id;
         DB::transaction(function () use ($auth_user_id, $request) {
             $create = Notification::create(array_merge(['user_id' => $auth_user_id], $request->input()));
-            $command = "php " . public_path() . "/artisan send:nofication $create->id";
+            $command = "php " . public_path() . "/artisan send:notification $create->id";
             At::newAtCommand($command, $create->publish_date);
         });
         return $this->successResponse(true);
