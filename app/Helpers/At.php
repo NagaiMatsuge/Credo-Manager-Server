@@ -34,8 +34,7 @@ class At
         $date = substr_replace($date, '', -2, 2);
         $date .= ".00";
         $shellCommand = "echo '$command' | at -t $date";
-        $result = shell_exec($shellCommand);
-
+        $result = exec($shellCommand);
         Logger::newCron($result, $shellCommand);
         if (strpos($result, "job") !== false) {
             $word = 'job';

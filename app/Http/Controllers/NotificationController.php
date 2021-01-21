@@ -17,7 +17,25 @@ class NotificationController extends Controller
     //* Get all notifications with pagination
     public function index(Request $request)
     {
-        return $this->successResponse(Notification::paginate(30));
+        if ($request->user()->hasRole(['Admin', 'Manager'])) {
+            return $this->showToAdmin($request);
+        } else {
+            return $this->showToUser($request);
+        }
+    }
+
+    //* Get methods for Admins or Managers only
+    public function showToAdmin(Request $request)
+    {
+        $notifs = Notification::where('user_id', $request->user()->id)->paginate(30);
+        return $this->successResponse($notifs);
+    }
+
+    //* Get method for Users
+    public function showToUser(Request $request)
+    {
+        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->where('t1.to_user', $request->user()->id)->where('t2.publish_date', '<', now())->paginate(30);
+        return $this->successResponse($notifs);
     }
 
     //* Get notification by its id
@@ -37,7 +55,7 @@ class NotificationController extends Controller
             $notificationUser = [];
             foreach ($userIds as $userId) {
                 $notificationUser[] = [
-                    'user_id' => $userId,
+                    'to_user' => $userId,
                     'notification_id' => $create->id
                 ];
             }
