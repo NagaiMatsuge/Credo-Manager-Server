@@ -241,14 +241,14 @@ class TaskController extends Controller
     {
         $projects = DB::table('projects')->select('id', 'title');
         if ($request->title) {
-            $projects = $projects->where('title', 'like', '%' . $request->title . '%');
+            $projects = $projects->where('title', 'like', '%' . $request->title . '%')->where('archived', false);
         }
 
         $users = DB::table('users')->select('id', 'name');
         if ($request->name) {
             $users = $users->where('name', 'like', '%' . $request->name . '%');
         }
-        return $this->successResponse(['users' => $users->paginate(5), 'projects' => $projects->paginate(5)]);
+        return $this->successResponse(['users' => $users->get(), 'projects' => $projects->get()]);
     }
 
     //* Get Sorted users for creating tasks
