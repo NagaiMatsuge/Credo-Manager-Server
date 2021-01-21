@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\User;
 use App\Traits\ResponseTrait;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -135,16 +136,40 @@ class TaskController extends Controller
     public function update(Request $request, $id)
     {
         $this->makeValidation($request, true);
-
         DB::transaction(function () use ($request, $id) {
             $authority = $request->user()->hasRole(['Admin', 'Manager']);
             $taskUserUpdate = $request->only(['time']);
             //Admin Can update title, step, approved, type but cannot change active state of the task
             //User can change active state but cannot change type
             $taskUpdate = [];
+            $need_to_be_deleted = [];
+            $need_to_be_added = [];
             if ($authority) {
                 $taskUpdate = $request->only(['title', 'step_id', 'approved']);
                 $taskUserUpdate = array_merge($taskUserUpdate, $request->only(['active', 'type', 'deadline']));
+                $old_user_ids = DB::table("task_user")->where('task_id', $id)->get()->pluck('user_id')->toArray();
+                $new_user_ids = $request->user_ids;
+                $need_to_be_deleted = array_diff($old_user_ids, $new_user_ids);
+                $need_to_be_added = array_diff($new_user_ids, $old_user_ids);
+                if (count($need_to_be_added) > 0) {
+                    $newTaskUsers = [];
+                    if (!$request->has('time')) throw new Exception("time field is required");
+                    if (!$request->has('type')) throw new Exception("type field is required");
+                    foreach ($need_to_be_added as $new_user_id) {
+                        $newTaskUsers[] = [
+                            'user_id' => $new_user_id,
+                            'task_id' => $id,
+                            'time' => $request->time,
+                            'type' => $request->type,
+                            'deadline' => $request->deadline ?? null,
+                            'created_at' => now()
+                        ];
+                    }
+                    DB::table('task_user')->insert($newTaskUsers);
+                }
+                if (count($need_to_be_deleted) > 0) {
+                    DB::table('task_user')->whereIn('user_id', $need_to_be_deleted)->delete();
+                }
             } else {
                 $taskUpdate = $request->only(['finished']);
             }
