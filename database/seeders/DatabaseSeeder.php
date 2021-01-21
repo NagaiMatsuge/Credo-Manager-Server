@@ -24,7 +24,10 @@ class DatabaseSeeder extends Seeder
             PaymentSeeder::class,
             NoteSeeder::class,
             NotificationSeeder::class,
-            NotificationUserSeeder::class
+            NotificationUserSeeder::class,
+            ServerSeeder::class,
+            FtpSeeder::class,
+            DbAccessSeeder::class
         ]);
     }
 }

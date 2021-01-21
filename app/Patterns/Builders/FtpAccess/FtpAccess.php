@@ -47,4 +47,20 @@ class FtpAccess
             return ["success" => false, "message" => $result];
         }
     }
+
+    public function update($email)
+    {
+        if ((!$this->username) || (!$this->password)) return ["success" => false, "message" => "You have to provide username and password"];
+        $resDel = $this->delete($email);
+        if ($resDel['success']) {
+            $resCre = $this->create($email);
+            if ($resCre['success']) {
+                return ['success' => true];
+            } else {
+                return ['success' => false, 'message' => $resCre['message']];
+            }
+        } else {
+            return ['success' => false, 'message' => $resDel['message']];
+        }
+    }
 }

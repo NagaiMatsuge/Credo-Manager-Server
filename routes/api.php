@@ -3,6 +3,7 @@
 // Authentication Routes
 
 use App\Models\Notification;
+use App\Models\Server;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,7 @@ require_once __DIR__ . "/MicroApiRoutes/notes.php";
 */
 
 Route::get('/test', function () {
-    $old_user_ids = DB::table("task_user")->where('task_id', 1)->get()->pluck('id')->toArray();
-    dd($old_user_ids);
+    $old_user_ids = Server::with("db_access")->with("ftp_access")->where('id', 1)->first();
+    $res = $old_user_ids->db_access[0]->server_name;
+    return response()->json($res);
 });

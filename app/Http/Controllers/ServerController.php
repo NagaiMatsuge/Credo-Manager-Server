@@ -12,6 +12,7 @@ use App\Traits\ResponseTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ServerController extends Controller
 {
@@ -20,7 +21,7 @@ class ServerController extends Controller
     //* Fetch all servers with pagination
     public function index(Request $request)
     {
-        $server_details = Server::paginate(10);
+        $server_details = Server::with('ftp_access')->with('db_access')->paginate(10);
         return $this->successResponse($server_details);
     }
 
@@ -30,20 +31,7 @@ class ServerController extends Controller
         if (!$request->user()->hasRole(['Admin']))
             return $this->notAllowed();
 
-        $request->validate([
-            'server.title' => 'required|min:3|max:255',
-            'server.host' => 'required|string|unique:servers,host',
-            'ftp_access.title' => 'required|min:3|max:255',
-            'ftp_access.host' => 'required|string',
-            'ftp_access.login' => 'required',
-            'ftp_access.password' => 'required|string',
-            'ftp_access.description' => 'nullable|min:10',
-            'db_access.server_name' => 'required',
-            'db_access.db_name' => 'required|unique:db_access,db_name',
-            'db_access.login' => 'required',
-            'db_access.password' => 'required|string',
-            'db_access.description' => 'nullable|min:10',
-        ]);
+        $this->validateRequest($request);
 
         $data = $request->input();
         DB::transaction(function () use ($data, $request) {
@@ -60,7 +48,6 @@ class ServerController extends Controller
             }
             $db = DbAccessFacade::setUser($data['db_access']['login'])
                 ->setPassword($data['db_access']['password'])
-                ->setHost($data['db_access']['server_name'])
                 ->setDatabaseName($data['db_access']['db_name']);
             $db_create = $db->create($email);
 
@@ -89,23 +76,66 @@ class ServerController extends Controller
     //* Show server, ftp_access, db_access by server's id    
     public function show(Request $request, $id)
     {
-        $id = DB::table('servers')
-            ->join('ftp_access', 'servers.id', '=', 'ftp_access.server_id')
-            ->join('db_access', 'servers.id', '=', 'db_access.server_id')
-            ->select('ftp_access.*', 'db_access.*', 'servers.title as server_name', 'servers.host as server_host')
-            ->get();
+        $id = Server::with('ftp_access')->with('db_access')->get();
         return $this->successResponse($id);
     }
 
     //* Update server, ftp_access, db-access by server's id    
     public function update(Request $request, $id)
     {
-        $data = $request->input();
-        DB::transaction(function () use ($id, $data) {
-            DB::table('servers')->where('id', $id)->update($data['server']);
-            DB::table('ftp_access')->where('id', $id)->update($data['ftp_access']);
-            DB::table('db_access')->where('id', $id)->update($data['db_access']);
+        $request->validate([
+            'server.title' => 'string',
+            'db_access.description' => 'string',
+            'db_access.server_name' => 'string',
+            'ftp_access.title' => 'string',
+            'ftp_access.description' => 'string',
+            'ftp_access.id' => [
+                Rule::requiredIf($request->has('ftp_access.title') || $request->has('ftp_access.description')),
+                'integer'
+            ],
+            'db_access.id' => [
+                Rule::requiredIf($request->has('db_access.title') || $request->has('db_access.description')),
+                'integer'
+            ]
+        ]);
+        DB::transaction(function () use ($request, $id) {
+            $data = $request->all();
+            $server_title = $data['server']['title'];
+            DB::table("servers")->where('id', $id)->update(['title' => $server_title]);
+            if ($request->has('db_access.id')) {
+                $updateDb = [
+                    'description' => $data['db_access']['description'],
+                    'server_name' => $data['db_access']['server_name']
+                ];
+                DB::table('db_access')->where('id', $data['db_access']['id'])->update($updateDb);
+            }
+            if ($request->has('ftp_access.id')) {
+                $ftpUpdate = [
+                    'description' => $data['ftp_access']['description'],
+                    'title' => $data['ftp_access']['title']
+                ];
+                DB::table('ftp_access')->where('id', $data['ftp_access']['id'])->update($ftpUpdate);
+            }
         });
+        return $this->successResponse([], 200, 'Updated successfully');
+    }
+
+    private function validateRequest(Request $request)
+    {
+        $request->validate([
+            'server.title' => 'required|min:3|max:255',
+            'server.host' => 'required|string|unique:servers,host',
+            'ftp_access.title' => 'required|min:3|max:255',
+            'ftp_access.host' => 'required|string',
+            'ftp_access.login' => 'required',
+            'ftp_access.password' => 'required|string',
+            'ftp_access.description' => 'nullable|min:10',
+            'db_access.server_name' => 'required',
+            'db_access.db_name' => 'required|unique:db_access,db_name',
+            'db_access.login' => 'required',
+            'db_access.password' => 'required|string',
+            'db_access.description' => 'nullable|min:10',
+        ]);
     }
 
     //* Delete server, ftp_access, db_access by server's id    

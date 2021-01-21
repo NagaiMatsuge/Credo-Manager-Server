@@ -66,4 +66,18 @@ class DbAccess
             return ["success" => false, "message" => $result];
         }
     }
+
+    public function update($email)
+    {
+        if ((!$this->password) && (!$this->username)) return ["success" => false, "message" => "Password or username is not set!"];
+        $shellCommand = "sudo mysql_create_db_user -t=update -u=$this->username -p=$this->password";
+        $result = shell_exec($shellCommand);
+        Logger::serverChange($result, $email, 'Update password');
+        $success_message = "Complete!";
+        if (strpos($result, $success_message) !== false) {
+            return ["success" => true];
+        } else {
+            return ["success" => false, "message" => $result];
+        }
+    }
 }
