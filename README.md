@@ -1,36 +1,51 @@
-# README By NagaiMatsuge
-
-## Time Manager App
+# README For Time Manager
 
 ## How do I get set up?
 
-- git clone https://NagaiMatsuge@bitbucket.org/NagaiMatsuge/backend.git
-- cp .env.example .env
-- composer install
-- php artisan key:generate
-- php artisan migrate
+```
+git clone https://NagaiMatsuge@bitbucket.org/NagaiMatsuge/backend.git
+cp .env.example .env
+composer install
+php artisan key:generate
+php artisan migrate
+```
 
 ## We provide data for testing purposes
 
-- php artisan db:seed
+```
+php artisan db:seed
+```
 
 ---
 
 ## Configuring AT for notifications(Go to App\Helpers\At.php for more information)
 
-- sudo apt-get install at
-- sudo systemctl enable --now atd (IF NOT ENABLED)
+```
+sudo apt-get install at
+sudo systemctl enable --now atd (IF NOT ENABLED)
+sudo chmod +x ./scripts/at_helper
+sudo chown root:root ./scripts/at_helper
+sudo ln ./scripts/at_helper /usr/local/bin
+```
 
 ---
 
 ## Websockets for Task-Chats
 
 - We use [Laravel-websockets](https://beyondco.de/docs/laravel-websockets/getting-started/introduction) for websockets
-- composer require beyondcode/laravel-websockets
-- php artisan vendor:publish --provider="BeyondCode\LaravelWebSockets\WebSocketsServiceProvider" --tag="migrations"
-- php artisan migrate
-- php artisan vendor:publish --provider="BeyondCode\LaravelWebSockets\WebSocketsServiceProvider" --tag="config"
-- composer require pusher/pusher-php-server "~3.0"
+
+```
+composer require beyondcode/laravel-websockets
+
+php artisan vendor:publish --provider="BeyondCode\LaravelWebSockets\WebSocketsServiceProvider" --tag="migrations"
+
+php artisan migrate
+
+php artisan vendor:publish --provider="BeyondCode\LaravelWebSockets\WebSocketsServiceProvider" --tag="config"
+
+composer require pusher/pusher-php-server "~3.0"
+```
+
 - .env file update BROADCAST_DRIVER=pusher
 - Edit config/broadcasting.php
 
@@ -86,13 +101,20 @@ window.Echo = new Echo({
 
 ## Configure supervisor for websockets
 
-- apt-get install supervisor
-- service supervisor restart
+```
+apt-get install supervisor
+service supervisor restart
+```
+
 - configure location of the artisan file in time_manager_queue.conf and time_manager_websockets.conf
-- cp ./time_manager_queue.conf /etc/supervisor/conf.d/
-- cp ./time_manager_websockets.conf /etc/supervisor/conf.d/
-- supervisorctl reread
-- supervisorctl update
+
+```
+ln ./time_manager_queue.conf /etc/supervisor/conf.d/
+ln ./time_manager_websockets.conf /etc/supervisor/conf.d/
+supervisorctl reread
+supervisorctl update
+```
+
 - please check if above two commands in supervisor are active and running with following commands
 
 ```
@@ -101,11 +123,3 @@ status
 ```
 
 ---
-
-## Configuring scripts for different use cases
-
-```
-sudo chmod +x ./scripts/at_helper
-sudo chown root:root ./scripts/at_helper
-sudo ln ./scripts/at_helper /usr/local/bin
-```
