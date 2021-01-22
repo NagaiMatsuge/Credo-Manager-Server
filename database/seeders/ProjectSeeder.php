@@ -20,14 +20,16 @@ class ProjectSeeder extends Seeder
             'title' => 'Uzexpress',
             'description' => 'Collaboration of markets in one central place. Marketing and other stuff.',
             'color' => config('params.colors')[rand(0, 2)],
-            'deadline' => now()->addMonth(2)
+            'deadline' => now()->addMonth(2),
+            'created_at' => now()
         ];
         $projects[] = [
             'id' => 2,
             'title' => 'Time Manager',
             'description' => 'Time manager application for credo studio',
             'color' => config('params.colors')[rand(0, 2)],
-            'deadline' => now()->addMonth(3)
+            'deadline' => now()->addMonth(3),
+            'created_at' => now()
         ];
 
         DB::table('projects')->insert($projects);

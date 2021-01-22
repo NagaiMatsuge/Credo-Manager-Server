@@ -24,6 +24,7 @@ class CreateProjectsTable extends Migration
             $table->boolean('archived')->default(false);
 
             $table->foreign('server_id')->references('id')->on('servers')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

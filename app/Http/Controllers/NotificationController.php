@@ -36,7 +36,7 @@ class NotificationController extends Controller
     //* Get method for Users
     public function showToUser(Request $request, $notes)
     {
-        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->where('t1.to_user', $request->user()->id)->where('t2.publish_date', '<', now())->paginate(30);
+        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->where('t1.to_user', $request->user()->id)->where('t2.publish_date', '<', now())->where('read', false)->paginate(30);
         return $this->successResponse(['notifications' => $notifs, 'notes' => $notes]);
     }
 
