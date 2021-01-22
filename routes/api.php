@@ -19,6 +19,8 @@ require_once __DIR__ . "/MicroApiRoutes/payments.php";
 require_once __DIR__ . "/MicroApiRoutes/messages.php";
 require_once __DIR__ . "/MicroApiRoutes/notifications.php";
 require_once __DIR__ . "/MicroApiRoutes/notes.php";
+require_once __DIR__ . "/MicroApiRoutes/main.php";
+
 
 use Illuminate\Http\Request;
 
