@@ -48,8 +48,8 @@ class UserController extends Controller
 
         $user->update($data);
         $user->syncRoles($request->role);
-        if ($user->hasRole(['Admin', 'Manager']))
-            DB::table('tasks')->where('user_id', $user->id)->delete();
+        if (in_array($request->role, ['Admin', 'Manager']))
+            DB::table('task_user')->where('user_id', $user->id)->delete();
 
         return $this->successResponse($user->toArray());
     }
