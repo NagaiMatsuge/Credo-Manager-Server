@@ -43,6 +43,8 @@ trait Query
     //* Get all users list for admin in tasks view route
     public static function getUserListForAdmin()
     {
-        return DB::table('users as t19')->select(DB::raw('(select t11.name from roles as t11 where t11.id=(select t12.role_id from model_has_roles as t12 where t12.model_uuid=t19.id))as user_role'), 't19.id as user_id', 't19.name as user_name', 't19.photo as user_photo', DB::raw('(1) as worked'), 't19.color as user_color')->paginate(4)->toArray();
+        // return DB::table('users as t19')->select(DB::raw('(select t11.name from roles as t11 where t11.id=(select t12.role_id from model_has_roles as t12 where t12.model_uuid=t19.id))as user_role'), 't19.id as user_id', 't19.name as user_name', 't19.photo as user_photo', DB::raw('(1) as worked'), 't19.color as user_color')->paginate(4)->toArray();
+
+        return DB::table('users as t1')->leftJoin('model_has_roles as t2', 't1.id', '=', 't2.model_uuid')->leftJoin('roles as t3', 't3.id', '=', 't2.role_id')->select('t1.id as user_id', 't1.name as user_name', 't1.photo as user_photo', 't1.color as user_color', 't3.name as user_role', DB::raw('(1) as worked'))->whereNotIn('t3.name', ['Admin', 'Manager'])->paginate(4)->toArray();
     }
 }
