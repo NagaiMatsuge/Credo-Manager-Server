@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
@@ -47,6 +48,9 @@ class UserController extends Controller
 
         $user->update($data);
         $user->syncRoles($request->role);
+        if ($user->hasRole(['Admin', 'Manager']))
+            DB::table('tasks')->where('user_id', $user->id)->delete();
+
         return $this->successResponse($user->toArray());
     }
 

@@ -2,7 +2,7 @@
 
 ## Time Manager App
 
-### How do I get set up?
+## How do I get set up?
 
 - git clone https://NagaiMatsuge@bitbucket.org/NagaiMatsuge/backend.git
 - cp .env.example .env
@@ -10,20 +10,20 @@
 - php artisan key:generate
 - php artisan migrate
 
-### We provide data for testing purposes
+## We provide data for testing purposes
 
 - php artisan db:seed
 
 ---
 
-### Configuring AT for notifications(Go to App\Helpers\At.php for more information)
+## Configuring AT for notifications(Go to App\Helpers\At.php for more information)
 
 - sudo apt-get install at
 - sudo systemctl enable --now atd (IF NOT ENABLED)
 
 ---
 
-### Websockets for Task-Chats
+## Websockets for Task-Chats
 
 - We use [Laravel-websockets](https://beyondco.de/docs/laravel-websockets/getting-started/introduction) for websockets
 - composer require beyondcode/laravel-websockets
@@ -84,7 +84,7 @@ window.Echo = new Echo({
 
 ---
 
-### Configure supervisor for websockets
+## Configure supervisor for websockets
 
 - apt-get install supervisor
 - service supervisor restart
@@ -96,7 +96,16 @@ window.Echo = new Echo({
 - please check if above two commands in supervisor are active and running with following commands
 
 ```
-- sudo supervisorctl
-- status
+sudo supervisorctl
+status
+```
 
+---
+
+## Configuring scripts for different use cases
+
+```
+sudo chmod +x ./scripts/at_helper
+sudo chown root:root ./scripts/at_helper
+sudo ln ./scripts/at_helper /usr/local/bin
 ```

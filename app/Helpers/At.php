@@ -33,8 +33,8 @@ class At
         $date = trim($date);
         $date = substr_replace($date, '', -2, 2);
         $date .= ".00";
-        $shellCommand = "echo '$command' | at -t $date";
-        $result = exec($shellCommand);
+        $shellCommand = "sudo at_helper create '" . $command . "' '" . $date . "' 2>&1";
+        $result = shell_exec($shellCommand);
         Logger::newCron($result, $shellCommand);
         if (strpos($result, "job") !== false) {
             $word = 'job';

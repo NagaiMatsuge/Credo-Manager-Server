@@ -60,7 +60,7 @@ class NotificationController extends Controller
                 ];
             }
             DB::table('notification_user')->insert($notificationUser);
-            $command = "php " . public_path() . "/artisan send:notification $create->id";
+            $command = "php " . base_path() . "/artisan send:notification $create->id";
             $res = At::newAtCommand($command, $create->publish_date);
             if ($res['success']) {
                 $job_number = $res['job'];

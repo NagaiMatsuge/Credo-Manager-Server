@@ -1,0 +1,47 @@
+#!/bin/bash
+
+action=$1
+
+if [ "${action}" == "create" ]; then
+    command=$2
+    date=$3
+    if [ "$command" != "" ] && [ "$date" != "" ]; then
+        echo "$command" | at -t $date
+    else
+        echo "Please provide at_helper create {command} {date}"
+        echo "Date should be yyyymmddhhmm.ss"
+        echo "Command - ${command}"
+        echo "Date - ${date}"
+    fi
+    exit 0
+fi
+
+if [ "${action}" == "remove" ]; then
+    jobnumber=$2
+    if [ "${jobnumber}" != "" ]; then
+        atrm ${jobnumber}
+    else
+        echo "Please provide at_helper remove {jobnumber}";
+    fi
+    exit 0
+fi
+
+if [ "${action}" == "list" ]; then
+    atq
+    exit 0
+fi
+
+if [ "${action}" == "help" ]; then
+    echo "################### AT Helper #####################"
+    echo "#                                                 #"
+    echo "#         at_helper {action} {options}...         #"
+    echo "#         at_helper create {command} {date}       #"
+    echo "#         at_helper remove {jobnumber}            #"
+    echo "#         at_helper list                          #"
+    echo "#         at_helper help                          #"
+    echo "#                                                 #"
+    echo "################### AT Helper #####################"
+    exit 0
+fi
+
+echo "type 'at_helper help' for more information"
