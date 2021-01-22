@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\At;
+use App\Models\Note;
 use App\Models\Notification;
 use App\Models\User;
 use App\Traits\ResponseTrait;
@@ -17,25 +18,26 @@ class NotificationController extends Controller
     //* Get all notifications with pagination
     public function index(Request $request)
     {
+        $notes = Note::where('user_id', $request->user()->id)->paginate(30);
         if ($request->user()->hasRole(['Admin', 'Manager'])) {
-            return $this->showToAdmin($request);
+            return $this->showToAdmin($request, $notes);
         } else {
-            return $this->showToUser($request);
+            return $this->showToUser($request, $notes);
         }
     }
 
     //* Get methods for Admins or Managers only
-    public function showToAdmin(Request $request)
+    public function showToAdmin(Request $request, $notes)
     {
         $notifs = Notification::where('user_id', $request->user()->id)->paginate(30);
-        return $this->successResponse($notifs);
+        return $this->successResponse(['notifications' => $notifs, 'notes' => $notes]);
     }
 
     //* Get method for Users
-    public function showToUser(Request $request)
+    public function showToUser(Request $request, $notes)
     {
         $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->where('t1.to_user', $request->user()->id)->where('t2.publish_date', '<', now())->paginate(30);
-        return $this->successResponse($notifs);
+        return $this->successResponse(['notifications' => $notifs, 'notes' => $notes]);
     }
 
     //* Get notification by its id

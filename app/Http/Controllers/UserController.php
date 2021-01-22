@@ -64,7 +64,12 @@ class UserController extends Controller
     public function getUser(Request $request)
     {
         $user = User::userWithRole($request->user()->id);
-        return $this->successResponse($user[0]);
+        $user = $user[0];
+        $user->work_start_time = substr($user->work_start_time, 0, -3);
+        $user->work_end_time = substr($user->work_end_time, 0, -3);
+        $user->pause_start_time = substr($user->pause_start_time, 0, -3);
+        $user->pause_end_time = substr($user->pause_end_time, 0, -3);
+        return $this->successResponse($user);
     }
 
     //* Validate request
