@@ -29,9 +29,13 @@ class TaskController extends Controller
     //* Show List of tasks to Admin
     public function showToAdmin(Request $request)
     {
-        $users = Task::getUserListForAdmin();
+        $request->validate([
+            'project_id' => 'nullable|integer',
+            'user_id' => 'nullable|string'
+        ]);
+        $users = Task::getUserListForAdmin($request->user_id ?? null);
 
-        $tasks = Task::getAllUserTasks($request->user()->id);
+        $tasks = Task::getAllUserTasks($request->user()->id, $request->project_id ?? null);
 
         $res = [];
         foreach ($users['data'] as $user) {
