@@ -52,7 +52,7 @@ class NotificationController extends Controller
     //* Show notifations history for user
     private function showNotificationLogToUser(Request $request)
     {
-        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->where('t1.to_user', $request->user()->id)->where('t2.publish_date', '<', now())->paginate(30);
+        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->leftJoin('users as t3', 't3.id', '=', 't2.user_id')->leftJoin('model_has_roles as t4', 't4.model_uuid', '=', 't2.user_id')->leftJoin('roles as t5', 't5.id', '=', 't4.role_id')->select('t2.text', 't2.publish_date', 't3.name', 't3.photo', 't3.color', 't5.name as role')->where('t1.to_user', $request->user()->id)->where('t2.publish_date', '<', now())->paginate(30);
         return $this->successResponse(['notifications' => $notifs]);
     }
 

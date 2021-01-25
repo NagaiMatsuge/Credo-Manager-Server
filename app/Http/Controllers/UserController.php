@@ -67,7 +67,7 @@ class UserController extends Controller
     {
         $curr_user = $request->user();
         $user = User::userWithRole($curr_user->id);
-        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->where('t1.read', false)->where('t1.to_user', $curr_user->id)->get();
+        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->leftJoin('model_has_roles as t3', 't3.model_uuid', '=', 't2.user_id')->leftJoin('roles as t4', 't4.id', '=', 't3.role_id')->leftJoin('users as t5', 't5.id', '=', 't2.user_id')->where('t1.read', false)->select('t2.id', 't2.user_id', 't5.name as user_name', 't5.color as user_color', 't5.photo as user_photo', 't2.text', 't2.publish_date', 't4.name as role')->where('t1.to_user', $curr_user->id)->where('t2.publish_date', '<', now())->get();
         $user = $user[0];
         $res = [
             'id' => $user->id,
