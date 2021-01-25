@@ -34,7 +34,8 @@ trait Query
         t20.type as type,
         t20.time,
         t20.deadline,
-        (select sum(t24.tt)/60 from (select t25.stopped_at - t25.created_at as tt from task_watchers as t25 where t25.user_id=t20.user_id and t25.task_id=t20.task_id) as t24 ) as time_spent,
+        (select sum(t24.tt)/60 from (select TIMESTAMPDIFF(SECOND, t27.created_at, t27.stopped_at) as tt from task_watchers as t27 where t27.user_id=t20.user_id and t27.task_id=t20.task_id) as t24 ) as time_spent,
+        (select TIMESTAMPDIFF(SECOND, (select max(t28.created_at) from task_watchers as t28 where t28.user_id=t20.user_id and t28.task_id=t20.task_id and t28.stopped_at is null), CURRENT_TIMESTAMP)/60) as last_time,
         (select count(t22.id) from unread_messages as t22 where t22.user_id=? and t22.message_id in (select t23.id from messages as t23 where t23.task_id=t20.task_id)) as unread_count,
         (select t26.approved from tasks as t26 where t26.id=t20.task_id) as task_approved
         from task_user as t20) as t25 where t25.task_approved=0', [$user_id]);

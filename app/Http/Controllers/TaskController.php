@@ -64,7 +64,8 @@ class TaskController extends Controller
                         'type' => $task->type,
                         'unread_count' => $task->unread_count,
                         'deadline' => $task->deadline,
-                        'time_spent' => (int)$task->time_spent
+                        'time_spent' => (int)$task->time_spent,
+                        'last_time' => (int)$task->last_time
                     ];
                     $res[$user->user_id]['tasks'][$task->status ? 'active' : 'inactive'][] = $task_info;
                 }
@@ -258,7 +259,7 @@ class TaskController extends Controller
         if (!$request->has('task_id')) {
             DB::table('task_user')->where('user_id', $user_id)->update(['active' => false]);
             DB::table('task_watchers')->where('user_id', $user_id)->where('stopped_at', null)->update([
-                'stopped_at' => now()
+                'stopped_at' => date('Y-m-d H:i:s')
             ]);
             return $this->successResponse(['tick' => false]);
         }
@@ -286,7 +287,7 @@ class TaskController extends Controller
         $lastWatcher = [
             'task_id' => $request->task_id,
             'user_id' => $user_id,
-            'created_at' => now()
+            'created_at' => date('Y-m-d H:i:s')
         ];
         DB::table('task_watchers')->insert($lastWatcher);
 

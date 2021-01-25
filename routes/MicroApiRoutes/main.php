@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\MainController;
-use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'main', 'middleware' => 'auth:api'], function () {
