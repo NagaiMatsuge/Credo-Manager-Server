@@ -6,13 +6,14 @@ use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Traits\ResponseTrait;
+use App\Traits\Tasks\TaskTrait;
 
 class MainController extends Controller
 {
-    use ResponseTrait;
+    use ResponseTrait, TaskTrait;
 
     //* Show users to admin main page
-    public function showUsersToAdmin(Request $request)
+    private function showUsersToAdmin(Request $request)
     {
         $users = DB::table('users as t1')->leftJoin('model_has_roles as t2', 't1.id', '=', 't2.model_uuid')->leftJoin('roles as t3', 't3.id', '=', 't2.role_id')->select(
             't1.name as user_name',
@@ -33,16 +34,9 @@ class MainController extends Controller
         return $this->successResponse($users);
     }
 
-    //* Describe your method
-    public function showToUser(Request $request)
-    {
-    }
-
     //* Show Projects only to admin or managers
-    public function showProjectsToAdmin(Request $request)
+    private function showProjectsToAdmin(Request $request)
     {
-        if (!$request->user()->hasRole(['Admin', 'Manager']))
-            return $this->notAllowed();
         $projects = DB::table('projects')->where('archived', false)->get();
         $users = DB::table('task_user as t1')->leftJoin('users as t4', 't4.id', '=', 't1.user_id')->select('t1.task_id', 't1.user_id', DB::raw('(SELECT t2.project_id FROM steps t2 WHERE t2.id=(SELECT t3.step_id FROM tasks t3 WHERE t3.id=t1.task_id)) AS project_iid'), 't4.photo', 't4.color')->get();
         $res = [];
@@ -66,7 +60,7 @@ class MainController extends Controller
     }
 
     //* Show unread messages for users
-    public function showUnreadMessages(Request $request)
+    private function showUnreadMessages(Request $request)
     {
         $user = $request->user();
         $unreadMessages = Message::from('messages as t1')->rightJoin('unread_messages as t2', 't1.id', '=', 't2.message_id')->leftJoin('users as t3', 't1.user_id', '=', 't3.id')->select(
@@ -79,5 +73,25 @@ class MainController extends Controller
             DB::raw('(select t4.title from tasks t4 where t4.id=t1.task_id) as task_title')
         )->where('t2.user_id', $user->id)->with('files')->get();
         return $this->successResponse($unreadMessages);
+    }
+
+    //* Middle section of the main page
+    public function mid(Request $request)
+    {
+        if ($request->user()->hasRole(['Admin', 'Manager'])) {
+            return $this->showUsersToAdmin($request);
+        } else {
+            return $this->showToUser($request);
+        }
+    }
+
+    //* Last section of the main page
+    public function last(Request $request)
+    {
+        if ($request->user()->hasRole(['Admin', 'Manager'])) {
+            return $this->showProjectsToAdmin($request);
+        } else {
+            return $this->showUnreadMessages($request);
+        }
     }
 }

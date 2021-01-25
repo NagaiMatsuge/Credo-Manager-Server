@@ -9,10 +9,12 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Traits\Tasks\TaskTrait;
 
 class TaskController extends Controller
 {
     use ResponseTrait;
+    use TaskTrait;
 
     //* Fetch all tasks
     public function index(Request $request)
@@ -70,39 +72,6 @@ class TaskController extends Controller
         }
         unset($users['data']);
         return $this->successResponse($res, 200, '', ['name' => 'links', 'data' => $users]);
-    }
-
-    //* Show list of tasks to User
-    public function showToUser(Request $request)
-    {
-        $userTasks = Task::getUserTasks($request->user()->id);
-
-        $res = [
-            'tasks' => [
-                'active' => [],
-                'inactive' => []
-            ]
-        ];
-        foreach ($userTasks as $task) {
-            $task_data = [
-                'id' => $task->task_id,
-                'project' => [
-                    'id' => $task->project_id,
-                    'title' => $task->project_title
-                ],
-                'title' => $task->task_title,
-                'time' => $task->time,
-                'type' => $task->type,
-                'unread_count' => $task->unread_count,
-                'deadline' => $task->deadline,
-                'time_spent' => (int)$task->time_spent
-            ];
-            $res['tasks'][$task->active ? 'active' : 'inactive'][] = $task_data;
-        }
-        $res['active'] = true;
-        $res['hide'] = true;
-
-        return $this->successResponse($res);
     }
 
     //* Create task with validation
