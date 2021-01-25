@@ -22,7 +22,7 @@ class NotificationController extends Controller
         if ($request->user()->hasRole(['Admin', 'Manager'])) {
             return $this->showToAdmin($request, $notes);
         } else {
-            return $this->showToUser($request, $notes);
+            return $this->showToUser($notes);
         }
     }
 
@@ -34,10 +34,33 @@ class NotificationController extends Controller
     }
 
     //* Get method for Users
-    public function showToUser(Request $request, $notes)
+    public function showToUser($notes)
     {
-        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->where('t1.to_user', $request->user()->id)->where('t2.publish_date', '<', now())->where('read', false)->paginate(30);
-        return $this->successResponse(['notifications' => $notifs, 'notes' => $notes]);
+        return $this->successResponse(['notes' => $notes]);
+    }
+
+
+    //* Show Notification Log
+    public function showNotificationLog(Request $request)
+    {
+        if ($request->user()->hasRole(['Admin', 'Manager'])) {
+            return $this->showNotificationLogToAdmin($request);
+        } else {
+            return $this->showNotificationLogToUser($request);
+        }
+    }
+    //* Show notifations history for user
+    private function showNotificationLogToUser(Request $request)
+    {
+        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->where('t1.to_user', $request->user()->id)->where('t2.publish_date', '<', now())->paginate(30);
+        return $this->successResponse(['notifications' => $notifs]);
+    }
+
+    //* Show notification history for admin
+    private function showNotificationLogToAdmin(Request $request)
+    {
+        $notifs = Notification::where('user_id', $request->user()->id)->where('publish_date', '<', now())->paginate(30);
+        return $this->successResponse(['notifications' => $notifs]);
     }
 
     //* Get notification by its id
@@ -49,6 +72,9 @@ class NotificationController extends Controller
     //* Create notification
     public function store(Request $request)
     {
+        if (!$request->user()->hasRole(['Admin', 'Manager'])) {
+            return $this->notAllowed();
+        }
         $this->makeValidation($request);
         $auth_user_id = $request->user()->id;
         DB::transaction(function () use ($auth_user_id, $request) {
@@ -77,8 +103,31 @@ class NotificationController extends Controller
     //* Update notification by its id
     public function update(Request $request, $id)
     {
-        $create = DB::table('notifications')->where('id', $id)->update($this->makeValidation($request));
-        return $this->successResponse($create);
+        $request->validate([
+            'text' => 'required|string|min:3',
+            'publish_date' => 'nullable|date|date_format:Y-m-d H:i:s'
+        ]);
+        if ($request->has('publish_date') && !$request->publish_date) {
+            DB::transaction(function () use ($id, $request) {
+                At::deleteAtCommand($id);
+                $command = "php " . base_path() . "/artisan send:notification $id";
+                $res = At::newAtCommand($command, $request->publish_date);
+                if (!$res['success']) {
+                    throw new Exception($res['message']);
+                }
+                DB::table('notifications')->where('id', $id)->update([
+                    'text' => $request->text,
+                    'publish_date' => $request->publish_date
+                ]);
+            });
+        } else {
+            DB::table('notifications')->where('id', $id)->update([
+                'text' => $request->text,
+            ]);
+        }
+
+
+        return $this->successResponse(true);
     }
 
     //* Delete notification by its id

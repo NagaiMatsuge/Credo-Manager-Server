@@ -65,13 +65,27 @@ class UserController extends Controller
     //* Fetch user credentials
     public function getUser(Request $request)
     {
-        $user = User::userWithRole($request->user()->id);
+        $curr_user = $request->user();
+        $user = User::userWithRole($curr_user->id);
+        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->where('t1.read', false)->where('t1.to_user', $curr_user->id)->get();
         $user = $user[0];
-        $user->work_start_time = substr($user->work_start_time, 0, -3);
-        $user->work_end_time = substr($user->work_end_time, 0, -3);
-        $user->pause_start_time = substr($user->pause_start_time, 0, -3);
-        $user->pause_end_time = substr($user->pause_end_time, 0, -3);
-        return $this->successResponse($user);
+        $res = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'work_start_time' => substr($user->work_start_time, 0, -3),
+            'work_end_time' => substr($user->work_end_time, 0, -3),
+            'pause_start_time' => substr($user->pause_start_time, 0, -3),
+            'pause_end_time' => substr($user->pause_end_time, 0, -3),
+            'notifications' => $notifs,
+            'manager_id' => $user->manager_id,
+            'photo' => $user->photo,
+            'color' => $user->color,
+            'theme' => $user->theme,
+            'role' => $user->role
+        ];
+        return $this->successResponse($res);
     }
 
     //* Validate request
