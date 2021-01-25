@@ -8,8 +8,8 @@ use App\Traits\ResponseTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use App\Traits\UploadTrait;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -46,7 +46,10 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
 
         $user->update($data);
-        $user->syncRoles($request->role);
+        if (!$request->user()->hasRole(['Admin'])) {
+            $user->syncRoles($request->role);
+        }
+
         if (in_array($request->role, ['Admin', 'Manager']))
             DB::table('task_user')->where('user_id', $user->id)->delete();
 
@@ -128,5 +131,21 @@ class UserController extends Controller
         $res = DB::table('users')->where('id', $id)->update($data);
 
         return $this->successResponse($res);
+    }
+
+    //* Change users pereferred theme
+    public function changeTheme(Request $request)
+    {
+        $request->validate([
+            'theme' => [
+                Rule::in(config('params.themes')),
+                'required'
+            ]
+        ]);
+
+        DB::table('users')->where('id', $request->user()->id)->update([
+            'theme' => $request->theme
+        ]);
+        return $this->successResponse(true);
     }
 }

@@ -23,6 +23,7 @@ class AlterUsersTable extends Migration
             $table->json('working_days')->comment('[1,2,3] -> monday, tuesday, wednesday');
             $table->text('photo')->nullable();
             $table->string('color');
+            $table->enum('theme', config('params.themes'))->default(config('params.themes')['1']);
         });
     }
 

@@ -17,6 +17,10 @@ return [
         'Frontend Developer',
         'Designer',
     ],
+    'themes' => [
+        '1' => 'light',
+        '2' => 'dark'
+    ],
     'month_format' => [
         '01' => 'январь',
         '02' => 'февраль',

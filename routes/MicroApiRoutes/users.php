@@ -10,4 +10,5 @@ Route::group(['prefix' => 'users', 'middleware' => 'auth:api'], function () {
     Route::put('/update/{user}', [UserController::class, 'update']);
     Route::delete('/delete/{id}', [UserController::class, 'destroy']);
     Route::put('/setting/update/{id}', [UserController::class, 'settingUpdate']);
+    Route::put('/theme', [UserController::class, 'changeTheme']);
 });
