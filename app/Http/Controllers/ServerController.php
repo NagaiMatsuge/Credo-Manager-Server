@@ -125,6 +125,7 @@ class ServerController extends Controller
         $request->validate([
             'server.title' => 'required|min:3|max:255',
             'server.host' => 'required|string|unique:servers,host',
+            'server.project_id' => 'required|integer',
             'ftp_access.title' => 'required|min:3|max:255',
             'ftp_access.host' => 'required|string',
             'ftp_access.login' => 'required',

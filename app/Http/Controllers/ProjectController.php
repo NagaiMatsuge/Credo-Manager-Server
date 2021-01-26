@@ -8,6 +8,7 @@ use App\Http\Resources\PaymentResource;
 use App\Http\Resources\StepResource;
 use App\Models\Payment;
 use App\Models\Project;
+use App\Models\Server;
 use App\Models\Step;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
@@ -190,5 +191,12 @@ class ProjectController extends Controller
         ]);
         DB::table('projects')->where('id', $id)->update(['archived' => $request->status]);
         return $this->successResponse([], 200, "Successfully Updated");
+    }
+
+    //* Get projects server
+    public function getServer(Request $request, $id)
+    {
+        $res = Server::where('project_id', $id)->with('ftp_access')->with('db_access')->get();
+        return $this->successResponse($res);
     }
 }

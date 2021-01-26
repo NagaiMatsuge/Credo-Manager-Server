@@ -15,7 +15,6 @@ class CreateProjectsTable extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('server_id')->nullable();
             $table->string('photo')->nullable();
             $table->string('color')->nullable();
             $table->string('title');
@@ -23,7 +22,6 @@ class CreateProjectsTable extends Migration
             $table->date('deadline');
             $table->boolean('archived')->default(false);
 
-            $table->foreign('server_id')->references('id')->on('servers')->onDelete('cascade');
             $table->timestamps();
         });
     }

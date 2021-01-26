@@ -13,4 +13,5 @@ Route::group(['prefix' => 'projects', 'middleware' => 'auth:api'], function () {
     Route::get('/{project}/steps', [ProjectController::class, 'getProjectSteps'])->where(['id' => '[0-9]+']);
     Route::get('/{id}/payments', [ProjectController::class, 'getPayments'])->where(['id' => '[0-9]+']);
     Route::put('/{id}/archive', [ProjectController::class, 'archive'])->where(['id' => '[0-9]+']);
+    Route::get('/{id}/server', [ProjectController::class, 'getServer'])->where(['id' => '[0-9]+']);
 });
