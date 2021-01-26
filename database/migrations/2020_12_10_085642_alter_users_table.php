@@ -25,6 +25,7 @@ class AlterUsersTable extends Migration
             $table->text('photo')->nullable();
             $table->string('color');
             $table->enum('theme', config('params.themes'))->default(config('params.themes')['1']);
+            $table->foreign('active_task_id')->references('id')->on('task_user');
         });
     }
 
