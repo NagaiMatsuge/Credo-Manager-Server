@@ -17,7 +17,7 @@ class ServerResource extends JsonResource
         $res = [
             'id' => $this->id,
             'project_id' => $this->project_id,
-            'title' => $this->project_id,
+            'title' => $this->title,
             'host' => $this->host,
             'created_at' => $this->created_at,
             'db_ftp' => []
