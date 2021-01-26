@@ -19,7 +19,6 @@ class TaskUserSeeder extends Seeder
         $taskUser[] = [
             'user_id' => $userIds[0],
             'task_id' => 1,
-            'active' => false,
             'created_at' => now(),
             'time' => 45,
             'type' => 1,
@@ -28,7 +27,6 @@ class TaskUserSeeder extends Seeder
         $taskUser[] = [
             'user_id' => $userIds[0],
             'task_id' => 3,
-            'active' => false,
             'created_at' => now(),
             'time' => 456,
             'type' => 2,
@@ -37,7 +35,6 @@ class TaskUserSeeder extends Seeder
         $taskUser[] = [
             'user_id' => $userIds[1],
             'task_id' => 4,
-            'active' => false,
             'created_at' => now(),
             'time' => 375,
             'type' => 1,
@@ -47,7 +44,6 @@ class TaskUserSeeder extends Seeder
         $taskUser[] = [
             'user_id' => $userIds[1],
             'task_id' => 5,
-            'active' => false,
             'created_at' => now(),
             'time' => 360,
             'type' => 1,
@@ -57,7 +53,6 @@ class TaskUserSeeder extends Seeder
         $taskUser[] = [
             'user_id' => $userIds[2],
             'task_id' => 7,
-            'active' => false,
             'created_at' => now(),
             'time' => 700,
             'type' => 1,
@@ -67,7 +62,6 @@ class TaskUserSeeder extends Seeder
         $taskUser[] = [
             'user_id' => $userIds[2],
             'task_id' => 8,
-            'active' => false,
             'created_at' => now(),
             'type' => 3,
             'deadline' => null,
@@ -77,7 +71,6 @@ class TaskUserSeeder extends Seeder
         $taskUser[] = [
             'user_id' => $userIds[2],
             'task_id' => 2,
-            'active' => false,
             'created_at' => now(),
             'type' => 3,
             'deadline' => null,

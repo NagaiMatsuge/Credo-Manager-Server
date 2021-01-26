@@ -44,5 +44,4 @@ use Illuminate\Http\Request;
 */
 
 Route::get('/test', function (Request $request) {
-    Server::create(['title' => 'date', 'host' => 'date']);
 });
