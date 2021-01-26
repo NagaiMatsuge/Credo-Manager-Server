@@ -47,7 +47,7 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
 
         $user->update($data);
-        if (!$request->user()->hasRole(['Admin'])) {
+        if ($request->user()->hasRole(['Admin'])) {
             $user->syncRoles($request->role);
         }
 
