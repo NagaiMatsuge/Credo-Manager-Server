@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\SingleUserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
@@ -25,8 +26,8 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::userWithRole($id);
-        $user[0]->working_days = json_decode($user[0]->working_days);
-        return $this->successResponse($user);
+        $res = new SingleUserResource($user[0]);
+        return $this->successResponse($res);
     }
 
     //* Update user By its id
