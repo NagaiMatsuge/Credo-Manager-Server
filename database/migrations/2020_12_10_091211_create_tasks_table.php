@@ -17,7 +17,9 @@ class CreateTasksTable extends Migration
             $table->id();
             $table->string('title');
             $table->unsignedBigInteger('step_id');
-            $table->boolean('finished')->default(false);
+            $table->tinyInteger('type')->comment('1 clock, 2 deadline, 3 unlimeted');
+            $table->integer('time')->default(0)->comment('number of minites');
+            $table->dateTime('deadline')->nullable();
             $table->boolean('approved')->default(false)->comment('Only can be approved by Admin');
             $table->timestamps();
 

@@ -19,7 +19,7 @@ class TaskController extends Controller
     //* Fetch all tasks
     public function index(Request $request)
     {
-        if ($request->user()->hasRole('Admin')) {
+        if ($request->user()->hasRole(['Admin', 'Manager'])) {
             return $this->showToAdmin($request);
         } else {
             return $this->showToUser($request);
@@ -46,7 +46,8 @@ class TaskController extends Controller
                     'role' => $user->user_role,
                     'photo' => $user->user_photo,
                     'worked' => $user->worked,
-                    'color' => $user->user_color
+                    'color' => $user->user_color,
+                    'active' => $user->active_task_id
                 ],
                 'active' => true,
                 'hide' => true,
@@ -58,20 +59,20 @@ class TaskController extends Controller
             foreach ($tasks as $task) {
                 if ($task->user_id == $user->user_id) {
                     $task_info = [
-                        'id' => $task->task_id,
+                        'id' => $task->id,
                         'project' => [
                             'id' => $task->project_id,
                             'title' => $task->project_title
                         ],
-                        'title' => $task->title,
+                        'title' => $task->task_title,
                         'time' => $task->time,
                         'type' => $task->type,
                         'unread_count' => $task->unread_count,
                         'deadline' => $task->deadline,
                         'time_spent' => (int)$task->time_spent,
-                        'last_time' => (int)$task->last_time
+                        'last_time' => (int)$task->additional_time
                     ];
-                    $res[$user->user_id]['tasks'][$task->status ? 'active' : 'inactive'][] = $task_info;
+                    $res[$user->user_id]['tasks'][$task->task_user_id === $user->active_task_id ? 'active' : 'inactive'][] = $task_info;
                 }
             }
         }
@@ -87,7 +88,7 @@ class TaskController extends Controller
 
         $this->makeValidation($request);
         DB::transaction(function () use ($request) {
-            $task = $request->only(['step_id', 'title']);
+            $task = $request->only(['step_id', 'title', 'time', 'deadline', 'type']);
             $newTask = Task::create($task);
             $user_ids = $request->user_ids;
             $userTasks = [];
@@ -95,10 +96,6 @@ class TaskController extends Controller
                 $userTasks[] = [
                     'user_id' => $user_id,
                     'task_id' => $newTask->id,
-                    'time' => $request->time,
-                    'type' => $request->type,
-                    'deadline' => $request->deadline ?? null,
-                    'created_at' => now()
                 ];
             }
             DB::table('task_user')->insert($userTasks);
@@ -112,31 +109,22 @@ class TaskController extends Controller
         $this->makeValidation($request, true);
         DB::transaction(function () use ($request, $id) {
             $authority = $request->user()->hasRole(['Admin', 'Manager']);
-            $taskUserUpdate = $request->only(['time']);
-            //Admin Can update title, step, approved, type but cannot change active state of the task
-            //User can change active state but cannot change type
+            $taskUserUpdate = [];
             $taskUpdate = [];
             $need_to_be_deleted = [];
             $need_to_be_added = [];
             if ($authority) {
-                $taskUpdate = $request->only(['title', 'step_id', 'approved']);
-                $taskUserUpdate = array_merge($taskUserUpdate, $request->only(['active', 'type', 'deadline']));
+                $taskUpdate = $request->only(['title', 'step_id', 'approved', 'type', 'deadline', 'time']);
                 $old_user_ids = DB::table("task_user")->where('task_id', $id)->get()->pluck('user_id')->toArray();
                 $new_user_ids = $request->user_ids;
                 $need_to_be_deleted = array_diff($old_user_ids, $new_user_ids);
                 $need_to_be_added = array_diff($new_user_ids, $old_user_ids);
                 if (count($need_to_be_added) > 0) {
                     $newTaskUsers = [];
-                    if (!$request->has('time')) throw new Exception("time field is required");
-                    if (!$request->has('type')) throw new Exception("type field is required");
                     foreach ($need_to_be_added as $new_user_id) {
                         $newTaskUsers[] = [
                             'user_id' => $new_user_id,
                             'task_id' => $id,
-                            'time' => $request->time,
-                            'type' => $request->type,
-                            'deadline' => $request->deadline ?? null,
-                            'created_at' => now()
                         ];
                     }
                     DB::table('task_user')->insert($newTaskUsers);
@@ -145,20 +133,13 @@ class TaskController extends Controller
                     DB::table('task_user')->whereIn('user_id', $need_to_be_deleted)->delete();
                 }
             } else {
-                $taskUpdate = $request->only(['finished']);
+                $taskUserUpdate = $request->only(['finished']);
             }
             if (!empty($taskUpdate))
                 DB::table('tasks')->where('id', $id)->update($taskUpdate);
 
-            //When the update is invoked by admin, execution touches all user_ids
-            //When update is invoked by user, execution touches only that user
-            if (!empty($taskUserUpdate)) {
-                DB::table('task_user')->when($authority, function ($query) use ($request) {
-                    return $query->whereIn('user_id', $request->user_ids);
-                })->when(!$authority, function ($query) use ($request) {
-                    return $query->where('user_id', $request->user()->id);
-                })->where('task_id', $id)->update($taskUserUpdate);
-            }
+            if (!empty($taskUserUpdate))
+                DB::table('task_user')->where('task_id', $id)->where('user_id', $request->user()->id)->update($taskUserUpdate);
         });
         return $this->successResponse([], 200, 'Successfully updated');
     }
@@ -234,7 +215,7 @@ class TaskController extends Controller
 
     private function userList()
     {
-        $users = User::allUsersWithRoles()->get();
+        $users = User::userRole();
         $res = [
             'developers' => [],
             'designers' => []
@@ -251,6 +232,7 @@ class TaskController extends Controller
 
     public function clock(Request $request)
     {
+
         if (!$request->user()->hasRole(['Admin', 'Manager']))
             return $this->notAllowed();
 
@@ -260,37 +242,34 @@ class TaskController extends Controller
         ]);
 
         $user_id = $request->user_id;
+        $user = DB::table('users')->where('id', $user_id)->first();
+
         if (!$request->has('task_id')) {
-            DB::table('task_user')->where('user_id', $user_id)->update(['active' => false]);
-            DB::table('task_watchers')->where('user_id', $user_id)->where('stopped_at', null)->update([
+            DB::table('users')->where('id', $user_id)->update(['active_task_id' => null]);
+            DB::table('task_watchers')->where('task_user_id', $user->active_task_id)->where('stopped_at', null)->update([
                 'stopped_at' => date('Y-m-d H:i:s')
             ]);
             return $this->successResponse(['tick' => false]);
         }
+        DB::transaction(function () use ($user_id, $request, $user) {
 
-        DB::transaction(function () use ($user_id, $request) {
+            $task_user = DB::table('task_user')->where('task_id', $request->task_id)->where('user_id', $request->user_id)->first();
 
-            $lastWatcher = DB::table('task_watchers as t1')->where('t1.task_id', $request->task_id)->whereRaw('created_at=(select max(t2.created_at) from task_watchers as t2 where t2.task_id=t1.task_id and t2.user_id=t1.user_id)')->where('t1.user_id', $user_id)->first();
-            $active_task = DB::table('task_user')->where('user_id', $user_id)->where('active', true)->first();
+            $lastWatcher = DB::table('task_watchers as t1')->where('t1.task_user_id', $user->active_task_id)->whereRaw('t1.created_at=(select max(t2.created_at) from task_watchers as t2 where t2.task_user_id=t1.task_user_id)')->first();
 
-            if ($active_task) {
-                DB::table('task_user')->where('user_id', $user_id)->where('active', true)->update(['active' => false]);
-                DB::table('task_watchers')->where('id', $lastWatcher->id)->update(['stopped_at' => now()]);
+            DB::table('users')->where('id', $user_id)->update(['active_task_id' => $task_user->id]);
+            if ($lastWatcher) {
+                DB::table('task_watchers')->where('id', $lastWatcher->id)->update(['stopped_at' => date('Y-m-d H:i:s')]);
             }
-            $this->createTaskWatcher($request, $user_id);
-
-            DB::table('task_user')->where('user_id', $user_id)->where('task_id', $request->task_id)->update([
-                'active' => true
-            ]);
+            $this->createTaskWatcher($request, $task_user->id);
         });
         return $this->successResponse(['tick' => true]);
     }
 
-    private function createTaskWatcher(Request $request, $user_id)
+    private function createTaskWatcher(Request $request, $task_user_id)
     {
         $lastWatcher = [
-            'task_id' => $request->task_id,
-            'user_id' => $user_id,
+            'task_user_id' => $task_user_id,
             'created_at' => date('Y-m-d H:i:s')
         ];
         DB::table('task_watchers')->insert($lastWatcher);

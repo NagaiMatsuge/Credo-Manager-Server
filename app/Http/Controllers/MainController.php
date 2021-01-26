@@ -15,22 +15,28 @@ class MainController extends Controller
     //* Show users to admin main page
     private function showUsersToAdmin(Request $request)
     {
-        $users = DB::table('users as t1')->leftJoin('model_has_roles as t2', 't1.id', '=', 't2.model_uuid')->leftJoin('roles as t3', 't3.id', '=', 't2.role_id')->select(
-            't1.name as user_name',
-            't1.photo as user_photo',
-            't1.color as user_color',
-            't3.name as user_role',
-            't1.work_start_time',
-            't1.work_end_time',
-            't1.pause_start_time',
-            't1.pause_end_time',
-            DB::raw('(select t7.title from projects as t7 where t7.id=(select t6.project_id from steps as t6 where t6.id=(select t5.step_id from tasks as t5 where t5.id=(select t4.task_id from task_user as t4 where t4.active=1 and t4.user_id=t1.id limit 1)))) as project_title'),
-            DB::raw('(select SUM(t8.stopped_at - t8.created_at) / 60 FROM task_watchers t8 WHERE t8.stopped_at is not null and t8.user_id=t1.id and t8.task_id=(select t9.task_id from task_user as t9 where t9.active=1 and t9.user_id=t1.id limit 1)) as time_spent'),
-            DB::raw('(select t10.time from task_user as t10 where t10.active=1 and t10.user_id=t1.id limit 1) as given_time'),
-            DB::raw('(select t11.type from task_user as t11 where t11.active=1 and t11.user_id=t1.id limit 1) as task_type'),
-            DB::raw('(select t12.deadline from task_user as t12 where t12.active=1 and t12.user_id=t1.id limit 1) as deadline'),
-            DB::raw('(select max(t13.stopped_at) FROM task_watchers t13 WHERE t13.stopped_at is not null and t13.user_id=t1.id) as last_pause'),
-        )->whereNotIn('t3.name', ['Admin', 'Manager'])->get();
+        $users = DB::table('users as t1')
+            ->leftJoin('roles as t2', 't2.id', '=', 't1.role_id')
+            ->leftJoin('tasks as t3', 't3.id', '=', 't1.active_task_id')
+            ->leftJoin('steps as t4', 't4.id', '=', 't3.step_id')
+            ->leftJoin('projects as t5', 't5.id', '=', 't4.project_id')
+            ->select(
+                't1.name as user_name',
+                't1.photo as user_photo',
+                't1.color as user_color',
+                't2.name as user_role',
+                't1.work_start_time',
+                't1.work_end_time',
+                't1.pause_start_time',
+                't1.pause_end_time',
+                't5.title as project_title',
+                't3.time as given_time',
+                't3.type as task_type',
+                't3.deadline as deadline',
+                DB::raw('(select max(t6.stopped_at) FROM task_watchers t6 WHERE t6.stopped_at is not null and t6.task_user_id=t1.active_task_id) as last_pause'),
+                DB::raw('(select SUM(TIMESTAMPDIFF(MINUTE, t8.created_at, t8.stopped_at)) from task_watchers as t8 where t8.task_user_id=t1.active_task_id) as time_spent'),
+                DB::raw('(select TIMESTAMPDIFF(MINUTE, (select max(t10.created_at) from task_watchers as t10 where t10.task_user_id=t1.active_task_id and t10.stopped_at IS NULL), CURRENT_TIMESTAMP)) as additional_time')
+            )->whereNotIn('t2.name', ['Admin', 'Manager'])->get();
         return $this->successResponse($users);
     }
 

@@ -10,7 +10,7 @@ trait TaskTrait
     //* Show list of tasks to User
     public function showToUser(Request $request)
     {
-        $userTasks = Task::getUserTasks($request->user()->id);
+        $userTasks = Task::getUserTasks($request->user()->id, $request->project_id ?? null);
 
         $res = [
             'tasks' => [
@@ -20,7 +20,7 @@ trait TaskTrait
         ];
         foreach ($userTasks as $task) {
             $task_data = [
-                'id' => $task->task_id,
+                'id' => $task->id,
                 'project' => [
                     'id' => $task->project_id,
                     'title' => $task->project_title
@@ -30,9 +30,10 @@ trait TaskTrait
                 'type' => $task->type,
                 'unread_count' => $task->unread_count,
                 'deadline' => $task->deadline,
-                'time_spent' => (int)$task->time_spent
+                'time_spent' => (int)$task->time_spent,
+                'last_time' => (int)$task->additional_time
             ];
-            $res['tasks'][$task->active ? 'active' : 'inactive'][] = $task_data;
+            $res['tasks'][$task->active_task_id === $task->id ? 'active' : 'inactive'][] = $task_data;
         }
         $res['active'] = true;
         $res['hide'] = true;

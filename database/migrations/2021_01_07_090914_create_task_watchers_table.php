@@ -15,13 +15,11 @@ class CreateTaskWatchersTable extends Migration
     {
         Schema::create('task_watchers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('task_id');
-            $table->uuid('user_id');
+            $table->unsignedBigInteger('task_user_id');
             $table->dateTime('stopped_at')->nullable();
             $table->timestamps();
 
-            $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('task_user_id')->references('id')->on('task_user')->onDelete('cascade');
         });
     }
 

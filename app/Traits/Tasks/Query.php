@@ -6,55 +6,81 @@ use Illuminate\Support\Facades\DB;
 
 trait Query
 {
-    public static function getUserTasks($user_id)
+    public static function getUserTasks($user_id, $project_id = null)
     {
-        return DB::select('select t30.* from (select
-        (select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t1.task_id)) as t4) as project_id,
-        (select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t1.task_id)) as t7)) as project_title,
-        t1.task_id as task_id,
-        t1.active as active,
-        (select t3.title from tasks as t3 where t3.id=t1.task_id) as task_title,
-        (select t10.finished from tasks as t10 where t10.id=t1.task_id) as task_finished,
-        (select t17.approved from tasks as t17 where t17.id=t1.task_id) as task_approved,
-        t1.time,
-        t1.type,
-        t1.deadline,
-        (select count(t12.id) from unread_messages as t12 where t12.user_id=t1.user_id and t12.message_id in (select t13.id from messages as t13 where t13.task_id=t1.task_id)) as unread_count,
-        (select sum(t16.tt)/60 from (select t15.stopped_at - t15.created_at as tt from task_watchers as t15 where t15.user_id=t1.user_id and t15.task_id=t1.task_id and t15.stopped_at is not null) as t16) as time_spent
-        from task_user as t1 where t1.user_id=?) as t30 where t30.task_approved=0', [$user_id]);
+        return DB::table('task_user as t1')
+            ->leftJoin('tasks as t2', 't2.id', '=', 't1.task_id')
+            ->leftJoin('steps as t3', 't3.id', '=', 't2.step_id')
+            ->leftJoin('projects as t4', 't4.id', '=', 't3.project_id')
+            ->leftJoin('users as t8', 't8.id', '=', 't1.user_id')
+            ->select(
+                't2.id',
+                't4.id as project_id',
+                't4.title as project_title',
+                't2.title as task_title',
+                't2.time',
+                't2.type',
+                't2.deadline',
+                't8.active_task_id',
+                DB::raw('(select count(t5.id) from unread_messages as t5 where t5.user_id=?) as unread_count'),
+                DB::raw('(select SUM(TIMESTAMPDIFF(MINUTE, t6.created_at, t6.stopped_at)) from task_watchers as t6 where t6.task_user_id=t1.id) as time_spent'),
+                DB::raw('(select TIMESTAMPDIFF(MINUTE, (select max(t7.created_at) from task_watchers as t7 where t7.task_user_id=t1.id and t7.stopped_at IS NULL), CURRENT_TIMESTAMP)) as additional_time')
+            )
+            ->setBindings([$user_id])
+            ->where('t1.user_id', $user_id)
+            ->when($project_id, function ($q) use ($project_id) {
+                return $q->where('t4.id', $project_id);
+            })
+            ->get();
     }
 
     //* Get all user tasks for Admin
     public static function getAllUserTasks($user_id, $project_id = null)
     {
-        $additionalSql = "";
-        $data = [$user_id];
-        if ($project_id) {
-            $additionalSql = " and t25.project_id=?";
-            $data[] = $project_id;
-        }
-
-        return DB::select("select t25.* from (select (select t2.id from tasks as t2 where t2.id=t20.task_id) as task_id, t20.active as status, (select t3.title from tasks as t3 where t3.id=t20.task_id) as title,
-        (select t4.project_id from (select t5.* from steps as t5 where t5.id=(select t6.step_id from tasks as t6 where t6.id=t20.task_id)) as t4) as project_id,
-        (select t10.title from projects as t10 where t10.id=(select t7.project_id from (select t8.* from steps as t8 where t8.id=(select t9.step_id from tasks as t9 where t9.id=t20.task_id)) as t7)) as project_title,
-        t20.user_id,
-        t20.type as type,
-        t20.time,
-        t20.deadline,
-        (select sum(t24.tt)/60 from (select TIMESTAMPDIFF(SECOND, t27.created_at, t27.stopped_at) as tt from task_watchers as t27 where t27.user_id=t20.user_id and t27.task_id=t20.task_id) as t24 ) as time_spent,
-        (select TIMESTAMPDIFF(SECOND, (select max(t28.created_at) from task_watchers as t28 where t28.user_id=t20.user_id and t28.task_id=t20.task_id and t28.stopped_at is null), CURRENT_TIMESTAMP)/60) as last_time,
-        (select count(t22.id) from unread_messages as t22 where t22.user_id=? and t22.message_id in (select t23.id from messages as t23 where t23.task_id=t20.task_id)) as unread_count,
-        (select t26.approved from tasks as t26 where t26.id=t20.task_id) as task_approved
-        from task_user as t20) as t25 where t25.task_approved=0" . $additionalSql, $data);
+        return DB::table('task_user as t1')
+            ->leftJoin('tasks as t2', 't2.id', '=', 't1.task_id')
+            ->leftJoin('steps as t3', 't3.id', '=', 't2.step_id')
+            ->leftJoin('projects as t4', 't4.id', '=', 't3.project_id')
+            ->select(
+                't2.id',
+                't4.id as project_id',
+                't4.title as project_title',
+                't2.title as task_title',
+                't2.time',
+                't2.type',
+                't2.deadline',
+                't1.user_id',
+                't1.id as task_user_id',
+                DB::raw('(select count(t5.id) from unread_messages as t5 where t5.user_id=?) as unread_count'),
+                DB::raw('(select SUM(TIMESTAMPDIFF(MINUTE, t6.created_at, t6.stopped_at)) from task_watchers as t6 where t6.task_user_id=t1.id) as time_spent'),
+                DB::raw('(select TIMESTAMPDIFF(MINUTE, (select max(t7.created_at) from task_watchers as t7 where t7.task_user_id=t1.id and t7.stopped_at IS NULL), CURRENT_TIMESTAMP)) as additional_time')
+            )
+            ->setBindings([$user_id])
+            ->when($project_id, function ($q) use ($project_id) {
+                return $q->where('t4.id', $project_id);
+            })
+            ->get();
     }
 
-    //* Get all users list for admin in tasks view route
+    //* Get all users list for admin in tasks view route with pagination
     public static function getUserListForAdmin($user_id = null)
     {
-        // return DB::table('users as t19')->select(DB::raw('(select t11.name from roles as t11 where t11.id=(select t12.role_id from model_has_roles as t12 where t12.model_uuid=t19.id))as user_role'), 't19.id as user_id', 't19.name as user_name', 't19.photo as user_photo', DB::raw('(1) as worked'), 't19.color as user_color')->paginate(4)->toArray();
-
-        return DB::table('users as t1')->leftJoin('model_has_roles as t2', 't1.id', '=', 't2.model_uuid')->leftJoin('roles as t3', 't3.id', '=', 't2.role_id')->select('t1.id as user_id', 't1.name as user_name', 't1.photo as user_photo', 't1.color as user_color', 't3.name as user_role', DB::raw('(1) as worked'))->whereNotIn('t3.name', ['Admin', 'Manager'])->when($user_id, function ($query) use ($user_id) {
-            return $query->where('t1.id', $user_id);
-        })->paginate(4)->toArray();
+        return DB::table('users as t1')
+            ->leftJoin('roles as t2', 't2.id', '=', 't1.role_id')
+            ->select(
+                't1.id as user_id',
+                't1.name as user_name',
+                't1.photo as user_photo',
+                't1.color as user_color',
+                't2.name as user_role',
+                't1.active_task_id',
+                DB::raw('(1) as worked')
+            )
+            ->whereNotIn('t2.name', ['Admin', 'Manager'])
+            ->when($user_id, function ($query) use ($user_id) {
+                return $query->where('t1.id', $user_id);
+            })
+            ->paginate(4)
+            ->toArray();
     }
 }

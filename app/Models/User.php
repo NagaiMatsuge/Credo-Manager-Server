@@ -9,7 +9,6 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use App\Traits\UuidsTrait;
 use App\Traits\UserQuery;
-use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -62,6 +61,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function tasks()
     {
-        return $this->belongsToMany(Task::class);
+        return $this->hasMany(TaskUser::class, 'user_id', 'id');
     }
 }

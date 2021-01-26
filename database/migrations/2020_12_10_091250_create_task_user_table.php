@@ -17,10 +17,7 @@ class CreateTaskUserTable extends Migration
             $table->id();
             $table->uuid('user_id');
             $table->unsignedBigInteger('task_id');
-            $table->integer('time')->default(0)->comment('number of minites');
-            $table->tinyInteger('type')->comment('1 clock, 2 deadline, 3 unlimeted');
-            $table->dateTime('deadline')->nullable();
-            $table->timestamps();
+            $table->boolean('finished')->default(false);
 
             $table->unique(['user_id', 'task_id']);
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
