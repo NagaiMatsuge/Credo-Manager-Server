@@ -27,7 +27,7 @@ class UserController extends Controller
     {
         $user = User::userWithRole($id);
         $res = new SingleUserResource($user[0]);
-        return $this->successResponse($res);
+        return $this->successResponse([$res]);
     }
 
     //* Update user By its id
