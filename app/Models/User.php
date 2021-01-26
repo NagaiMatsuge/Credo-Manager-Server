@@ -8,13 +8,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use App\Traits\UuidsTrait;
-use Spatie\Permission\Traits\HasRoles;
 use App\Traits\UserQuery;
 use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable, UuidsTrait, HasRoles, UserQuery;
+    use HasApiTokens, HasFactory, Notifiable, UuidsTrait, UserQuery;
 
     /**
      * The attributes that are mass assignable.

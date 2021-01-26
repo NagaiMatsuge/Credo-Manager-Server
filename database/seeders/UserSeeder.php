@@ -32,7 +32,8 @@ class UserSeeder extends Seeder
             'pause_start_time' => '13:00',
             'pause_end_time' => '14:00',
             'working_days' => [1, 2, 3, 4, 5],
-            'color' => '#FC73AD'
+            'color' => '#FC73AD',
+            'role_id' => 2
         ]);
         $users[] = User::create([
             'name' => 'Bobur',
@@ -44,7 +45,8 @@ class UserSeeder extends Seeder
             'pause_start_time' => '13:00',
             'pause_end_time' => '14:00',
             'working_days' => [1, 2, 3, 4, 5],
-            'color' => '#FCB573'
+            'color' => '#FCB573',
+            'role_id' => 3
         ]);
         $users[] = User::create([
             'name' => 'Ruslan',
@@ -56,7 +58,8 @@ class UserSeeder extends Seeder
             'pause_start_time' => '13:00',
             'pause_end_time' => '14:00',
             'working_days' => [1, 2, 3, 4, 5],
-            'color' => '#8F73FC'
+            'color' => '#8F73FC',
+            'role_id' => 1
         ]);
         $users[] = User::create([
             'name' => 'Shoxrux',
@@ -68,13 +71,8 @@ class UserSeeder extends Seeder
             'pause_start_time' => '13:00',
             'pause_end_time' => '14:00',
             'working_days' => [1, 2, 3, 4, 5],
-            'color' => '#3B5998'
+            'color' => '#3B5998',
+            'role_id' => 2
         ]);
-
-        $roles = config('params.roles');
-        $users[0]->syncRoles($roles[3]);
-        $users[1]->syncRoles($roles[2]);
-        $users[2]->syncRoles($roles[0]);
-        $users[3]->syncRoles($roles[2]);
     }
 }
