@@ -23,7 +23,8 @@ trait UserQuery
             'users.photo',
             'users.color',
             'users.theme',
-            'roles.name as role'
+            'roles.name as role',
+            'users.working_days'
         );
         if ($id)
             $query = $query->where('users.id', $id)->first();
