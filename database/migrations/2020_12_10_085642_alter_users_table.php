@@ -15,6 +15,7 @@ class AlterUsersTable extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('phone', 20)->nullable();
+            $table->unsignedBigInteger('active_task_id')->nullable();
             $table->time('work_start_time', 0);
             $table->time('work_end_time', 0);
             $table->uuid('manager_id')->nullable();
