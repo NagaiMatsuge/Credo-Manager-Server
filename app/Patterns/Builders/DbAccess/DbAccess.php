@@ -41,7 +41,7 @@ class DbAccess
         $result = shell_exec($shellCommand);
         Logger::serverChange($result, $email, "Creating Database");
         $error_message = "ERROR";
-        if (strpos($result, $error_message) == false) {
+        if (strpos($result, $error_message) !== false) {
             return ["success" => false, 'message' => $result];
         } else {
             return ["success" => true];
@@ -57,22 +57,19 @@ class DbAccess
             $shellCommand = "mysql_delete_db $this->database 2>&1";
             $result = shell_exec($shellCommand);
             Logger::serverChange($result, $email, "Deleting Database");
-            if (strpos($result, $error_message) == false) {
+            if (strpos($result, $error_message) !== false) {
                 return ["success" => false, 'message' => $result];
-            } else {
-                return ["success" => true];
             }
         }
         if ($this->username) {
             $shellCommand = "mysql_delete_user $this->username 2>&1";
             $result = shell_exec($shellCommand);
             Logger::serverChange($result, $email, "Deleting Database User");
-            if (strpos($result, $error_message) == false) {
+            if (strpos($result, $error_message) !== false) {
                 return ["success" => false, 'message' => $result];
-            } else {
-                return ["success" => true];
             }
         }
+        return ['success' => true];
     }
 
     public function update($email)
@@ -82,7 +79,7 @@ class DbAccess
         $result = shell_exec($shellCommand);
         Logger::serverChange($result, $email, "Updating Database User");
         $error_message = "ERROR";
-        if (strpos($result, $error_message) == false) {
+        if (strpos($result, $error_message) !== false) {
             return ["success" => false, 'message' => $result];
         } else {
             return ["success" => true];
