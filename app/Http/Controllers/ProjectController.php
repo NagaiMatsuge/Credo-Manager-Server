@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\CurrencyResource;
+use App\Http\Resources\ServerResource;
 use App\Http\Resources\StepResource;
 use App\Models\Project;
 use App\Models\Server;
@@ -194,6 +195,7 @@ class ProjectController extends Controller
     public function getServer(Request $request, $id)
     {
         $res = Server::where('project_id', $id)->with('ftp_access')->with('db_access')->get();
+        $res = ServerResource::collection($res);
         return $this->successResponse($res);
     }
 }
