@@ -10,13 +10,7 @@ class Task extends Model
 {
     use HasFactory, Query;
 
-    protected $fillable = [
-        'title',
-        'finished',
-        'approved',
-        'deadline',
-        'step_id'
-    ];
+    protected $guarded = ['*'];
 
     public function users()
     {
