@@ -41,7 +41,7 @@ class ServerController extends Controller
             $server = Server::create($data['server']);
             FtpAccess::create(array_merge($data['ftp_access'], ['server_id' => $server->id]));
             DbAccess::create(array_merge($data['db_access'], ['server_id' => $server->id]));
-            if ($request->input('server.type') == 1) {
+            if ($request->input('server.type_id') == 1) {
 
                 $ftp = FtpAccessFacade::setUser($data['ftp_access']['login'])->setPassword($data['ftp_access']['password']);
                 $ftp_create = $ftp->create($email);

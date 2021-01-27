@@ -8,7 +8,6 @@ class DbAccess
 {
     private $username;
     private $password;
-    private $host;
     private $database;
 
     public function setUser($username)
@@ -37,47 +36,56 @@ class DbAccess
 
     public function create($email)
     {
-        if ((!$this->database) || (!$this->username)) return ["success" => false, "message" => "Database or username is not set!"];
-        $shellCommand = "sudo mysql_create_db_user -t=create -d=$this->database -u=$this->username ";
-        if ($this->host) $shellCommand .= "-h=$this->host ";
-        if ($this->password) $shellCommand .= "-p=$this->password";
+        if ((!$this->database) || (!$this->username) || (!$this->password)) return ["success" => false, "message" => "Database or username is not set!"];
+        $shellCommand = "mysql_create $this->username $this->database $this->password 2>&1";
         $result = shell_exec($shellCommand);
         Logger::serverChange($result, $email, "Creating Database");
-        $success_message = "User creation completed!";
-        if (strpos($result, $success_message) !== false) {
-            return ["success" => true];
+        $error_message = "ERROR";
+        if (strpos($result, $error_message) == false) {
+            return ["success" => false, 'message' => $result];
         } else {
-            return ["success" => false, "message" => $result];
+            return ["success" => true];
         }
     }
 
     public function delete($email)
     {
         if ((!$this->database) && (!$this->username)) return ["success" => false, "message" => "Database or username is not set!"];
-        $shellCommand = "sudo mysql_create_db_user -t=delete ";
-        if ($this->database) $shellCommand .= "-d=$this->database ";
-        if ($this->username) $shellCommand .= "-u=$this->username";
-        $result = shell_exec($shellCommand);
-        Logger::serverChange($result, $email, "Deleting Database");
-        $success_message = "Complete!";
-        if (strpos($result, $success_message) !== false) {
-            return ["success" => true];
-        } else {
-            return ["success" => false, "message" => $result];
+        $result = null;
+        $error_message = "ERROR";
+        if ($this->database) {
+            $shellCommand = "mysql_delete_db $this->database 2>&1";
+            $result = shell_exec($shellCommand);
+            Logger::serverChange($result, $email, "Deleting Database");
+            if (strpos($result, $error_message) == false) {
+                return ["success" => false, 'message' => $result];
+            } else {
+                return ["success" => true];
+            }
+        }
+        if ($this->username) {
+            $shellCommand = "mysql_delete_user $this->username 2>&1";
+            $result = shell_exec($shellCommand);
+            Logger::serverChange($result, $email, "Deleting Database User");
+            if (strpos($result, $error_message) == false) {
+                return ["success" => false, 'message' => $result];
+            } else {
+                return ["success" => true];
+            }
         }
     }
 
     public function update($email)
     {
         if ((!$this->password) && (!$this->username)) return ["success" => false, "message" => "Password or username is not set!"];
-        $shellCommand = "sudo mysql_create_db_user -t=update -u=$this->username -p=$this->password";
+        $shellCommand = "mysql_update $this->username $this->password 2>&1";
         $result = shell_exec($shellCommand);
-        Logger::serverChange($result, $email, 'Update password');
-        $success_message = "Complete!";
-        if (strpos($result, $success_message) !== false) {
-            return ["success" => true];
+        Logger::serverChange($result, $email, "Updating Database User");
+        $error_message = "ERROR";
+        if (strpos($result, $error_message) == false) {
+            return ["success" => false, 'message' => $result];
         } else {
-            return ["success" => false, "message" => $result];
+            return ["success" => true];
         }
     }
 }

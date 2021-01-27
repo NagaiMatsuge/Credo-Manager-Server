@@ -10,7 +10,9 @@ class Server extends Model
     use HasFactory;
     protected $fillable = [
         'title',
-        'host'
+        'host',
+        'project_id',
+        'type'
     ];
 
     public function ftp_access()
