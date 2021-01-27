@@ -158,7 +158,7 @@ class TaskController extends Controller
     {
         return $request->validate([
             'step_id' => [
-                Rule::requiredIf(!$for_update),
+                Rule::requiredIf($for_update == false),
                 'integer'
             ],
             'user_ids' => [
@@ -167,19 +167,19 @@ class TaskController extends Controller
             ],
             'user_ids.*' => 'string',
             'title' => [
-                Rule::requiredIf(!$for_update),
+                Rule::requiredIf($for_update == false),
                 'string',
                 'min:3',
                 'max:255',
             ],
             'active' => 'nullable|boolean',
             'time' => [
-                Rule::requiredIf(!$for_update),
+                Rule::requiredIf($for_update == false),
                 'integer',
                 'max:1000000000'
             ],
             'type' => [
-                Rule::requiredIf(!$for_update),
+                Rule::requiredIf($for_update == false),
                 'integer',
                 Rule::in(array_keys(config('params.task_types')))
             ],

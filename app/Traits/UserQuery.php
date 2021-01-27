@@ -82,4 +82,29 @@ trait UserQuery
         else
             DB::table('users')->where('id', $this->id)->update(['role_id' => $role->id]);
     }
+
+    public static function role($roles): object
+    {
+        $query = DB::table('users')->leftJoin('roles', 'users.role_id', '=', 'roles.id')->select(
+            'users.id',
+            'users.name',
+            'users.email',
+            'users.phone',
+            'users.color',
+            'users.working_days',
+            'users.work_start_time',
+            'users.work_end_time',
+            'users.pause_start_time',
+            'users.pause_end_time',
+            'users.active_task_id',
+            'users.manager_id',
+            'users.theme'
+        );
+        if (is_string($roles)) {
+            $query = $query->where('roles.name', $roles);
+        } else if (is_array($roles)) {
+            $query = $query->whereIn('roles.name', $roles);
+        }
+        return $query;
+    }
 }
