@@ -16,7 +16,7 @@ class CreateFtpAccessTable extends Migration
         Schema::create('ftp_access', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('server_id');
-            $table->string('title');
+            $table->integer('port')->default(21);
             $table->string('host');
             $table->string('login');
             $table->text('password');

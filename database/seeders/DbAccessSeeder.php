@@ -20,7 +20,7 @@ class DbAccessSeeder extends Seeder
         $dbAccesses = [];
         $dbAccesses[] = [
             'db_name' => 'artisans',
-            'server_name' => 'artisan command',
+            'host' => 'artisan command',
             'login' => 'artisan',
             'password' => 'artisan',
             'description' => 'Long long long description, (actually no)',
@@ -28,7 +28,23 @@ class DbAccessSeeder extends Seeder
         ];
         $dbAccesses[] = [
             'db_name' => 'White hat',
-            'server_name' => 'whitehat.com',
+            'host' => 'whitehat.com',
+            'login' => 'hatshatshats',
+            'password' => 'guessmypassword',
+            'description' => 'Totally random text',
+            'server_id' => 2,
+        ];
+        $dbAccesses[] = [
+            'db_name' => 'White hat',
+            'host' => 'whitehat.com',
+            'login' => 'hatshatshats',
+            'password' => 'guessmypassword',
+            'description' => 'Totally random text',
+            'server_id' => 2,
+        ];
+        $dbAccesses[] = [
+            'db_name' => 'White hat',
+            'host' => 'whitehat.com',
             'login' => 'hatshatshats',
             'password' => 'guessmypassword',
             'description' => 'Totally random text',

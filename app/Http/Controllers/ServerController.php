@@ -34,108 +34,107 @@ class ServerController extends Controller
         $this->validateRequest($request);
 
         $data = $request->input();
+        $data['server']['type'] = $data['server']['type_id'];
+        unset($data['server']['type_id']);
         DB::transaction(function () use ($data, $request) {
             $email = $request->user()->email;
             $server = Server::create($data['server']);
             FtpAccess::create(array_merge($data['ftp_access'], ['server_id' => $server->id]));
             DbAccess::create(array_merge($data['db_access'], ['server_id' => $server->id]));
-            $ftp = FtpAccessFacade::setUser($data['ftp_access']['login'])->setPassword($data['ftp_access']['password']);
-            $ftp_create = $ftp->create($email);
-            if (!$ftp_create['success']) {
-                //This throw is needed to revert datbase changes back, don't remove it!
-                throw new Exception($ftp_create['message']);
-                return;
-            }
-            $db = DbAccessFacade::setUser($data['db_access']['login'])
-                ->setPassword($data['db_access']['password'])
-                ->setDatabaseName($data['db_access']['db_name']);
-            $db_create = $db->create($email);
+            if ($request->input('server.type') == 1) {
 
-            if (!$db_create['success']) {
-                //Delete the user
-                $ftp->delete($email);
-                //This throw is needed to revert datbase changes back, don't remove it!
-                throw new Exception($db_create['message']);
-                return;
-            }
+                $ftp = FtpAccessFacade::setUser($data['ftp_access']['login'])->setPassword($data['ftp_access']['password']);
+                $ftp_create = $ftp->create($email);
+                if (!$ftp_create['success']) {
+                    //This throw is needed to revert datbase changes back, don't remove it!
+                    throw new Exception($ftp_create['message']);
+                    return;
+                }
+                $db = DbAccessFacade::setUser($data['db_access']['login'])
+                    ->setPassword($data['db_access']['password'])
+                    ->setDatabaseName($data['db_access']['db_name']);
+                $db_create = $db->create($email);
 
-            $server = ServerFacade::setHost($data['server']['host'])->create($email);
-            if (!$server['success']) {
-                //Delete the user
-                $ftp->delete($email);
-                //Delete database access
-                $db->delete($email);
-                //This throw is needed to revert datbase changes back, don't remove it!
-                throw new Exception($server['message']);
-                return;
+                if (!$db_create['success']) {
+                    //Delete the user
+                    $ftp->delete($email);
+                    //This throw is needed to revert datbase changes back, don't remove it!
+                    throw new Exception($db_create['message']);
+                    return;
+                }
+
+                $server = ServerFacade::setHost($data['server']['host'])->create($email);
+                if (!$server['success']) {
+                    //Delete the user
+                    $ftp->delete($email);
+                    //Delete database access
+                    $db->delete($email);
+                    //This throw is needed to revert datbase changes back, don't remove it!
+                    throw new Exception($server['message']);
+                    return;
+                }
             }
         });
         return $this->successResponse([]);
     }
 
-    //* Show server, ftp_access, db_access by server's id    
-    public function show(Request $request, $id)
-    {
-        $id = Server::with('ftp_access')->with('db_access')->get();
-        return $this->successResponse($id);
-    }
-
     //* Update server, ftp_access, db-access by server's id    
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'server.title' => 'string',
-            'db_access.description' => 'string',
-            'db_access.server_name' => 'string',
-            'ftp_access.title' => 'string',
-            'ftp_access.description' => 'string',
-            'ftp_access.id' => [
-                Rule::requiredIf($request->has('ftp_access.title') || $request->has('ftp_access.description')),
-                'integer'
-            ],
-            'db_access.id' => [
-                Rule::requiredIf($request->has('db_access.title') || $request->has('db_access.description')),
-                'integer'
-            ]
-        ]);
-        DB::transaction(function () use ($request, $id) {
-            $data = $request->all();
-            $server_title = $data['server']['title'];
-            DB::table("servers")->where('id', $id)->update(['title' => $server_title]);
-            if ($request->has('db_access.id')) {
-                $updateDb = [
-                    'description' => $data['db_access']['description'],
-                    'server_name' => $data['db_access']['server_name']
-                ];
-                DB::table('db_access')->where('id', $data['db_access']['id'])->update($updateDb);
-            }
-            if ($request->has('ftp_access.id')) {
-                $ftpUpdate = [
-                    'description' => $data['ftp_access']['description'],
-                    'title' => $data['ftp_access']['title']
-                ];
-                DB::table('ftp_access')->where('id', $data['ftp_access']['id'])->update($ftpUpdate);
-            }
+        $this->validateRequest($request);
+        $server = DB::table('servers')->where('id', $id)->first();
+        if ($server->type == 1)
+            return $this->updateLocalServer($request, $id);
+        else
+            return $this->updateClientServer($request, $id);
+    }
+
+    //* Update local server information
+    public function updateLocalServer(Request $request, $id)
+    {
+        DB::transaction(function () use ($id, $request) {
+            $server = $request->only(['server.title']);
+            $ftp = $request->only(['ftp_access.description']);
+            $db = $request->only(['db_access.description']);
+            DB::table('servers')->where('id', $id)->update($server['server']);
+            DB::table('ftp_access')->where('server_id', $id)->update($ftp['ftp_access']);
+            DB::table('db_access')->where('server_id', $id)->update($db['db_access']);
         });
-        return $this->successResponse([], 200, 'Updated successfully');
+    }
+
+    //* Update client server
+    public function updateClientServer(Request $request, $id)
+    {
+        DB::transaction(function () use ($id, $request) {
+            $server = $request->only(['server.title', 'server.host']);
+            $ftp = $request->only(['ftp_access.description', 'ftp_access.port', 'ftp_access.host', 'ftp_access.login', 'ftp_access.password']);
+            $db = $request->only(['db_access.description', 'db_access.db_name', 'db_access.host', 'db_access.login', 'db_access.password']);
+            DB::table('servers')->where('id', $id)->update($server['server']);
+            DB::table('ftp_access')->where('server_id', $id)->update($ftp['ftp_access']);
+            DB::table('db_access')->where('server_id', $id)->update($db['db_access']);
+        });
     }
 
     private function validateRequest(Request $request)
     {
         $request->validate([
+            'server.type_id' => [
+                'required',
+                Rule::in(array_keys(config('params.server_types')))
+            ],
             'server.title' => 'required|min:3|max:255',
             'server.host' => 'required|string|unique:servers,host',
             'server.project_id' => 'required|integer',
-            'ftp_access.title' => 'required|min:3|max:255',
+            'ftp_access.port' => 'required|integer',
             'ftp_access.host' => 'required|string',
-            'ftp_access.login' => 'required',
+            'ftp_access.login' => 'required|string',
             'ftp_access.password' => 'required|string',
-            'ftp_access.description' => 'nullable|min:10',
-            'db_access.server_name' => 'required',
-            'db_access.db_name' => 'required|unique:db_access,db_name',
-            'db_access.login' => 'required',
+            'ftp_access.description' => 'nullable|string|min:6',
+            'db_access.host' => 'required|string',
+            'db_access.db_name' => 'required|string|unique:db_access,db_name',
+            'db_access.login' => 'required|string',
             'db_access.password' => 'required|string',
-            'db_access.description' => 'nullable|min:10',
+            'db_access.description' => 'nullable|string|min:6',
         ]);
     }
 

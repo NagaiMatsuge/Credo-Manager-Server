@@ -43,7 +43,7 @@ use Illuminate\Http\Request;
         '(select t6.project_id from steps t6 where t6.id=(select t5.step_id from tasks t5 where t4.id=(select t4.task_id from task_user as t4 where t4.active=1 and t4.user_id=t1.id limit 1)))',
 */
 
-Route::get('/test', function (Request $request) {
+Route::post('/test', function (Request $request) {
     // $res = DB::table('task_user as t1')
     //     ->leftJoin('tasks as t2', 't2.id', '=', 't1.task_id')
     //     ->leftJoin('steps as t3', 't3.id', '=', 't2.step_id')
@@ -104,15 +104,18 @@ Route::get('/test', function (Request $request) {
     //         return $q->where('t4.id', $project_id);
     //     })
     //     ->get();
-    $user_id = "2bdf2f24-82b7-413b-aac7-3a7922a0b741";
-    $res = Message::from('messages as t1')->rightJoin('unread_messages as t2', 't1.id', '=', 't2.message_id')->leftJoin('users as t3', 't1.user_id', '=', 't3.id')->select(
-        't1.text',
-        't1.created_at as sent_at',
-        't3.photo as user_photo',
-        't3.color as user_color',
-        't3.name as user_name',
-        DB::raw('(select t5.title from projects as t5 where t5.id=(select t6.project_id from steps as t6 where t6.id=(select t7.step_id from tasks as t7 where t7.id=t1.task_id))) as project_title'),
-        DB::raw('(select t4.title from tasks t4 where t4.id=t1.task_id) as task_title')
-    )->where('t2.user_id', $user_id)->with('files')->get();
-    return response()->json($res);
+    // $user_id = "2bdf2f24-82b7-413b-aac7-3a7922a0b741";
+    // $res = Message::from('messages as t1')->rightJoin('unread_messages as t2', 't1.id', '=', 't2.message_id')->leftJoin('users as t3', 't1.user_id', '=', 't3.id')->select(
+    //     't1.text',
+    //     't1.created_at as sent_at',
+    //     't3.photo as user_photo',
+    //     't3.color as user_color',
+    //     't3.name as user_name',
+    //     DB::raw('(select t5.title from projects as t5 where t5.id=(select t6.project_id from steps as t6 where t6.id=(select t7.step_id from tasks as t7 where t7.id=t1.task_id))) as project_title'),
+    //     DB::raw('(select t4.title from tasks t4 where t4.id=t1.task_id) as task_title')
+    // )->where('t2.user_id', $user_id)->with('files')->get();
+    $res = $request->only(['server.id', 'server.name']);
+    // unset($res['server']['id']);
+
+    return response()->json([$res['server'], is_array($res)]);
 });

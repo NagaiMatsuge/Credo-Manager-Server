@@ -18,6 +18,7 @@ class CreateServersTable extends Migration
             $table->unsignedBigInteger('project_id');
             $table->string('title', 30);
             $table->string('host');
+            $table->enum('type', config('params.server_types'));
             $table->timestamps();
 
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
