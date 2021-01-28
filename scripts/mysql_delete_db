@@ -1,0 +1,12 @@
+#!/bin/bash
+db=$1
+
+if [ "${db}" != "" ]; then
+
+mysql -u root -proot -e "drop database ${db};"
+
+else
+
+echo "ERROR: Provide Enough options"
+echo "EXAMPLE: mysql_delete_db db_name"
+fi

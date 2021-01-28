@@ -1,0 +1,15 @@
+#!/bin/bash
+user=$1
+db_name=$2
+pass=$3
+
+if [ "${user}" != "" ] && [ "${db_name}" != "" ] && [ "${pass}" != "" ]; then
+
+mysql -u root -proot -e "create database if not exists ${db_name};create user ${user} identified by '${pass}';GRANT ALL PRIVILEGES ON ${db_name}.* TO ${user};FLUSH PRIVILEGES;"
+
+else
+
+echo "ERROR: Provide Enough options"
+echo "EXAMPLE: mysql_create username db_name pass"
+
+fi
