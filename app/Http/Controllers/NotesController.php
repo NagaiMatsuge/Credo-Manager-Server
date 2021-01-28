@@ -14,37 +14,45 @@ class NotesController extends Controller
     //* Get all notes
     public function index(Request $request)
     {
-        return $this->successResponse(Note::paginate(30));
+        return $this->successResponse(Note::where('user_id', $request->user()->id)->paginate(30));
     }
 
     //* Show note by its id
     public function show(Request $request, $id)
     {
-        return $this->successResponse($id);
+        $res = DB::table('notes')->where('id', $id)->where('user_id', $request->user()->id)->first();
+        return $this->successResponse($res);
     }
 
     //* Store note
     public function store(Request $request)
     {
-        $create = Note::create($request->validate([
-            'text' => 'request|string|min:3'
-        ]));
+        $request->validate([
+            'text' => 'required|string|min:3'
+        ]);
+        $create = Note::create([
+            'text' => $request->text,
+            'user_id' => $request->user()->id
+        ]);
         return $this->successResponse($create);
     }
-    
+
     //* Update note by its id
     public function update(Request $request, $id)
     {
-        $update = $id->update($request->validate([
-            'text' => 'request|string|min:3'
-        ]));
-        return $this->successResponse($update);
+        $request->validate([
+            'text' => 'required|string|min:3'
+        ]);
+        DB::table('notes')->where('id', $id)->where('user_id', $request->user()->id)->update([
+            'text' => $request->text
+        ]);
+        return $this->successResponse(true);
     }
 
     //* Delete note by its id
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $delete = DB::table('notes')->where('id', $id)->delete();
+        $delete = DB::table('notes')->where('id', $id)->where('user_id', $request->user()->id)->delete();
         return $this->successResponse($delete);
     }
 }
