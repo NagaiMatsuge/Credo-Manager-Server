@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\CurrencyCollection;
 use App\Http\Resources\CurrencyResource;
-use App\Http\Resources\PaymentResource;
 use App\Http\Resources\ServerResource;
 use App\Http\Resources\StepResource;
-use App\Models\Payment;
 use App\Models\Project;
 use App\Models\Server;
 use App\Models\Step;

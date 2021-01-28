@@ -17,26 +17,13 @@ class CreateTasksTable extends Migration
             $table->id();
             $table->string('title');
             $table->unsignedBigInteger('step_id');
-            $table->boolean('finished')->default(false);
+            $table->tinyInteger('type')->comment('1 clock, 2 deadline, 3 unlimeted');
+            $table->integer('time')->default(0)->comment('number of minites');
+            $table->dateTime('deadline')->nullable();
             $table->boolean('approved')->default(false)->comment('Only can be approved by Admin');
             $table->timestamps();
 
             $table->foreign('step_id')->references('id')->on('steps')->onDelete('cascade');
-        });
-
-        Schema::create('task_user', function (Blueprint $table) {
-            $table->id();
-            $table->uuid('user_id');
-            $table->unsignedBigInteger('task_id');
-            $table->integer('time')->default(0)->comment('number of minites');
-            $table->tinyInteger('type')->comment('1 clock, 2 deadline, 3 unlimeted');
-            $table->dateTime('deadline')->nullable();
-            $table->boolean('active')->default(false);
-            $table->timestamps();
-
-            $table->unique(['user_id', 'task_id']);
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
         });
     }
 

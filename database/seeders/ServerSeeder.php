@@ -19,12 +19,14 @@ class ServerSeeder extends Seeder
             'title' => 'Uzexpress',
             'host' => 'Uzexpress.ru',
             'project_id' => 1,
+            'type' => 1,
             'created_at' => now()
         ];
         $servers[] = [
             'title' => 'Time Manager',
             'host' => 'time_manager.credo/',
             'project_id' => 2,
+            'type' => 2,
             'created_at' => now()
         ];
 

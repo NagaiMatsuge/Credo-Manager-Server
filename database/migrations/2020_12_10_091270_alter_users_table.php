@@ -15,6 +15,8 @@ class AlterUsersTable extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('phone', 20)->nullable();
+            $table->unsignedBigInteger('active_task_id')->nullable();
+            $table->unsignedBigInteger('role_id');
             $table->time('work_start_time', 0);
             $table->time('work_end_time', 0);
             $table->uuid('manager_id')->nullable();
@@ -24,6 +26,8 @@ class AlterUsersTable extends Migration
             $table->text('photo')->nullable();
             $table->string('color');
             $table->enum('theme', config('params.themes'))->default(config('params.themes')['1']);
+            $table->foreign('active_task_id')->references('id')->on('task_user');
+            $table->foreign('role_id')->references('id')->on('roles');
         });
     }
 

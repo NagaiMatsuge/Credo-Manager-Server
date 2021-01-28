@@ -30,6 +30,22 @@ sudo ln ./scripts/at_helper /usr/local/bin
 
 ---
 
+## Configure scripts for other purposes
+
+- Make all files in scripts folder executable
+- Link all files in scripts folder to /usr/local/bin
+- Example: sudo ln ./scripts/virtualhost /usr/local/bin
+- Open /etc/sudoers file and paste the following:
+
+```
+www-data ALL=(root) NOPASSWD: /usr/local/bin/create_sftp_user
+www-data ALL=(root) NOPASSWD: /usr/local/bin/virtualhost
+www-data ALL=(root) NOPASSWD: /usr/local/bin/update_user_password
+
+```
+
+---
+
 ## Websockets for Task-Chats
 
 - We use [Laravel-websockets](https://beyondco.de/docs/laravel-websockets/getting-started/introduction) for websockets

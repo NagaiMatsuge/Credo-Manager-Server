@@ -16,7 +16,7 @@ class CreateDbAccessTable extends Migration
         Schema::create('db_access', function (Blueprint $table) {
             $table->id();
             $table->string('db_name');
-            $table->string('server_name');
+            $table->string('host')->default('localhost');
             $table->string('login');
             $table->text('password');
             $table->text('description')->nullable();

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
 
 class ParamsController extends Controller
 {
@@ -13,6 +13,6 @@ class ParamsController extends Controller
     //* Get all Roles
     public function getAllRoles(Request $request)
     {
-        return $this->successResponse(Role::select('id', 'name')->get());
+        return $this->successResponse(DB::table('roles')->get());
     }
 }

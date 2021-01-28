@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
 
 class RolesSeeder extends Seeder
 {
@@ -14,8 +14,13 @@ class RolesSeeder extends Seeder
      */
     public function run()
     {
-        foreach (config('params.roles') as $role) {
-            Role::create(['name' => $role, 'guard_name' => 'web']);
+        $roles = config('params.roles');
+        $res = [];
+        foreach ($roles as $role) {
+            $res[] = [
+                'name' => $role
+            ];
         }
+        DB::table('roles')->insert($res);
     }
 }

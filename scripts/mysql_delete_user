@@ -1,0 +1,12 @@
+#!/bin/bash
+user=$1
+
+if [ "${user}" != "" ]; then
+
+mysql -u root -proot -e "drop user ${user};"
+
+else
+
+echo "ERROR: Provide Enough options"
+echo "EXAMPLE: mysql_delete_user username"
+fi

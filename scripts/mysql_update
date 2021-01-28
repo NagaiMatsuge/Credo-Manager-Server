@@ -1,0 +1,14 @@
+#!/bin/bash
+user=$1
+pass=$2
+
+if [ "${user}" != "" ] && [ "${pass}" != "" ]; then
+
+mysql -u root -proot -e "alter user ${user} identified by'${pass}';FLUSH PRIVILEGES;"
+
+else
+
+echo "ERROR: Provide Enough options"
+echo "EXAMPLE: mysql_update username new_pass"
+
+fi

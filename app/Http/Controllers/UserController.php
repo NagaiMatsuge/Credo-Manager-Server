@@ -17,16 +17,16 @@ class UserController extends Controller
     use ResponseTrait, UploadTrait;
 
     //* Return All users with their role
-    public function index(Request $request)
+    public function index()
     {
-        return $this->successResponse(User::usersWithRoleAndPagination());
+        return $this->successResponse(User::userRole(null, 8));
     }
 
     //* Show one user by its id
     public function show($id)
     {
-        $user = User::userWithRole($id);
-        $res = new SingleUserResource($user[0]);
+        $user = User::userRole($id);
+        $res = new SingleUserResource($user);
         return $this->successResponse([$res]);
     }
 
@@ -47,7 +47,7 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
 
         $user->update($data);
-        if ($request->user()->hasRole(['Admin'])) {
+        if ($request->user()->hasRole('Admin')) {
             $user->syncRoles($request->role);
         }
 
@@ -58,8 +58,10 @@ class UserController extends Controller
     }
 
     //* Delete user by its id
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
+        if (!$request->user()->hasRole('Admin'))
+            return $this->notAllowed();
         return $this->successResponse(User::deleteOneById($id));
     }
 
@@ -67,9 +69,8 @@ class UserController extends Controller
     public function getUser(Request $request)
     {
         $curr_user = $request->user();
-        $user = User::userWithRole($curr_user->id);
-        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->leftJoin('model_has_roles as t3', 't3.model_uuid', '=', 't2.user_id')->leftJoin('roles as t4', 't4.id', '=', 't3.role_id')->leftJoin('users as t5', 't5.id', '=', 't2.user_id')->where('t1.read', false)->select('t2.id', 't2.user_id', 't5.name as user_name', 't5.color as user_color', 't5.photo as user_photo', 't2.text', 't2.publish_date', 't4.name as role')->where('t1.to_user', $curr_user->id)->where('t2.publish_date', '<', now())->get();
-        $user = $user[0];
+        $user = User::userRole($curr_user->id);
+        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->leftJoin('users as t5', 't5.id', '=', 't2.user_id')->leftJoin('roles as t6', 't6.id', '=', 't5.role_id')->where('t1.read', false)->select('t2.id', 't2.user_id', 't5.name as user_name', 't5.color as user_color', 't5.photo as user_photo', 't2.text', 't2.publish_date', 't6.name as role')->where('t1.to_user', $curr_user->id)->where('t2.publish_date', '<', now())->get();
         $res = [
             'id' => $user->id,
             'name' => $user->name,

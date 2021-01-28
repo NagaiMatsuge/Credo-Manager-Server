@@ -51,16 +51,13 @@ class FtpAccess
     public function update($email)
     {
         if ((!$this->username) || (!$this->password)) return ["success" => false, "message" => "You have to provide username and password"];
-        $resDel = $this->delete($email);
-        if ($resDel['success']) {
-            $resCre = $this->create($email);
-            if ($resCre['success']) {
-                return ['success' => true];
-            } else {
-                return ['success' => false, 'message' => $resCre['message']];
-            }
+        $shellCommand = "sudo /usr/local/bin/update_user_password $this->username $this->password 2>&1";
+        $res = shell_exec($shellCommand);
+        Logger::serverChange($res, $email, "Updating ftp user password");
+        if ($res == null) {
+            return ['success' => true];
         } else {
-            return ['success' => false, 'message' => $resDel['message']];
+            return ['success' => false, 'message' => $res];
         }
     }
 }

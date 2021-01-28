@@ -11,10 +11,12 @@ class FtpAccess extends Model
     protected $table = 'ftp_access';
     protected $fillable = [
         'server_id',
-        'title',
+        'port',
         'host',
-        'login', 
+        'login',
         'password',
-        'description'
+        'description',
+        'created_at',
+        'updated_at'
     ];
 }

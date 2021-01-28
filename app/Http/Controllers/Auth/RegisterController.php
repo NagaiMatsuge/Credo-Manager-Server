@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Traits\ResponseTrait;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -38,10 +39,11 @@ class RegisterController extends Controller
         // $working_days = json_encode($request->working_days);
         // $data['working_days'] = "$working_days";
         // return $this->successResponse($request->input());
-        $data = $request->except('password');
+        $data = $request->except(['password', 'role']);
         $data['password'] = Hash::make($request->password);
+        $role = DB::table('roles')->where('name', $request->role)->first();
+        $data['role_id'] = $role->id;
         $user = User::create($data);
-        $user->syncRoles($data['role']);
 
         Mail::to($request->email)->send(new VerifyEmail($user, $request->password));
 

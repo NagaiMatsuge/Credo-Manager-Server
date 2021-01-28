@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\ResponseTrait;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
@@ -33,9 +34,9 @@ class LoginController extends Controller
             return $this->errorResponse('auth/email-not-verified');
         }
         $token = $user->createToken('Personal access token')->accessToken;
-        $rolesOfTheUser = $user->getRoleNames()->toArray();
+        $rolesOfTheUser = DB::table('roles')->where('id', $user->role_id)->first();
         $res = array_merge($request->user()->toArray(), ['_token' => $token]);
-        $res['role'] = $rolesOfTheUser[0];
+        $res['role'] = $rolesOfTheUser->name;
         return $this->successResponse($res, 200, 'Login Successfull');
     }
 

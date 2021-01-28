@@ -35,15 +35,6 @@ class StepController extends Controller
         $step['debt'] = $step['price'];
         $step = Step::create($step);
 
-        if ($request->tasks !== null) {
-            $tasks = $request->tasks;
-
-            foreach ($tasks as $key => $task) {
-                $tasks[$key]['step_id'] = $step->id;
-            }
-
-            Task::updateOrCreate($tasks);
-        }
         return $this->successResponse([], 201, "Successfully updated");
     }
 
