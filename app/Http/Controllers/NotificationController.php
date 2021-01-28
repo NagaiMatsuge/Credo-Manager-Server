@@ -39,6 +39,18 @@ class NotificationController extends Controller
         return $this->successResponse(['notes' => $notes]);
     }
 
+    //* User has read some notifcations
+    public function userHasReadNotifs(Request $request)
+    {
+        $request->validate([
+            'notification_ids' => 'array|required',
+            'notification_ids.*' => 'integer'
+        ]);
+
+        DB::table("notification_user")->leftJoin('notifications', 'notifications.id', '=', 'notification_user.notification_id')->where('notification_user.to_user', $request->user()->id)->whereIn('notification_user.notification_id', $request->input('notification_ids'))->where('notifications.publish_date', '<', date('Y-m-d H:i:s'))->update(['read' => true]);
+        return $this->successResponse(true);
+    }
+
 
     //* Show Notification Log
     public function showNotificationLog(Request $request)
@@ -52,14 +64,14 @@ class NotificationController extends Controller
     //* Show notifations history for user
     private function showNotificationLogToUser(Request $request)
     {
-        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->leftJoin('users as t3', 't3.id', '=', 't2.user_id')->leftJoin('roles as t5', 't5.id', '=', 't3.role_id')->select('t2.text', 't2.publish_date', 't3.name', 't3.photo', 't3.color', 't5.name as role')->where('t1.to_user', $request->user()->id)->where('t2.publish_date', '<', now())->paginate(30);
+        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->leftJoin('users as t3', 't3.id', '=', 't2.user_id')->leftJoin('roles as t5', 't5.id', '=', 't3.role_id')->select('t2.text', 't2.publish_date', 't3.name', 't3.photo', 't3.color', 't5.name as role')->where('t1.to_user', $request->user()->id)->where('t2.publish_date', '<', date('Y-m-d H:i:s'))->paginate(30);
         return $this->successResponse(['notifications' => $notifs]);
     }
 
     //* Show notification history for admin
     private function showNotificationLogToAdmin(Request $request)
     {
-        $notifs = Notification::where('user_id', $request->user()->id)->where('publish_date', '<', now())->paginate(30);
+        $notifs = Notification::where('user_id', $request->user()->id)->where('publish_date', '<', date('Y-m-d H:i:s'))->paginate(30);
         return $this->successResponse(['notifications' => $notifs]);
     }
 
