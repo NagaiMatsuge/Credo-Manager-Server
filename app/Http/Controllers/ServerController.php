@@ -81,9 +81,18 @@ class ServerController extends Controller
     //* Update server, ftp_access, db-access by server's id    
     public function update(Request $request, $id)
     {
-        $this->validateRequest($request);
+        if (!$request->user()->hasRole('Admin'))
+            return $this->notAllowed();
+        $request->validate([
+            'server.title' => 'nullable|string',
+            'db_access.description' => 'nullable|string',
+            'db_access.password' => 'nullable|string',
+            'ftp_access.description' => 'nullable|string',
+            'ftp_access.password' => 'nullable|string'
+        ]);
         $server = DB::table('servers')->where('id', $id)->first();
-        if ($server->type == 1)
+        $server_types = config('params.server_types');
+        if ($server->type == $server_types['1'])
             return $this->updateLocalServer($request, $id);
         else
             return $this->updateClientServer($request, $id);
@@ -92,14 +101,24 @@ class ServerController extends Controller
     //* Update local server information
     public function updateLocalServer(Request $request, $id)
     {
-        DB::transaction(function () use ($id, $request) {
+        $old_server = Server::where('id', $id)->with('ftp_access')->with('db_access')->first();
+
+        DB::transaction(function () use ($id, $request, $old_server) {
+            $user_email = $request->user()->email;
             $server = $request->only(['server.title']);
-            $ftp = $request->only(['ftp_access.description']);
-            $db = $request->only(['db_access.description']);
+            $ftp = $request->only(['ftp_access.description', 'ftp_access.password']);
+            $db = $request->only(['db_access.description', 'db_access.password']);
+            if ($old_server->ftp_access[0]->password !== $ftp['ftp_access']['password'])
+                FtpAccessFacade::setUser($old_server->ftp_access[0]->login)->setPassword($ftp['ftp_access']['password'])->update($user_email);
+
+            if ($old_server->db_access[0]->password !== $db['db_access']['password'])
+                DbAccessFacade::setUser($old_server->db_access[0]->login)->setPassword($db['db_access']['password'])->update($user_email);
+
             DB::table('servers')->where('id', $id)->update($server['server']);
             DB::table('ftp_access')->where('server_id', $id)->update($ftp['ftp_access']);
             DB::table('db_access')->where('server_id', $id)->update($db['db_access']);
         });
+        return $this->successResponse(true);
     }
 
     //* Show one server with ftp and db_accesses
@@ -120,6 +139,7 @@ class ServerController extends Controller
             DB::table('ftp_access')->where('server_id', $id)->update($ftp['ftp_access']);
             DB::table('db_access')->where('server_id', $id)->update($db['db_access']);
         });
+        return $this->successResponse("Updated Client Server");
     }
 
     private function validateRequest(Request $request)
