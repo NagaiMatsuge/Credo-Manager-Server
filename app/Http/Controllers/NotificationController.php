@@ -103,13 +103,17 @@ class NotificationController extends Controller
     //* Update notification by its id
     public function update(Request $request, $id)
     {
+        if (!$request->user()->hasRole(['Admin', 'Manager'])) {
+            return $this->notAllowed();
+        }
         $request->validate([
             'text' => 'required|string|min:3',
             'publish_date' => 'nullable|date|date_format:Y-m-d H:i:s'
         ]);
-        if ($request->has('publish_date') && !$request->publish_date) {
-            DB::transaction(function () use ($id, $request) {
-                At::deleteAtCommand($id);
+        $job = DB::table('notifications')->where('id', $id)->first();
+        if ($request->has('publish_date') && $job->publish_date > date('Y-m-d H:i:s')) {
+            DB::transaction(function () use ($id, $request, $job) {
+                At::deleteAtCommand($job->job_number);
                 $command = "php " . base_path() . "/artisan send:notification $id";
                 $res = At::newAtCommand($command, $request->publish_date);
                 if (!$res['success']) {
@@ -117,7 +121,8 @@ class NotificationController extends Controller
                 }
                 DB::table('notifications')->where('id', $id)->update([
                     'text' => $request->text,
-                    'publish_date' => $request->publish_date
+                    'publish_date' => $request->publish_date,
+                    'job_number' => $res['job']
                 ]);
             });
         } else {
@@ -131,8 +136,11 @@ class NotificationController extends Controller
     }
 
     //* Delete notification by its id
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
+        if (!$request->user()->hasRole(['Admin', 'Manager'])) {
+            return $this->notAllowed();
+        }
         DB::transaction(function () use ($id) {
             $notification = DB::table('notifications')->where('id', $id)->first();
             if ($notification->job_number)

@@ -117,8 +117,11 @@ Route::post('/test', function (Request $request) {
     // $res = $request->only(['server.id', 'server.name']);
     // unset($res['server']['id']);
     // $command = "sudo su -c "echo 'username:1234' | chpasswd" root"
-    $command1 = "echo 'username:password' | sudo chpasswd2>&1";
-    $res = shell_exec($command1);
-    return response()->json(['command' => $command1, 'output' => $res]);
+    // $command1 = "echo 'username:password' | sudo chpasswd2>&1";
+    // $res = shell_exec($command1);
+    $res = date('Y-m-d H:i:s');
+    sleep(2);
+    $res2 = date('Y-m-d H:i:s');
+    return response()->json($res < $res2);
     // return response()->json([$res['server'], is_array($res)]);
 });

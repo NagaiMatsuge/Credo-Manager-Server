@@ -55,7 +55,7 @@ class At
             'job_number' => 'required|integer'
         ]);
         if ($validator->fails()) throw new Exception("Invalid job number");
-        $shellCommand = "atrm $job";
+        $shellCommand = "sudo at_helper remove $job";
         $res = shell_exec($shellCommand);
         Logger::newCron($res, $shellCommand);
     }

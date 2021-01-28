@@ -41,7 +41,7 @@ sudo ln ./scripts/at_helper /usr/local/bin
 www-data ALL=(root) NOPASSWD: /usr/local/bin/create_sftp_user
 www-data ALL=(root) NOPASSWD: /usr/local/bin/virtualhost
 www-data ALL=(root) NOPASSWD: /usr/local/bin/update_user_password
-
+www-data ALL=(ALL)  NOPASSWD: /usr/local/bin/at_helper
 ```
 
 ---
