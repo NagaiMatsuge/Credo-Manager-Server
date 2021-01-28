@@ -102,6 +102,13 @@ class ServerController extends Controller
         });
     }
 
+    //* Show one server with ftp and db_accesses
+    public function show(Request $request, $id)
+    {
+        $res = Server::where('id', $id)->with('ftp_access')->with('db_access')->first();
+        return $this->successResponse($res);
+    }
+
     //* Update client server
     public function updateClientServer(Request $request, $id)
     {
