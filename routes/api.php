@@ -114,8 +114,11 @@ Route::post('/test', function (Request $request) {
     //     DB::raw('(select t5.title from projects as t5 where t5.id=(select t6.project_id from steps as t6 where t6.id=(select t7.step_id from tasks as t7 where t7.id=t1.task_id))) as project_title'),
     //     DB::raw('(select t4.title from tasks t4 where t4.id=t1.task_id) as task_title')
     // )->where('t2.user_id', $user_id)->with('files')->get();
-    $res = $request->only(['server.id', 'server.name']);
+    // $res = $request->only(['server.id', 'server.name']);
     // unset($res['server']['id']);
-
-    return response()->json([$res['server'], is_array($res)]);
+    // $command = "sudo su -c "echo 'username:1234' | chpasswd" root"
+    $command1 = "echo 'username:password' | sudo chpasswd2>&1";
+    $res = shell_exec($command1);
+    return response()->json(['command' => $command1, 'output' => $res]);
+    // return response()->json([$res['server'], is_array($res)]);
 });
