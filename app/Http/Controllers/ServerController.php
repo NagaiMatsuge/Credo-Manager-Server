@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\SingleServerResource;
 use App\Models\DbAccess;
 use App\Models\FtpAccess;
 use App\Models\Server;
@@ -125,6 +126,7 @@ class ServerController extends Controller
     public function show(Request $request, $id)
     {
         $res = Server::where('id', $id)->with('ftp_access')->with('db_access')->first();
+        $res = new SingleServerResource($res);
         return $this->successResponse($res);
     }
 
