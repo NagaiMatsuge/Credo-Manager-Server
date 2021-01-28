@@ -92,8 +92,7 @@ class ServerController extends Controller
             'ftp_access.password' => 'nullable|string'
         ]);
         $server = DB::table('servers')->where('id', $id)->first();
-        $server_types = config('params.server_types');
-        if ($server->type == $server_types['1'])
+        if ($server->type == 1)
             return $this->updateLocalServer($request, $id);
         else
             return $this->updateClientServer($request, $id);
@@ -177,19 +176,21 @@ class ServerController extends Controller
             $email = $request->user()->email;
             $serverDetails = Server::where('id', $id)->with('ftp_access')->with('db_access')->first()->toArray();
             Server::where('id', $id)->delete();
-            $server_host = $serverDetails['host'];
-            $server_delete = ServerFacade::setHost($server_host)->delete($email);
-            if (!$server_delete['success']) throw new Exception($server_delete['message']);
-            foreach ($serverDetails['ftp_access'] as $ftp) {
-                $ftp_user = $ftp['login'];
-                $ftp_delete = FtpAccessFacade::setUser($ftp_user)->delete($email);
-                if (!$ftp_delete['success']) throw new Exception($ftp_delete['message']);
-            }
-            foreach ($serverDetails['db_access'] as $db) {
-                $db_user = $db['login'];
-                $db_name = $db['db_name'];
-                $db_delete = DbAccessFacade::setUser($db_user)->setDatabaseName($db_name)->delete($email);
-                if (!$db_delete['success']) throw new Exception($db_delete['message']);
+            if ($serverDetails['type'] == 1) {
+                $server_host = $serverDetails['host'];
+                $server_delete = ServerFacade::setHost($server_host)->delete($email);
+                if (!$server_delete['success']) throw new Exception($server_delete['message']);
+                foreach ($serverDetails['ftp_access'] as $ftp) {
+                    $ftp_user = $ftp['login'];
+                    $ftp_delete = FtpAccessFacade::setUser($ftp_user)->delete($email);
+                    if (!$ftp_delete['success']) throw new Exception($ftp_delete['message']);
+                }
+                foreach ($serverDetails['db_access'] as $db) {
+                    $db_user = $db['login'];
+                    $db_name = $db['db_name'];
+                    $db_delete = DbAccessFacade::setUser($db_user)->setDatabaseName($db_name)->delete($email);
+                    if (!$db_delete['success']) throw new Exception($db_delete['message']);
+                }
             }
         });
         return $this->successResponse([]);
