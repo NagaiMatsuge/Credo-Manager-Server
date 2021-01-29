@@ -68,7 +68,7 @@ class TaskController extends Controller
                         'time' => $task->time,
                         'type' => $task->type,
                         'unread_count' => $task->unread_count,
-                        'deadline' => explode(' ', $task->deadline)[0],
+                        'deadline' => $task->deadline,
                         'time_spent' => (int)$task->time_spent,
                         'last_time' => (int)$task->additional_time
                     ];
