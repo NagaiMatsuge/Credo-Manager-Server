@@ -17,8 +17,9 @@ class MainController extends Controller
     {
         $users = DB::table('users as t1')
             ->leftJoin('roles as t2', 't2.id', '=', 't1.role_id')
-            ->leftJoin('tasks as t3', 't3.id', '=', 't1.active_task_id')
-            ->leftJoin('steps as t4', 't4.id', '=', 't3.step_id')
+            ->leftJoin('task_user as t3', 't3.id', '=', 't1.active_task_id')
+            ->leftJoin('tasks as b3', 'b3.id', '=', 't3.task_id')
+            ->leftJoin('steps as t4', 't4.id', '=', 'b3.step_id')
             ->leftJoin('projects as t5', 't5.id', '=', 't4.project_id')
             ->select(
                 't1.name as user_name',
@@ -30,15 +31,36 @@ class MainController extends Controller
                 't1.pause_start_time',
                 't1.pause_end_time',
                 't5.title as project_title',
-                't3.time as given_time',
-                't3.type as task_type',
-                't3.deadline as deadline',
+                'b3.time as given_time',
+                'b3.type as task_type',
+                'b3.deadline as deadline',
                 DB::raw('(select TIMESTAMPDIFF(MINUTE, max(t6.stopped_at), CURRENT_TIMESTAMP) FROM task_watchers t6 WHERE t6.task_user_id in (select a1.id from task_user as a1 where a1.user_id=t1.id)) as last_pause'),
                 DB::raw('(select SUM(TIMESTAMPDIFF(MINUTE, t8.created_at, t8.stopped_at)) from task_watchers as t8 where t8.task_user_id=t1.active_task_id) as time_spent'),
                 DB::raw('(select TIMESTAMPDIFF(MINUTE, (select max(t10.created_at) from task_watchers as t10 where t10.task_user_id=t1.active_task_id and t10.stopped_at IS NULL), CURRENT_TIMESTAMP)) as additional_time'),
                 DB::raw('(select count(a1.id) from task_user as a1 where a1.user_id=t1.id) as task_count')
             )->whereNotIn('t2.name', ['Admin', 'Manager'])->get();
-        return $this->successResponse($users);
+        $res = [];
+        foreach ($users as $user) {
+            $res[] = [
+                'additional_time' => $user->additional_time ?? 0,
+                'deadline' => $user->deadline,
+                'given_time' => $user->given_time ?? 0,
+                'last_pause' => $user->last_pause,
+                'pause_end_time' => $user->pause_end_time,
+                'pause_start_time' => $user->pause_start_time,
+                'project_title' => $user->project_title,
+                'task_count' => $user->task_count,
+                'task_type' => $user->task_type,
+                'time_spent' => $user->time_spent ?? 0,
+                'user_color' => $user->user_color,
+                'user_name' => $user->user_name,
+                'user_photo' => $user->user_photo,
+                'user_role' => $user->user_role,
+                'work_end_time' => $user->work_end_time,
+                'work_start_time' => $user->work_start_time
+            ];
+        }
+        return $this->successResponse($res);
     }
 
     //* Show Projects only to admin or managers
