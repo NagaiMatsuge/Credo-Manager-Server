@@ -22,7 +22,7 @@ trait Query
                 't2.type',
                 't2.deadline',
                 't8.active_task_id',
-                DB::raw('(select count(t5.id) from unread_messages as t5 where t5.user_id=?) as unread_count'),
+                DB::raw('(select count(t5.id) from unread_messages as t5 where t5.user_id=? and t5.message_id in (select n1.id from messages as n1 where n1.task_id=t1.task_id)) as unread_count'),
                 DB::raw('(select SUM(TIMESTAMPDIFF(MINUTE, t6.created_at, t6.stopped_at)) from task_watchers as t6 where t6.task_user_id=t1.id) as time_spent'),
                 DB::raw('(select TIMESTAMPDIFF(MINUTE, (select max(t7.created_at) from task_watchers as t7 where t7.task_user_id=t1.id and t7.stopped_at IS NULL), CURRENT_TIMESTAMP)) as additional_time')
             )
