@@ -33,7 +33,7 @@ class MainController extends Controller
                 't3.time as given_time',
                 't3.type as task_type',
                 't3.deadline as deadline',
-                DB::raw('(select max(t6.stopped_at) FROM task_watchers t6 WHERE t6.stopped_at is not null and t6.task_user_id=t1.active_task_id) as last_pause'),
+                DB::raw('(select TIMESTAMPDIFF(MINUTE, max(t6.stopped_at), CURRENT_TIMESTAMP) FROM task_watchers t6 WHERE t6.task_user_id in (select a1.id from task_user as a1 where a1.user_id=t1.id)) as last_pause'),
                 DB::raw('(select SUM(TIMESTAMPDIFF(MINUTE, t8.created_at, t8.stopped_at)) from task_watchers as t8 where t8.task_user_id=t1.active_task_id) as time_spent'),
                 DB::raw('(select TIMESTAMPDIFF(MINUTE, (select max(t10.created_at) from task_watchers as t10 where t10.task_user_id=t1.active_task_id and t10.stopped_at IS NULL), CURRENT_TIMESTAMP)) as additional_time')
             )->whereNotIn('t2.name', ['Admin', 'Manager'])->get();
