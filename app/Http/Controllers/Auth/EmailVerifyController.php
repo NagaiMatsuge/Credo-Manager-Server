@@ -16,14 +16,12 @@ class EmailVerifyController extends Controller
     use ResponseTrait;
 
     //* Verify users Email
-    public function verify(Request $request, $id, $email)
+    public function verify(Request $request, $id)
     {
         if (!$request->hasValidSignature())
             return $this->errorResponse('link-expire', 405);
         $user = User::find($id);
         if (!$user)
-            return $this->errorResponse('not-found/user', 405);
-        if (!Hash::check($user->email, $email))
             return $this->errorResponse('not-found/user', 405);
         if ($user->email_verified_at)
             return $this->errorResponse('repeat/email-verified', 405);
