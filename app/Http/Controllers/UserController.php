@@ -62,6 +62,9 @@ class UserController extends Controller
     {
         if (!$request->user()->hasRole('Admin'))
             return $this->notAllowed();
+            User::where('id', $id)->update([
+                'active_task_id' => null
+            ]);
         return $this->successResponse(User::deleteOneById($id));
     }
 
