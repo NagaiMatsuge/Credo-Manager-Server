@@ -20,6 +20,7 @@ class ServerResource extends JsonResource
             'title' => $this->title,
             'host' => $this->host,
             'created_at' => $this->created_at,
+            'type' => config('params.server_types.' . $this->type),
             'db_ftp' => []
         ];
 
