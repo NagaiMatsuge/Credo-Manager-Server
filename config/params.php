@@ -2,8 +2,8 @@
 
 return [
     'urls' => [
-        'front_end_password_reset' => 'http://localhost:8080/password/reset',
-        'front_base_url' => 'http://localhost:8080'
+        'front_end_password_reset' => 'http://tm.credo/password/reset',
+        'front_base_url' => 'http://tm.credo'
     ],
     'task_types' => [
         '1' => 'clock',
