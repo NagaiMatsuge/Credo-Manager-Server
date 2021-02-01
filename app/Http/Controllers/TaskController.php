@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TaskChange;
+use App\Models\Notification;
 use App\Models\Task;
 use App\Models\User;
 use App\Traits\ResponseTrait;
@@ -83,22 +85,38 @@ class TaskController extends Controller
     //* Create task with validation
     public function store(Request $request)
     {
-        if (!$request->user()->hasRole(['Admin', 'Manager']))
+        $current_user = $request->user();
+        if (!$current_user->hasRole(['Admin', 'Manager']))
             return $this->notAllowed();
 
         $this->makeValidation($request);
-        DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request, $current_user) {
             $task = $request->only(['step_id', 'title', 'time', 'deadline', 'type']);
             $newTask = Task::create($task);
             $user_ids = $request->user_ids;
             $userTasks = [];
+            $date_n =  date('Y-m-d H:i:s');
+            $text = "У вас есть новая задача";
+            $notif = Notification::create([
+                'user_id' => $current_user->id,
+                'text' => $text,
+                'publish_date' => $date_n
+            ]);
+            $notification_user = [];
             foreach ($user_ids as $user_id) {
                 $userTasks[] = [
                     'user_id' => $user_id,
                     'task_id' => $newTask->id,
                 ];
+                $notification_user[] = [
+                    'to_user' => $user_id,
+                    'notification_id' => $notif->id
+                ];
+
+                broadcast(new TaskChange($user_id, $text, $current_user, $date_n));
             }
             DB::table('task_user')->insert($userTasks);
+            DB::table('notification_user')->insert($notification_user);
         });
         return $this->successResponse([], 201, "Successfully created");
     }
@@ -232,8 +250,8 @@ class TaskController extends Controller
 
     public function clock(Request $request)
     {
-
-        if (!$request->user()->hasRole(['Admin', 'Manager']))
+        $current_user = $request->user();
+        if (!$current_user->hasRole(['Admin', 'Manager']))
             return $this->notAllowed();
 
         $request->validate([
@@ -243,15 +261,27 @@ class TaskController extends Controller
 
         $user_id = $request->user_id;
         $user = DB::table('users')->where('id', $user_id)->first();
-
+        $date_n =  date('Y-m-d H:i:s');
         if (!$request->has('task_id')) {
             DB::table('users')->where('id', $user_id)->update(['active_task_id' => null]);
             DB::table('task_watchers')->where('task_user_id', $user->active_task_id)->where('stopped_at', null)->update([
-                'stopped_at' => date('Y-m-d H:i:s')
+                'stopped_at' => $date_n
             ]);
+            $text = "У вас больше нет активных задач";
+
+            $notif = Notification::create([
+                'user_id' => $current_user->id,
+                'text' => $text,
+                'publish_date' => $date_n
+            ]);
+            DB::table('notification_user')->insert([
+                'to_user' => $user_id,
+                'notification_id' => $notif->id
+            ]);
+            broadcast(new TaskChange($user->id, $text, $current_user, $date_n));
             return $this->successResponse(['tick' => false]);
         }
-        DB::transaction(function () use ($user_id, $request, $user) {
+        DB::transaction(function () use ($user_id, $request, $user, $current_user, $date_n) {
 
             $task_user = DB::table('task_user')->where('task_id', $request->task_id)->where('user_id', $request->user_id)->first();
 
@@ -262,6 +292,17 @@ class TaskController extends Controller
                 DB::table('task_watchers')->where('id', $lastWatcher->id)->update(['stopped_at' => date('Y-m-d H:i:s')]);
             }
             $this->createTaskWatcher($request, $task_user->id);
+            $text = "У вас есть новая активная задача";
+            $notif = Notification::create([
+                'user_id' => $current_user->id,
+                'text' => $text,
+                'publish_date' => $date_n
+            ]);
+            DB::table('notification_user')->insert([
+                'to_user' => $user_id,
+                'notification_id' => $notif->id
+            ]);
+            broadcast(new TaskChange($user->id, $text, $current_user, $date_n));
         });
         return $this->successResponse(['tick' => true]);
     }
