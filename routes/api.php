@@ -43,7 +43,7 @@ use Illuminate\Http\Request;
         '(select t6.project_id from steps t6 where t6.id=(select t5.step_id from tasks t5 where t4.id=(select t4.task_id from task_user as t4 where t4.active=1 and t4.user_id=t1.id limit 1)))',
 */
 
-Route::post('/test', function (Request $request) {
+Route::get('/test', function (Request $request) {
     // $res = DB::table('task_user as t1')
     //     ->leftJoin('tasks as t2', 't2.id', '=', 't1.task_id')
     //     ->leftJoin('steps as t3', 't3.id', '=', 't2.step_id')
@@ -119,9 +119,15 @@ Route::post('/test', function (Request $request) {
     // $command = "sudo su -c "echo 'username:1234' | chpasswd" root"
     // $command1 = "echo 'username:password' | sudo chpasswd2>&1";
     // $res = shell_exec($command1);
-    $res = date('Y-m-d H:i:s');
-    sleep(2);
-    $res2 = date('Y-m-d H:i:s');
-    return response()->json($res < $res2);
+    // $res = date('Y-m-d H:i:s');
+    // sleep(2);
+    // $res2 = date('Y-m-d H:i:s');
+    // return response()->json($res < $res2);
+    $format = 'Y-m-d H-i-s';
+    $res = new DateTime('2021-02-15 12:12:12');
+    $res2 = new DateTime();
+    return response()->json([
+        'hours' => $res->diff($res2)
+    ]);
     // return response()->json([$res['server'], is_array($res)]);
 });

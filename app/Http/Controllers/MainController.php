@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Traits\ResponseTrait;
 use App\Traits\Tasks\TaskTrait;
+use DateTime;
 
 class MainController extends Controller
 {
@@ -67,15 +68,18 @@ class MainController extends Controller
     private function showProjectsToAdmin(Request $request)
     {
         $projects = DB::table('projects')->where('archived', false)->get();
-        $users = DB::table('task_user as t1')->leftJoin('users as t4', 't4.id', '=', 't1.user_id')->select('t1.task_id', 't1.user_id', DB::raw('(SELECT t2.project_id FROM steps t2 WHERE t2.id=(SELECT t3.step_id FROM tasks t3 WHERE t3.id=t1.task_id)) AS project_iid'), 't4.photo', 't4.color')->get();
+        $users = DB::table('task_user as t1')->leftJoin('users as t4', 't4.id', '=', 't1.user_id')->select('t1.task_id', 't1.user_id', 't4.name', DB::raw('(SELECT t2.project_id FROM steps t2 WHERE t2.id=(SELECT t3.step_id FROM tasks t3 WHERE t3.id=t1.task_id)) AS project_iid'), 't4.photo', 't4.color')->get();
         $res = [];
         $count = 0;
         foreach ($projects as $project) {
+            $deadline = new DateTime($project->deadline);
+            $current_date = new DateTime();
             $projectAdd = [
                 'title' => $project->title,
-                'created_at' => $project->created_at,
-                'deadline' => $project->deadline,
+                'created_at' => explode(' ', $project->created_at)[0],
+                'deadline' => $deadline->diff($current_date),
                 'photo' => $project->photo,
+                'color' => $project->color,
                 'participants' => []
             ];
             foreach ($users as $user) {
