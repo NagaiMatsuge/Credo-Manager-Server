@@ -125,13 +125,12 @@ service supervisor restart
 - configure location of the artisan file in time_manager_queue.conf and time_manager_websockets.conf
 
 ```
-ln ./time_manager_queue.conf /etc/supervisor/conf.d/
 ln ./time_manager_websockets.conf /etc/supervisor/conf.d/
 supervisorctl reread
 supervisorctl update
 ```
 
-- please check if above two commands in supervisor are active and running with following commands
+- please check if above command in supervisor is active and running with following commands
 
 ```
 sudo supervisorctl
