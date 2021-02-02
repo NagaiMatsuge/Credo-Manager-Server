@@ -67,7 +67,7 @@ class MainController extends Controller
     //* Show Projects only to admin or managers
     private function showProjectsToAdmin(Request $request)
     {
-        $projects = DB::table('projects')->where('archived', false)->get();
+        $projects = DB::table('projects')->where('archived', false)->orderBy('deadline', 'asc')->get();
         $users = DB::table('task_user as t1')->leftJoin('users as t4', 't4.id', '=', 't1.user_id')->select('t1.task_id', 't1.user_id', 't4.name', DB::raw('(SELECT t2.project_id FROM steps t2 WHERE t2.id=(SELECT t3.step_id FROM tasks t3 WHERE t3.id=t1.task_id)) AS project_iid'), 't4.photo', 't4.color')->get();
         $res = [];
         $count = 0;
