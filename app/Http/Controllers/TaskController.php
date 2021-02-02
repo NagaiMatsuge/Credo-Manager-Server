@@ -7,7 +7,6 @@ use App\Models\Notification;
 use App\Models\Task;
 use App\Models\User;
 use App\Traits\ResponseTrait;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -275,7 +274,8 @@ class TaskController extends Controller
             $notif = Notification::create([
                 'user_id' => $current_user->id,
                 'text' => $text,
-                'publish_date' => $date_n
+                'publish_date' => $date_n,
+                'type' => 2
             ]);
             DB::table('notification_user')->insert([
                 'to_user' => $user_id,
@@ -302,7 +302,8 @@ class TaskController extends Controller
             $notif = Notification::create([
                 'user_id' => $current_user->id,
                 'text' => $text,
-                'publish_date' => $date_n
+                'publish_date' => $date_n,
+                'type' => 2
             ]);
             DB::table('notification_user')->insert([
                 'to_user' => $user_id,

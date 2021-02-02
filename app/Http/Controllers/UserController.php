@@ -62,9 +62,10 @@ class UserController extends Controller
     {
         if (!$request->user()->hasRole('Admin'))
             return $this->notAllowed();
-            User::where('id', $id)->update([
-                'active_task_id' => null
-            ]);
+        User::where('id', $id)->update([
+            'active_task_id' => null,
+            'back_up_active_task_id' => null
+        ]);
         return $this->successResponse(User::deleteOneById($id));
     }
 
@@ -73,7 +74,24 @@ class UserController extends Controller
     {
         $curr_user = $request->user();
         $user = User::userRole($curr_user->id);
-        $notifs = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')->leftJoin('users as t5', 't5.id', '=', 't2.user_id')->leftJoin('roles as t6', 't6.id', '=', 't5.role_id')->where('t1.read', false)->select('t2.id', 't2.user_id', 't5.name as user_name', 't5.color as user_color', 't5.photo as user_photo', 't2.text', 't2.publish_date', 't6.name as role')->where('t1.to_user', $curr_user->id)->where('t2.publish_date', '<', date('Y-m-d H:i:s'))->get();
+        $notifs = DB::table('notification_user as t1')
+            ->leftJoin('notifications as t2', 't1.notification_id', '=', 't2.id')
+            ->leftJoin('users as t5', 't5.id', '=', 't2.user_id')
+            ->leftJoin('roles as t6', 't6.id', '=', 't5.role_id')
+            ->where('t1.read', false)
+            ->select(
+                't2.id',
+                't2.user_id',
+                't5.name as user_name',
+                't5.color as user_color',
+                't5.photo as user_photo',
+                't2.text',
+                't2.publish_date',
+                't6.name as role'
+            )
+            ->where('t1.to_user', $curr_user->id)
+            ->where('t2.publish_date', '<', date('Y-m-d H:i:s'))
+            ->get();
         $res = [
             'id' => $user->id,
             'name' => $user->name,

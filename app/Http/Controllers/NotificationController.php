@@ -29,7 +29,7 @@ class NotificationController extends Controller
     //* Get methods for Admins or Managers only
     public function showToAdmin(Request $request, $notes)
     {
-        $notifs = Notification::where('user_id', $request->user()->id)->paginate(30);
+        $notifs = Notification::where('user_id', $request->user()->id)->where('type', 1)->paginate(30);
         return $this->successResponse(['notifications' => $notifs, 'notes' => $notes]);
     }
 
