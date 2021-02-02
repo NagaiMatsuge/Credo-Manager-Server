@@ -44,6 +44,12 @@ www-data ALL=(root) NOPASSWD: /usr/local/bin/update_user_password
 www-data ALL=(ALL)  NOPASSWD: /usr/local/bin/at_helper
 ```
 
+- Open cron and configure the following command line script to run every minute
+
+```
+php /path/to/project/artisan update:timer
+```
+
 ---
 
 ## Websockets for Task-Chats
