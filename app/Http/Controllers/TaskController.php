@@ -263,7 +263,10 @@ class TaskController extends Controller
         $user = DB::table('users')->where('id', $user_id)->first();
         $date_n =  date('Y-m-d H:i:s');
         if (!$request->has('task_id')) {
-            DB::table('users')->where('id', $user_id)->update(['active_task_id' => null]);
+            DB::table('users')->where('id', $user_id)->update([
+                'active_task_id' => null,
+                'back_up_active_task_id' => null
+            ]);
             DB::table('task_watchers')->where('task_user_id', $user->active_task_id)->where('stopped_at', null)->update([
                 'stopped_at' => $date_n
             ]);
@@ -287,7 +290,10 @@ class TaskController extends Controller
 
             $lastWatcher = DB::table('task_watchers as t1')->where('t1.task_user_id', $user->active_task_id)->whereRaw('t1.created_at=(select max(t2.created_at) from task_watchers as t2 where t2.task_user_id=t1.task_user_id)')->first();
 
-            DB::table('users')->where('id', $user_id)->update(['active_task_id' => $task_user->id]);
+            DB::table('users')->where('id', $user_id)->update([
+                'active_task_id' => $task_user->id,
+                'back_up_active_task_id' => $task_user->id
+            ]);
             if ($lastWatcher) {
                 DB::table('task_watchers')->where('id', $lastWatcher->id)->update(['stopped_at' => date('Y-m-d H:i:s')]);
             }

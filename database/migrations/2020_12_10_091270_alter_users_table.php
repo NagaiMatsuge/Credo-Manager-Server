@@ -28,6 +28,8 @@ class AlterUsersTable extends Migration
             $table->enum('theme', config('params.themes'))->default(config('params.themes')['1']);
             $table->foreign('active_task_id')->references('id')->on('task_user');
             $table->foreign('role_id')->references('id')->on('roles');
+            $table->unsignedBigInteger('back_up_active_task_id')->nullable();
+            $table->foreign('back_up_active_task_id')->references('id')->on('task_user');
         });
     }
 
