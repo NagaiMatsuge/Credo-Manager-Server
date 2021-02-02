@@ -48,7 +48,8 @@ class TaskController extends Controller
                     'photo' => $user->user_photo,
                     'worked' => $user->worked,
                     'color' => $user->user_color,
-                    'active' => $user->active_task_id
+                    'active' => $user->active_task_id,
+                    'has_paused_task' => is_null($user->back_up_active_task_id) ? false : true
                 ],
                 'active' => true,
                 'hide' => true,
@@ -73,7 +74,7 @@ class TaskController extends Controller
                         'time_spent' => (int)$task->time_spent,
                         'last_time' => (int)$task->additional_time
                     ];
-                    $res[$user->user_id]['tasks'][$task->task_user_id === $user->active_task_id ? 'active' : 'inactive'][] = $task_info;
+                    $res[$user->user_id]['tasks'][($task->task_user_id === $user->active_task_id) || ($task->task_user_id === $user->back_up_active_task_id) ? 'active' : 'inactive'][] = $task_info;
                 }
             }
         }
@@ -265,6 +266,7 @@ class TaskController extends Controller
             DB::table('users')->where('id', $user_id)->update([
                 'active_task_id' => null,
                 'back_up_active_task_id' => null
+
             ]);
             DB::table('task_watchers')->where('task_user_id', $user->active_task_id)->where('stopped_at', null)->update([
                 'stopped_at' => $date_n
@@ -292,7 +294,7 @@ class TaskController extends Controller
 
             DB::table('users')->where('id', $user_id)->update([
                 'active_task_id' => $task_user->id,
-                'back_up_active_task_id' => $task_user->id
+                'back_up_active_task_id' => null
             ]);
             if ($lastWatcher) {
                 DB::table('task_watchers')->where('id', $lastWatcher->id)->update(['stopped_at' => date('Y-m-d H:i:s')]);
