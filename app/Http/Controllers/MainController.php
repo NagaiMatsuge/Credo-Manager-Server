@@ -77,7 +77,10 @@ class MainController extends Controller
             $projectAdd = [
                 'title' => $project->title,
                 'created_at' => explode(' ', $project->created_at)[0],
-                'deadline' => $deadline->diff($current_date),
+                'deadline' => [
+                    'value'=>$deadline,
+                    'values'=>$deadline->diff($current_date)
+                ],
                 'photo' => $project->photo,
                 'color' => $project->color,
                 'participants' => []
@@ -105,7 +108,7 @@ class MainController extends Controller
             DB::raw('(select t5.title from projects as t5 where t5.id=(select t6.project_id from steps as t6 where t6.id=(select t7.step_id from tasks as t7 where t7.id=t1.task_id))) as project_title'),
             DB::raw('(select t4.title from tasks t4 where t4.id=t1.task_id) as task_title')
         )->where('t2.user_id', $user->id)->with('files')->get();
-        return $this->successResponse($unreadMessages);
+        return $this->successResponse(['message' => $unreadMessages]);
     }
 
     //* Middle section of the main page

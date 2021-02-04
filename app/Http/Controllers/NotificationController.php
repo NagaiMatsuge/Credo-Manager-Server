@@ -18,7 +18,7 @@ class NotificationController extends Controller
     //* Get all notifications with pagination
     public function index(Request $request)
     {
-        $notes = Note::where('user_id', $request->user()->id)->paginate(30);
+        $notes = DB::table('notes')->where('user_id', $request->user()->id)->paginate(30);
         if ($request->user()->hasRole(['Admin', 'Manager'])) {
             return $this->showToAdmin($request, $notes);
         } else {
