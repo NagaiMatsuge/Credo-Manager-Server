@@ -109,29 +109,31 @@ class MainController extends Controller
             't3.name as user_name',
             DB::raw('(select t5.title from projects as t5 where t5.id=(select t6.project_id from steps as t6 where t6.id=(select t7.step_id from tasks as t7 where t7.id=t1.task_id))) as project_title'),
             DB::raw('(select t4.title from tasks t4 where t4.id=t1.task_id) as task_title')
-        )->where('t2.user_id', $user->id)->get();
+        )->where('t2.user_id', $user->id)->paginate(15);
 
         $message_ids = $unreadMessages->pluck('id');
         $files = MessageFile::whereIn('message_id', $message_ids)->get();
+        $unreadMessages = $unreadMessages->toArray();
         $res = [];
-        foreach ($unreadMessages as $um) {
+        foreach ($unreadMessages['data'] as $um) {
             $i = [
-                'id' => $um->id,
-                'text' => $um->text,
-                'sent_at' => $um->sent_at,
-                'user_color' => $um->user_color,
-                'user_name' => $um->user_name,
-                'project_title' => $um->project_title,
-                'task_title' => $um->task_title
+                'id' => $um['id'],
+                'text' => $um['text'],
+                'sent_at' => $um['sent_at'],
+                'user_color' => $um['user_color'],
+                'user_name' => $um['user_name'],
+                'project_title' => $um['project_title'],
+                'task_title' => $um['task_title']
             ];
             foreach ($files as $f) {
-                if ($f->message_id == $um->id) {
+                if ($f->message_id == $um['id']) {
                     $i['files'][] = $f;
                 }
             }
             $res[] = $i;
         }
-        return $this->successResponse(['message' => $res]);
+        $unreadMessages['data'] = $res;
+        return $this->successResponse(['message' => $unreadMessages]);
     }
 
     //* Middle section of the main page
