@@ -41,7 +41,7 @@ trait TaskTrait
                 'last_time' => (int)$task->additional_time,
                 'finished' => $task->finished,
             ];
-            $res['tasks'][($task->active_task_id === $task->id) || ($task->back_up_active_task_id === $task->id) ? 'active' : 'inactive'][] = $task_data;
+            $res['tasks'][($task->active_task_id == $task->id) || ($task->back_up_active_task_id == $task->id) ? 'active' : 'inactive'][] = $task_data;
         }
         $res['active'] = true;
         $res['hide'] = true;

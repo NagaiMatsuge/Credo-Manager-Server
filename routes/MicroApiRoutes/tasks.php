@@ -14,4 +14,5 @@ Route::group(['prefix' => 'tasks', 'middleware' => 'auth:api'], function () {
     Route::get('/data', [TaskController::class, 'getCredentials']);
     Route::get('/users', [TaskController::class, 'getUserListForCreatingTask']);
     Route::put('/clock', [TaskController::class, 'clock']);
+    Route::post('/finalize', [TaskController::class, 'updateTaskUser']);
 });

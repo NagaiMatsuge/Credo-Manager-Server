@@ -125,45 +125,123 @@ class TaskController extends Controller
     //* Update task by its id As Admin or Manager
     public function update(Request $request, $id)
     {
+        $curr_user = $request->user();
+        if (!$curr_user->hasRole(['Admin', 'Manager']))
+            return $this->nowAllowed();
+
+        $user_with_role = User::userRole($curr_user->id);
+        if ($user_with_role->role == "Manager") {
+            $canManagerUpdateTaks = DB::table('task_user as t1')
+                ->where('t1.task_id', $id)
+                ->whereRaw('t1.user_id in (select t2.id from users as t2 where t2.manager_id=?)', [$user_with_role->id])->exists();
+            if (!$canManagerUpdateTaks)
+                return $this->notAllowed();
+        }
         $this->makeValidation($request, true);
         DB::transaction(function () use ($request, $id) {
-            $authority = $request->user()->hasRole(['Admin', 'Manager']);
-            $taskUserUpdate = [];
-            $taskUpdate = [];
-            $need_to_be_deleted = [];
-            $need_to_be_added = [];
-            if ($authority) {
-                $taskUpdate = $request->only(['title', 'step_id', 'type', 'deadline', 'time']);
-                $taskUserUpdate = $request->only(['approved']);
-
-                $old_user_ids = DB::table("task_user")->where('task_id', $id)->get()->pluck('user_id')->toArray();
-                $new_user_ids = $request->user_ids;
-                $need_to_be_deleted = array_diff($old_user_ids, $new_user_ids);
-                $need_to_be_added = array_diff($new_user_ids, $old_user_ids);
-                if (count($need_to_be_added) > 0) {
-                    $newTaskUsers = [];
-                    foreach ($need_to_be_added as $new_user_id) {
-                        $newTaskUsers[] = [
-                            'user_id' => $new_user_id,
-                            'task_id' => $id,
-                        ];
-                    }
-                    DB::table('task_user')->insert($newTaskUsers);
+            $old_user_ids = DB::table("task_user")->where('task_id', $id)->get()->pluck('user_id')->toArray();
+            $new_user_ids = $request->user_ids;
+            $need_to_be_deleted = array_diff($old_user_ids, $new_user_ids);
+            $need_to_be_added = array_diff($new_user_ids, $old_user_ids);
+            if (count($need_to_be_added) > 0) {
+                $newTaskUsers = [];
+                foreach ($need_to_be_added as $new_user_id) {
+                    $newTaskUsers[] = [
+                        'user_id' => $new_user_id,
+                        'task_id' => $id,
+                    ];
                 }
-                if (count($need_to_be_deleted) > 0) {
-                    DB::table('task_user')->whereIn('user_id', $need_to_be_deleted)->delete();
-                }
-            } else {
-                $taskUserUpdate = $request->only(['finished']);
+                DB::table('task_user')->insert($newTaskUsers);
             }
-
-            if (!empty($taskUpdate))
-                DB::table('tasks')->where('id', $id)->update($taskUpdate);
-
-            if (!empty($taskUserUpdate))
-                DB::table('task_user')->where('id', $id)->update($taskUserUpdate);
+            if (count($need_to_be_deleted) > 0) {
+                DB::table('task_user')->whereIn('user_id', $need_to_be_deleted)->delete();
+            }
+            $taskUpdate = $request->only(['time', 'type', 'deadline', 'title']);
+            DB::table('tasks')->where('id', $id)->update($taskUpdate);
         });
         return $this->successResponse([], 200, 'Successfully updated');
+    }
+
+    //* Update task User
+    public function updateTaskUser(Request $request)
+    {
+        $curr_user = $request->user();
+        $authority = $curr_user->hasRole(['Admin', 'Manager']);
+        $request->validate([
+            'user_id' => [
+                'string',
+                Rule::requiredIf($authority)
+            ],
+            'task_id' => 'required|integer',
+            'approved' => [
+                'boolean',
+                Rule::requiredIf($authority)
+            ],
+            'finished' => [
+                'boolean',
+                Rule::requiredIf(!$authority)
+            ]
+        ]);
+        DB::transaction(function () use ($request, $curr_user, $authority) {
+            $task_info = DB::table('tasks')->where('id', $request->task_id)->first();
+            if ($authority) {
+                $taskUserUpdate = $request->only(['approved']);
+                $curr_user_with_role = $curr_user->withRole();
+                if ($curr_user_with_role->role == 'Manager') {
+                    $canManagerUpdateTask = DB::table('task_user as t1')
+                        ->where('t1.task_id', $request->task_id)
+                        ->whereRaw('t1.user_id in (select t2.id from users as t2 where t2.manager_id=?)', [$curr_user->id])->exists();
+                    if (!$canManagerUpdateTask)
+                        return $this->nowAllowed();
+                }
+                DB::table('task_user')
+                    ->where('user_id', $request->user_id)
+                    ->where('task_id', $request->task_id)
+                    ->update($taskUserUpdate);
+                $text = 'Ваша задача ' . $task_info->title . ' одобрена';
+                $date = date('Y-m-d H:i:s');
+                $notif = Notification::create([
+                    'user_id' => $curr_user->id,
+                    'text' => $text,
+                    'publish_date' => $date,
+                    'type' => 2
+                ]);
+                DB::table('notification_user')->insert([
+                    'to_user' => $request->user_id,
+                    'notification_id' => $notif->id
+                ]);
+                broadcast(new TaskChange($request->user_id, $text, $curr_user_with_role, $date, $notif->id));
+            } else {
+                $taskUserUpdate = $request->only(['finished']);
+                DB::table('task_user')
+                    ->where('user_id', $curr_user->id)
+                    ->where('task_id', $request->task_id)
+                    ->update($taskUserUpdate);
+                $users = DB::table('users as t1')
+                    ->leftJoin('roles as t2', 't2.id', '=', 't1.role_id')
+                    ->select('t1.id')
+                    ->where('t2.name', 'Admin')
+                    ->orWhereRaw('t1.id=(select t3.manager_id from users as t3 where t3.id=?)', [$curr_user->id])->get();
+                $text = 'Пользователь завершил задачу ' . $task_info->title;
+                $date = date('Y-m-d H:i:m');
+                $notif = Notification::create([
+                    'user_id' => $curr_user->id,
+                    'text' => $text,
+                    'publish_date' => $date,
+                    'type' => 3
+                ]);
+                $notif_users = [];
+                foreach ($users as $user) {
+                    $notif_users[] = [
+                        'to_user' => $user->id,
+                        'notification_id' => $notif->id
+                    ];
+                    broadcast(new TaskChange($user->id, $text, $curr_user->withRole(), $date, $notif->id));
+                }
+                DB::table('notification_user')->insert($notif_users);
+            }
+        });
+        return $this->successResponse(true);
     }
 
     //* Delete task by its id
