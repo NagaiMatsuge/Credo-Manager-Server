@@ -27,7 +27,15 @@ class ProjectController extends Controller
         $request->validate([
             'archive' => 'nullable|boolean'
         ]);
-        $projects = DB::table('projects')->select('projects.*', DB::raw('(SELECT COUNT(tasks.id) FROM tasks WHERE tasks.step_id IN (SELECT id FROM steps WHERE steps.project_id=projects.id)) as task_count'), DB::raw('(SELECT COUNT(tasks.id) FROM tasks WHERE tasks.step_id IN (SELECT id FROM steps WHERE steps.project_id=projects.id AND tasks.approved=1)) as approved_count'), DB::raw('(SELECT SUM(t1.percent)/ COUNT(t1.percent) AS paid_percent FROM (SELECT ((steps.price - steps.debt) * 100 / steps.price) AS percent FROM steps WHERE steps.project_id=projects.id) AS t1) AS paid_percent'))->where('archived', $request->archive ?? false)->paginate(10);
+        $projects = DB::table('projects')
+            ->select(
+                'projects.*',
+                DB::raw('(SELECT COUNT(b1.id) from task_user as b1 where b1.task_id in (select b2.id from tasks as b2 where b2.step_id in (select b3.id from steps as b3 where b3.project_id=projects.id))) as task_count'),
+                DB::raw('(select count(a1.id) from task_user as a1 where a1.approved=1 and a1.task_id in (select a2.id from tasks as a2 where a2.step_id in (select a3.id from steps as a3 where a3.project_id=projects.id))) as approved_count'),
+                DB::raw('(SELECT SUM(t1.percent)/ COUNT(t1.percent) AS paid_percent FROM (SELECT ((steps.price - steps.debt) * 100 / steps.price) AS percent FROM steps WHERE steps.project_id=projects.id) AS t1) AS paid_percent')
+            )
+            ->where('archived', $request->archive ?? false)
+            ->paginate(10);
         $counts = DB::select("select (select count(projects.id) from projects where projects.archived=1) as count_archived, (select count(projects.id) from projects where projects.archived=0) as count_not_archived");
         $projects = $projects->toArray();
         foreach ($projects['data'] as $key => $project) {

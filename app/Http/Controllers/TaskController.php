@@ -128,11 +128,13 @@ class TaskController extends Controller
         $this->makeValidation($request, true);
         DB::transaction(function () use ($request, $id) {
             $authority = $request->user()->hasRole(['Admin', 'Manager']);
+            $taskUserUpdate = [];
             $taskUpdate = [];
             $need_to_be_deleted = [];
             $need_to_be_added = [];
             if ($authority) {
-                $taskUpdate = $request->only(['title', 'step_id', 'approved', 'type', 'deadline', 'time']);
+                $taskUpdate = $request->only(['title', 'step_id', 'type', 'deadline', 'time']);
+                $taskUserUpdate = $request->only(['approved']);
 
                 $old_user_ids = DB::table("task_user")->where('task_id', $id)->get()->pluck('user_id')->toArray();
                 $new_user_ids = $request->user_ids;
@@ -152,11 +154,14 @@ class TaskController extends Controller
                     DB::table('task_user')->whereIn('user_id', $need_to_be_deleted)->delete();
                 }
             } else {
-                $taskUpdate = $request->only(['finished']);
+                $taskUserUpdate = $request->only(['finished']);
             }
 
             if (!empty($taskUpdate))
                 DB::table('tasks')->where('id', $id)->update($taskUpdate);
+
+            if (!empty($taskUserUpdate))
+                DB::table('task_user')->where('id', $id)->update($taskUserUpdate);
         });
         return $this->successResponse([], 200, 'Successfully updated');
     }

@@ -20,8 +20,6 @@ class CreateTasksTable extends Migration
             $table->tinyInteger('type')->comment('1 clock, 2 deadline, 3 unlimeted');
             $table->integer('time')->default(0)->comment('number of minites');
             $table->date('deadline')->nullable();
-            $table->boolean('approved')->default(false)->comment('Only can be approved by Admin');
-            $table->boolean('finished')->default(false);
             $table->timestamps();
 
             $table->foreign('step_id')->references('id')->on('steps')->onDelete('cascade');

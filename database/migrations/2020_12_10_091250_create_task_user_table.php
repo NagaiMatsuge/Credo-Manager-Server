@@ -16,8 +16,9 @@ class CreateTaskUserTable extends Migration
         Schema::create('task_user', function (Blueprint $table) {
             $table->id();
             $table->uuid('user_id');
-            $table->unsignedBigInteger('task_id');
             $table->boolean('finished')->default(false);
+            $table->boolean('approved')->default(false);
+            $table->unsignedBigInteger('task_id');
 
             $table->unique(['user_id', 'task_id']);
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

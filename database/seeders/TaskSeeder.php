@@ -18,7 +18,6 @@ class TaskSeeder extends Seeder
         $tasks[] = [
             'title' => 'Наверстать страницу проекты',
             'step_id' => 2,
-            'approved' => 0,
             'deadline' => null,
             'time' => 234,
             'type' => 1
@@ -26,7 +25,6 @@ class TaskSeeder extends Seeder
         $tasks[] = [
             'title' => 'Пагинатсия на сайте',
             'step_id' => 2,
-            'approved' => 0,
             'deadline' => null,
             'time' => 234,
             'type' => 1
@@ -37,7 +35,6 @@ class TaskSeeder extends Seeder
             'deadline' => null,
             'time' => 234,
             'type' => 1,
-            'approved' => 0,
         ];
         $tasks[] = [
             'title' => 'Сделать сайт адаптивным',
@@ -45,7 +42,6 @@ class TaskSeeder extends Seeder
             'deadline' => null,
             'time' => 234,
             'type' => 1,
-            'approved' => 0,
         ];
         $tasks[] = [
             'title' => 'Изменить цветь иконок',
@@ -53,7 +49,6 @@ class TaskSeeder extends Seeder
             'deadline' => null,
             'time' => 234,
             'type' => 1,
-            'approved' => 0,
         ];
         $tasks[] = [
             'title' => 'Процент оплаты нужны для проектов',
@@ -61,7 +56,6 @@ class TaskSeeder extends Seeder
             'deadline' => null,
             'time' => 234,
             'type' => 1,
-            'approved' => 0,
         ];
         $tasks[] = [
             'title' => 'Настроить платежную систему',
@@ -69,7 +63,6 @@ class TaskSeeder extends Seeder
             'deadline' => null,
             'time' => 234,
             'type' => 1,
-            'approved' => 0,
         ];
         $tasks[] = [
             'title' => 'У проектов должны быть иконки',
@@ -77,7 +70,6 @@ class TaskSeeder extends Seeder
             'deadline' => null,
             'time' => 234,
             'type' => 1,
-            'approved' => 0,
         ];
 
 
