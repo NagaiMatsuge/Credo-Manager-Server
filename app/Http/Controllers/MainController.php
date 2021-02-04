@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Message;
+use App\Models\MessageFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Traits\ResponseTrait;
@@ -78,8 +79,8 @@ class MainController extends Controller
                 'title' => $project->title,
                 'created_at' => explode(' ', $project->created_at)[0],
                 'deadline' => [
-                    'value'=>$deadline,
-                    'values'=>$deadline->diff($current_date)
+                    'value' => $deadline,
+                    'values' => $deadline->diff($current_date)
                 ],
                 'photo' => $project->photo,
                 'color' => $project->color,
@@ -100,6 +101,7 @@ class MainController extends Controller
     {
         $user = $request->user();
         $unreadMessages = Message::from('messages as t1')->rightJoin('unread_messages as t2', 't1.id', '=', 't2.message_id')->leftJoin('users as t3', 't1.user_id', '=', 't3.id')->select(
+            't1.id',
             't1.text',
             't1.created_at as sent_at',
             't3.photo as user_photo',
@@ -107,8 +109,29 @@ class MainController extends Controller
             't3.name as user_name',
             DB::raw('(select t5.title from projects as t5 where t5.id=(select t6.project_id from steps as t6 where t6.id=(select t7.step_id from tasks as t7 where t7.id=t1.task_id))) as project_title'),
             DB::raw('(select t4.title from tasks t4 where t4.id=t1.task_id) as task_title')
-        )->where('t2.user_id', $user->id)->with('files')->get();
-        return $this->successResponse(['message' => $unreadMessages]);
+        )->where('t2.user_id', $user->id)->get();
+
+        $message_ids = $unreadMessages->pluck('id');
+        $files = MessageFile::whereIn('message_id', $message_ids)->get();
+        $res = [];
+        foreach ($unreadMessages as $um) {
+            $i = [
+                'id' => $um->id,
+                'text' => $um->text,
+                'sent_at' => $um->sent_at,
+                'user_color' => $um->user_color,
+                'user_name' => $um->user_name,
+                'project_title' => $um->project_title,
+                'task_title' => $um->task_title
+            ];
+            foreach ($files as $f) {
+                if ($f->message_id == $um->id) {
+                    $i['files'][] = $f;
+                }
+            }
+            $res[] = $i;
+        }
+        return $this->successResponse(['message' => $res]);
     }
 
     //* Middle section of the main page
