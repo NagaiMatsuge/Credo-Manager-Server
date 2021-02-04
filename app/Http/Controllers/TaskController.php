@@ -72,7 +72,8 @@ class TaskController extends Controller
                         'unread_count' => $task->unread_count,
                         'deadline' => $task->deadline,
                         'time_spent' => (int)$task->time_spent,
-                        'last_time' => (int)$task->additional_time
+                        'last_time' => (int)$task->additional_time,
+                        'finished' => $task->finished,
                     ];
                     $res[$user->user_id]['tasks'][($task->task_user_id === $user->active_task_id) || ($task->task_user_id === $user->back_up_active_task_id) ? 'active' : 'inactive'][] = $task_info;
                 }
@@ -127,12 +128,12 @@ class TaskController extends Controller
         $this->makeValidation($request, true);
         DB::transaction(function () use ($request, $id) {
             $authority = $request->user()->hasRole(['Admin', 'Manager']);
-            $taskUserUpdate = [];
             $taskUpdate = [];
             $need_to_be_deleted = [];
             $need_to_be_added = [];
             if ($authority) {
-                $taskUpdate = $request->only(['title', 'step_id', 'approved', 'type', 'deadline', 'time', 'finished']);
+                $taskUpdate = $request->only(['title', 'step_id', 'approved', 'type', 'deadline', 'time']);
+
                 $old_user_ids = DB::table("task_user")->where('task_id', $id)->get()->pluck('user_id')->toArray();
                 $new_user_ids = $request->user_ids;
                 $need_to_be_deleted = array_diff($old_user_ids, $new_user_ids);
@@ -150,12 +151,12 @@ class TaskController extends Controller
                 if (count($need_to_be_deleted) > 0) {
                     DB::table('task_user')->whereIn('user_id', $need_to_be_deleted)->delete();
                 }
+            } else {
+                $taskUpdate = $request->only(['finished']);
             }
+
             if (!empty($taskUpdate))
                 DB::table('tasks')->where('id', $id)->update($taskUpdate);
-
-            if (!empty($taskUserUpdate))
-                DB::table('task_user')->where('task_id', $id)->where('user_id', $request->user()->id)->update($taskUserUpdate);
         });
         return $this->successResponse([], 200, 'Successfully updated');
     }

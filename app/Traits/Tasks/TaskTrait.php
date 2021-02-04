@@ -39,6 +39,7 @@ trait TaskTrait
                 'deadline' => $task->deadline,
                 'time_spent' => (int)$task->time_spent,
                 'last_time' => (int)$task->additional_time,
+                'finished' => $task->finished,
             ];
             $res['tasks'][($task->active_task_id === $task->id) || ($task->back_up_active_task_id === $task->id) ? 'active' : 'inactive'][] = $task_data;
         }
