@@ -112,12 +112,12 @@ trait UserQuery
     {
         return DB::table('users')
             ->leftJoin('roles', 'roles.id', '=', 'users.role_id')
-            ->where('id', $this->id)
+            ->where('users.id', $this->id)
             ->select(
-                'user.name',
-                'user.color',
-                'user.photo',
-                'user.id',
+                'users.name',
+                'users.color',
+                'users.photo',
+                'users.id',
                 'roles.name as role'
             )
             ->first();

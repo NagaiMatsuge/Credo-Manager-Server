@@ -113,7 +113,7 @@ class TaskController extends Controller
                     'notification_id' => $notif->id
                 ];
 
-                broadcast(new TaskChange($user_id, $text, $current_user, $date_n));
+                broadcast(new TaskChange($user_id, $text, $current_user, $date_n, $notif->id));
             }
             DB::table('task_user')->insert($userTasks);
             DB::table('notification_user')->insert($notification_user);
@@ -283,6 +283,7 @@ class TaskController extends Controller
                 'to_user' => $user_id,
                 'notification_id' => $notif->id
             ]);
+            info('Task Change');
             broadcast(new TaskChange($user->id, $text, $current_user->withRole(), $date_n, $notif->id));
             return $this->successResponse(['tick' => false]);
         }
