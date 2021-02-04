@@ -91,6 +91,7 @@ class UserController extends Controller
             )
             ->where('t1.to_user', $curr_user->id)
             ->where('t2.publish_date', '<', date('Y-m-d H:i:s'))
+            ->orderBy('t2.publish_date', 'desc')
             ->get();
         $res = [
             'id' => $user->id,
