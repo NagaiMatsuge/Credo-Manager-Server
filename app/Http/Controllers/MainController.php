@@ -109,7 +109,7 @@ class MainController extends Controller
             't3.name as user_name',
             DB::raw('(select t5.title from projects as t5 where t5.id=(select t6.project_id from steps as t6 where t6.id=(select t7.step_id from tasks as t7 where t7.id=t1.task_id))) as project_title'),
             DB::raw('(select t4.title from tasks t4 where t4.id=t1.task_id) as task_title')
-        )->where('t2.user_id', $user->id)->paginate(15);
+        )->where('t2.user_id', $user->id)->orderBy('t1.created_at', 'desc')->paginate(15);
 
         $message_ids = $unreadMessages->pluck('id');
         $files = MessageFile::whereIn('message_id', $message_ids)->get();
