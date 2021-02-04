@@ -22,17 +22,20 @@ class NotificationSent implements ShouldBroadcast
 
     public $publish_date;
 
+    public $notif_id;
+
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($user_id, $message, $from_user, $publish_date)
+    public function __construct($user_id, $message, $from_user, $publish_date, $notif_id)
     {
         $this->user_id = $user_id;
         $this->message = $message;
         $this->from_user = $from_user;
         $this->publish_date = $publish_date;
+        $this->notif_id = $notif_id;
     }
 
     /**
@@ -52,6 +55,11 @@ class NotificationSent implements ShouldBroadcast
      */
     public function broadcastWith()
     {
-        return ['message' => $this->message, 'from_user' => $this->from_user, 'date' => $this->publish_date];
+        return [
+            'message' => $this->message,
+            'from_user' => $this->from_user,
+            'date' => $this->publish_date,
+            'notif_id' => $this->notif_id
+        ];
     }
 }

@@ -283,7 +283,7 @@ class TaskController extends Controller
                 'to_user' => $user_id,
                 'notification_id' => $notif->id
             ]);
-            broadcast(new TaskChange($user->id, $text, $current_user, $date_n));
+            broadcast(new TaskChange($user->id, $text, $current_user->withRole(), $date_n, $notif->id));
             return $this->successResponse(['tick' => false]);
         }
         DB::transaction(function () use ($user_id, $request, $user, $current_user, $date_n) {
@@ -311,7 +311,7 @@ class TaskController extends Controller
                 'to_user' => $user_id,
                 'notification_id' => $notif->id
             ]);
-            broadcast(new TaskChange($user->id, $text, $current_user, $date_n));
+            broadcast(new TaskChange($user->id, $text, $current_user->withRole(), $date_n, $notif->id));
         });
         return $this->successResponse(['tick' => true]);
     }

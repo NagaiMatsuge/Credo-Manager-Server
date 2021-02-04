@@ -107,4 +107,19 @@ trait UserQuery
         }
         return $query;
     }
+
+    public function withRole()
+    {
+        return DB::table('users')
+            ->leftJoin('roles', 'roles.id', '=', 'users.role_id')
+            ->where('id', $this->id)
+            ->select(
+                'user.name',
+                'user.color',
+                'user.photo',
+                'user.id',
+                'roles.name as role'
+            )
+            ->first();
+    }
 }

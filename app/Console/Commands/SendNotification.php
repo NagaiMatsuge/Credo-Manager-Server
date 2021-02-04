@@ -43,7 +43,24 @@ class SendNotification extends Command
     {
         try {
             $notification_id = $this->argument('notification_id');
-            $notification = DB::table('notification_user as t1')->leftJoin('notifications as t2', 't2.id', '=', 't1.notification_id')->leftJoin('users as t3', 't3.id', '=', 't2.user_id')->where('notification_id', $notification_id)->select('t3.photo', 't3.id as from_user', 't3.color', 't3.email', 't3.name', 't1.to_user', 't2.text', 't2.publish_date')->get()->toArray();
+            $notification = DB::table('notification_user as t1')
+                ->leftJoin('notifications as t2', 't2.id', '=', 't1.notification_id')
+                ->leftJoin('users as t3', 't3.id', '=', 't2.user_id')
+                ->leftJoin('roles as r1', 'r1.id', '=', 't3.role_id')
+                ->where('notification_id', $notification_id)
+                ->select(
+                    't3.photo',
+                    't3.id as from_user',
+                    't3.color',
+                    't3.email',
+                    't3.name',
+                    't1.to_user',
+                    't2.text',
+                    't2.publish_date',
+                    'r1.name as role'
+                )
+                ->get()
+                ->toArray();
             $user_ids = array_column($notification, 'to_user');
             $notification = $notification[0];
             $from_user = [
@@ -52,10 +69,11 @@ class SendNotification extends Command
                 'color' => $notification->color,
                 'email' => $notification->email,
                 'name' => $notification->name,
+                'role' => $notification->role
             ];
             //Insert into database
             foreach ($user_ids as $user_id) {
-                broadcast(new NotificationSent($user_id, $notification->text, $from_user, $notification->publish_date));
+                broadcast(new NotificationSent($user_id, $notification->text, $from_user, $notification->publish_date, $notification_id));
             }
         } catch (Exception $e) {
             Logger::cronError($e->getMessage(), $this->argument('notification_id'));
