@@ -15,7 +15,7 @@ class ParamsController extends Controller
     {
         $managers = DB::table('users as t1')
             ->leftJoin('roles as t2', 't2.id', '=', 't1.role_id')
-            ->whereRaw('t1.id in (select a1.manager_id from users as a1 where a1.manager_id is not null)')
+            ->where('t2.name', 'Manager')
             ->select(
                 't1.id',
                 't1.name',
