@@ -70,7 +70,7 @@ trait Query
     }
 
     //* Get all users list for admin in tasks view route with pagination
-    public static function getUserListForAdmin($user_id = null)
+    public static function getUserListForAdmin($user_id = null, $manager_id = null)
     {
         return DB::table('users as t1')
             ->leftJoin('roles as t2', 't2.id', '=', 't1.role_id')
@@ -84,6 +84,9 @@ trait Query
                 't1.back_up_active_task_id',
                 DB::raw('(1) as worked')
             )
+            ->when($manager_id != null, function ($query) use ($manager_id) {
+                return $query->where('t1.manager_id', $manager_id);
+            })
             ->whereNotIn('t2.name', ['Admin', 'Manager'])
             ->when($user_id, function ($query) use ($user_id) {
                 return $query->where('t1.id', $user_id);

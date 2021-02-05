@@ -20,21 +20,24 @@ class TaskController extends Controller
     //* Fetch all tasks
     public function index(Request $request)
     {
-        if ($request->user()->hasRole(['Admin', 'Manager'])) {
+        $curr_user = $request->user();
+        if ($curr_user->hasRole('Admin')) {
             return $this->showToAdmin($request);
+        } else if ($curr_user->hasRole('Manager')) {
+            return $this->showToAdmin($request, $curr_user->id);
         } else {
             return $this->showToUser($request);
         }
     }
 
     //* Show List of tasks to Admin
-    public function showToAdmin(Request $request)
+    public function showToAdmin(Request $request, $manager_id = null)
     {
         $request->validate([
             'project_id' => 'nullable|integer',
             'user_id' => 'nullable|string'
         ]);
-        $users = Task::getUserListForAdmin($request->user_id ?? null);
+        $users = Task::getUserListForAdmin($request->user_id ?? null, $manager_id);
 
         $tasks = Task::getAllUserTasks($request->user()->id, $request->project_id ?? null);
 
