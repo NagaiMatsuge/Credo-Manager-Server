@@ -14,7 +14,7 @@ class ParamsController extends Controller
     public function getAllRoles(Request $request)
     {
         $managers = DB::table('users as t1')
-            ->leftJoin('roles as t2', 't2.id', '= ', 't1.role_id')
+            ->leftJoin('roles as t2', 't2.id', '=', 't1.role_id')
             ->whereRaw('t1.id in (select a1.manager_id from users as a1 where a1.manager_id is not null)')
             ->select(
                 't1.id',
