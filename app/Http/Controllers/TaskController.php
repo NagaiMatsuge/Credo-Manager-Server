@@ -215,7 +215,11 @@ class TaskController extends Controller
                     ->update([
                         'stopped_at' => date('Y-m-d H:i:s')
                     ]);
-                $text = 'Ваша задача ' . $task_info->title . ' одобрена';
+                if ($request->approved == false)
+                    $pivot = ' не';
+                else
+                    $pivot = '';
+                $text = 'Ваша задача ' . $task_info->title . $pivot .  ' одобрена';
                 $date = date('Y-m-d H:i:s');
                 $notif = Notification::create([
                     'user_id' => $curr_user->id,
@@ -269,7 +273,7 @@ class TaskController extends Controller
                         'to_user' => $user->id,
                         'notification_id' => $notif->id
                     ];
-                    broadcast(new TaskChange($user->id, $text, $curr_user->withRole(), $date, $notif->id));
+                    broadcast(new TaskChange($user->id, $text, $curr_user->withRole(), $date, $notif->id, $request->task_id));
                 }
                 DB::table('notification_user')->insert($notif_users);
             }

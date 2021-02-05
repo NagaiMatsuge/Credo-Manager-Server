@@ -23,18 +23,21 @@ class TaskChange implements ShouldBroadcast
 
     public $notif_id;
 
+    public $task_id;
+
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($user_id, $text, $from_user, $publish_date, $notif_id)
+    public function __construct($user_id, $text, $from_user, $publish_date, $notif_id, $task_id = null)
     {
         $this->user_id = $user_id;
         $this->text = $text;
         $this->from_user = $from_user;
         $this->publish_date = $publish_date;
         $this->notif_id = $notif_id;
+        $this->task_id = $task_id;
     }
 
     /**
@@ -58,7 +61,8 @@ class TaskChange implements ShouldBroadcast
             'message' => $this->text,
             'from_user' => $this->from_user,
             'date' => $this->publish_date,
-            'notif_id' => $this->notif_id
+            'notif_id' => $this->notif_id,
+            'task_id' => $this->task_id
         ];
     }
 }
