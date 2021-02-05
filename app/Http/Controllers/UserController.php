@@ -87,7 +87,8 @@ class UserController extends Controller
             return $this->notAllowed();
         User::where('id', $id)->update([
             'active_task_id' => null,
-            'back_up_active_task_id' => null
+            'back_up_active_task_id' => null,
+            'manager_id' => null
         ]);
         return $this->successResponse(User::deleteOneById($id));
     }
