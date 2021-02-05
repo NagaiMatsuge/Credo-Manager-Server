@@ -30,6 +30,7 @@ class AlterUsersTable extends Migration
             $table->foreign('role_id')->references('id')->on('roles');
             $table->unsignedBigInteger('back_up_active_task_id')->nullable();
             $table->foreign('back_up_active_task_id')->references('id')->on('task_user');
+            $table->foreign("manager_id")->references('id')->on('users');
         });
     }
 
