@@ -185,6 +185,7 @@ class UserController extends Controller
                 return $this->errorResponse('password-matches-old');
             if (Hash::check($request->password, $user->password)) {
                 $data['password'] = Hash::make($request->new_password);
+                unset($data['new_password']);
             } else {
                 return $this->errorResponse('password-dontmatch');
             }
