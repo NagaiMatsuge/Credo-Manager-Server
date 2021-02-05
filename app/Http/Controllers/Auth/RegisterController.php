@@ -33,7 +33,8 @@ class RegisterController extends Controller
                 'required',
                 Rule::in(config('params.roles'))
             ],
-            'color' => 'required|string'
+            'color' => 'required|string',
+            'manager_id' => 'nullable|string|exists:users,id'
         ]);
         // $data = $request->except('working_days');
         // $working_days = json_encode($request->working_days);
