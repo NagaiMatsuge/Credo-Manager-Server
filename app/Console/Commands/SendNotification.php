@@ -47,7 +47,7 @@ class SendNotification extends Command
                 ->leftJoin('notifications as t2', 't2.id', '=', 't1.notification_id')
                 ->leftJoin('users as t3', 't3.id', '=', 't2.user_id')
                 ->leftJoin('roles as r1', 'r1.id', '=', 't3.role_id')
-                ->where('notification_user.notification_id', $notification_id)
+                ->where('notification_id', $notification_id)
                 ->select(
                     't3.photo',
                     't3.id as from_user',
