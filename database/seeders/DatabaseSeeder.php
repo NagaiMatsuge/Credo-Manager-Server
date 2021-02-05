@@ -14,20 +14,20 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            RolesSeeder::class,
+            // RolesSeeder::class,
             UserSeeder::class,
-            ProjectSeeder::class,
-            StepSeeder::class,
-            TaskSeeder::class,
-            TaskUserSeeder::class,
-            MessageSeeder::class,
-            PaymentSeeder::class,
-            NoteSeeder::class,
-            NotificationSeeder::class,
-            NotificationUserSeeder::class,
-            ServerSeeder::class,
-            FtpSeeder::class,
-            DbAccessSeeder::class
+            // ProjectSeeder::class,
+            // StepSeeder::class,
+            // TaskSeeder::class,
+            // TaskUserSeeder::class,
+            // MessageSeeder::class,
+            // PaymentSeeder::class,
+            // NoteSeeder::class,
+            // NotificationSeeder::class,
+            // NotificationUserSeeder::class,
+            // ServerSeeder::class,
+            // FtpSeeder::class,
+            // DbAccessSeeder::class
         ]);
     }
 }

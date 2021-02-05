@@ -143,6 +143,9 @@ class NotificationController extends Controller
             ]);
         }
 
+        if ($job->publish_date < date('Y-m-d H:i:s') && $request->has('publish_date')) {
+            return $this->errorResponse('already-published');
+        }
 
         return $this->successResponse(true);
     }
