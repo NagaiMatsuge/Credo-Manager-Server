@@ -28,7 +28,9 @@ class SingleUserResource extends JsonResource
             'color' => $this->color,
             'theme' => $this->theme,
             'role' => $this->role,
-            'working_days' => json_decode($this->working_days)
+            'working_days' => json_decode($this->working_days),
+            'manager_name' => $this->manager_name,
+            'role_id' => $this->role_id
         ];
         return $res;
     }
