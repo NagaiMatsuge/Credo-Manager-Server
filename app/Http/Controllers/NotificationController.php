@@ -33,6 +33,7 @@ class NotificationController extends Controller
         return $this->successResponse(['notifications' => $notifs, 'notes' => $notes]);
     }
 
+
     //* Get method for Users
     public function showToUser($notes)
     {

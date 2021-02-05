@@ -104,7 +104,8 @@ class TaskController extends Controller
             $notif = Notification::create([
                 'user_id' => $current_user->id,
                 'text' => $text,
-                'publish_date' => $date_n
+                'publish_date' => $date_n,
+                'type' => 2
             ]);
             $notification_user = [];
             foreach ($user_ids as $user_id) {
@@ -188,6 +189,9 @@ class TaskController extends Controller
         DB::transaction(function () use ($request, $curr_user, $authority) {
             $task_info = DB::table('tasks')->where('id', $request->task_id)->first();
             if ($authority) {
+                $task_user_info = DB::table('task_user')
+                    ->where('task_id', $request->task_id)
+                    ->where('user_id', $request->user_id)->first();
                 $taskUserUpdate = $request->only(['approved']);
                 $curr_user_with_role = $curr_user->withRole();
                 if ($curr_user_with_role->role == 'Manager') {
@@ -201,6 +205,16 @@ class TaskController extends Controller
                     ->where('user_id', $request->user_id)
                     ->where('task_id', $request->task_id)
                     ->update($taskUserUpdate);
+                DB::table("users")->where('id', $request->user_id)->update([
+                    'active_task_id' => null,
+                    'back_up_active_task_id' => null
+                ]);
+                DB::table('task_watchers')
+                    ->where('task_user_id', $task_user_info->id)
+                    ->whereNull('stopped_at')
+                    ->update([
+                        'stopped_at' => date('Y-m-d H:i:s')
+                    ]);
                 $text = 'Ваша задача ' . $task_info->title . ' одобрена';
                 $date = date('Y-m-d H:i:s');
                 $notif = Notification::create([
@@ -215,6 +229,10 @@ class TaskController extends Controller
                 ]);
                 broadcast(new TaskChange($request->user_id, $text, $curr_user_with_role, $date, $notif->id));
             } else {
+                $task_user_info = DB::table("task_user")
+                    ->where('task_id', $request->task_id)
+                    ->where('user_id', $curr_user->id)
+                    ->first();
                 $taskUserUpdate = $request->only(['finished']);
                 DB::table('task_user')
                     ->where('user_id', $curr_user->id)
@@ -225,6 +243,18 @@ class TaskController extends Controller
                     ->select('t1.id')
                     ->where('t2.name', 'Admin')
                     ->orWhereRaw('t1.id=(select t3.manager_id from users as t3 where t3.id=?)', [$curr_user->id])->get();
+                DB::table('users')
+                    ->where('id', $curr_user->id)
+                    ->update([
+                        'active_task_id' => null,
+                        'back_up_active_task_id' => null
+                    ]);
+                DB::table('task_watchers')
+                    ->where("task_user_id", $task_user_info->id)
+                    ->whereNull('stopped_at')
+                    ->update([
+                        'stopped_at' => date('Y-m-d H:i:s')
+                    ]);
                 $text = 'Пользователь завершил задачу ' . $task_info->title;
                 $date = date('Y-m-d H:i:m');
                 $notif = Notification::create([
@@ -381,7 +411,6 @@ class TaskController extends Controller
             DB::table('users')->where('id', $user_id)->update([
                 'active_task_id' => null,
                 'back_up_active_task_id' => null
-
             ]);
             DB::table('task_watchers')->where('task_user_id', $user->active_task_id)->where('stopped_at', null)->update([
                 'stopped_at' => $date_n
