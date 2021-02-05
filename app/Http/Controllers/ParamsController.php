@@ -16,6 +16,7 @@ class ParamsController extends Controller
         $managers = DB::table('users as t1')
             ->leftJoin('roles as t2', 't2.id', '=', 't1.role_id')
             ->where('t2.name', 'Manager')
+            ->where('t1.id', '<>', $request->user()->id)
             ->select(
                 't1.id',
                 't1.name',
