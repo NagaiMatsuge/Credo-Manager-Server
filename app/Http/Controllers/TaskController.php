@@ -316,9 +316,33 @@ class TaskController extends Controller
         return $this->successResponse($res);
     }
 
-    private function userList()
+    private function userList($manager_id = null)
     {
-        $users = User::userRole();
+        if ($manager_id != null) {
+            $users = DB::table('users as t1')
+                ->leftJoin('roles as t2', 't2.id', '=', 't1.role_id')
+                ->whereRaw('t1.id in (select b1.id from users as b1 where b1.manager_id=?)', [$manager_id])
+                ->select(
+                    't1.id',
+                    't1.name',
+                    't1.email',
+                    't1.phone',
+                    't1.work_start_time',
+                    't1.work_end_time',
+                    't1.manager_id',
+                    't1.pause_start_time',
+                    't1.pause_end_time',
+                    't1.photo',
+                    't1.color',
+                    't1.theme',
+                    't2.name as role',
+                    't1.working_days'
+                )
+                ->get();
+        } else {
+            $users = User::userRole();
+        }
+
         $res = [
             'developers' => [],
             'designers' => []

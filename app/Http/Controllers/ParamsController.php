@@ -25,7 +25,7 @@ class ParamsController extends Controller
             )
             ->get();
         return $this->successResponse([
-            'roles' => DB::table('roles')->get(),
+            'roles' => DB::table('roles')->where('name', '<>', 'Admin')->get(),
             'managers' => $managers
         ]);
     }

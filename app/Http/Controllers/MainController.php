@@ -15,7 +15,7 @@ class MainController extends Controller
     use ResponseTrait, TaskTrait;
 
     //* Show users to admin main page
-    private function showUsersToAdmin(Request $request)
+    private function showUsersToAdmin(Request $request, $manager_id = null)
     {
         $users = DB::table('users as t1')
             ->leftJoin('roles as t2', 't2.id', '=', 't1.role_id')
@@ -40,7 +40,12 @@ class MainController extends Controller
                 DB::raw('(select SUM(TIMESTAMPDIFF(MINUTE, t8.created_at, t8.stopped_at)) from task_watchers as t8 where t8.task_user_id=t1.active_task_id) as time_spent'),
                 DB::raw('(select TIMESTAMPDIFF(MINUTE, (select max(t10.created_at) from task_watchers as t10 where t10.task_user_id=t1.active_task_id and t10.stopped_at IS NULL), CURRENT_TIMESTAMP)) as additional_time'),
                 DB::raw('(select count(a1.id) from task_user as a1 where a1.user_id=t1.id) as task_count')
-            )->whereNotIn('t2.name', ['Admin', 'Manager'])->get();
+            )
+            ->whereNotIn('t2.name', ['Admin', 'Manager'])
+            ->when($manager_id != null, function ($query) use ($manager_id) {
+                return $query->where('t1.manager_id', $manager_id);
+            })
+            ->get();
         $res = [];
         foreach ($users as $user) {
             $res[] = [
@@ -139,8 +144,11 @@ class MainController extends Controller
     //* Middle section of the main page
     public function mid(Request $request)
     {
-        if ($request->user()->hasRole(['Admin', 'Manager'])) {
+        $curr_user = $request->user();
+        if ($curr_user->hasRole('Admin')) {
             return $this->showUsersToAdmin($request);
+        } else if ($curr_user->hasRole('Manager')) {
+            return $this->showUsersToAdmin($request, $curr_user->id);
         } else {
             return $this->showToUser($request);
         }
