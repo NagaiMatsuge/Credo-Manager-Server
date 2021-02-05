@@ -19,6 +19,9 @@ class RegisterController extends Controller
     //* Registering users
     public function register(Request $request)
     {
+        if (!$request->user()->hasRole('Admin'))
+            return $this->notAllowed();
+
         $request->validate([
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
@@ -40,10 +43,13 @@ class RegisterController extends Controller
         // $working_days = json_encode($request->working_days);
         // $data['working_days'] = "$working_days";
         // return $this->successResponse($request->input());
+        $role = DB::table('roles')->where('name', $request->role)->first();
+        if ($role->name == 'Admin')
+            return $this->errorResponse('There might be only one admin');
         $data = $request->except(['password', 'role']);
         $data['password'] = Hash::make($request->password);
-        $role = DB::table('roles')->where('name', $request->role)->first();
         $data['role_id'] = $role->id;
+
         $user = User::create($data);
 
         Mail::to($request->email)->send(new VerifyEmail($user, $request->password));

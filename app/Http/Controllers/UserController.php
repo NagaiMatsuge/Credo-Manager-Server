@@ -53,6 +53,9 @@ class UserController extends Controller
     //* Update user By its id
     public function update(Request $request, User $user)
     {
+        if (!$request->user()->hasRole('Admin'))
+            return $this->notAllowed();
+
         $this->validateRequest($request);
 
         $data = $request->except(['role', 'photo', 'password']);
@@ -67,7 +70,7 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
 
         $user->update($data);
-        if ($request->user()->hasRole('Admin')) {
+        if ($request->role != "Admin") {
             $user->syncRoles($request->role);
         }
 
