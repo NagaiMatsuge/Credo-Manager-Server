@@ -19,7 +19,7 @@ class CreateNotificationsTable extends Migration
             $table->uuid('user_id');
             $table->text('text');
             $table->dateTime('publish_date');
-            $table->enum('type', [1, 2])->default(1)->comment('1 - ordinary, 2 - only-to-user-not-admin');
+            $table->enum('type', [1, 2, 3])->default(1)->comment('1 - ordinary, 2 - only-to-user-not-admin, 3 - only to admin');
             $table->integer('job_number')->nullable()->comment("Job number at AT command linux");
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
