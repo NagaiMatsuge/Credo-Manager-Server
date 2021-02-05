@@ -25,7 +25,27 @@ class UserController extends Controller
     //* Show one user by its id
     public function show($id)
     {
-        $user = User::userRole($id);
+        $user = DB::table('users')->leftJoin('roles', 'users.role_id', '=', 'roles.id')->select(
+            'users.id',
+            'users.name',
+            'users.email',
+            'users.phone',
+            'users.work_start_time',
+            'users.work_end_time',
+            'users.manager_id',
+            'users.pause_start_time',
+            'users.pause_end_time',
+            'users.photo',
+            'users.color',
+            'users.theme',
+            'roles.name as role',
+            'users.working_days',
+            'roles.id as role_id',
+            DB::raw('(select b1.name from users as b1 where b1.id=users.manager_id) as manager_name')
+        )
+            ->where('users.id', $id)
+            ->first();
+
         $res = new SingleUserResource($user);
         return $this->successResponse([$res]);
     }
