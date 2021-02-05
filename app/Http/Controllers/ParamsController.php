@@ -11,12 +11,16 @@ class ParamsController extends Controller
     use ResponseTrait;
 
     //* Get all Roles
-    public function getAllRoles(Request $request)
+    public function getAllRoles(Request $request, $id)
     {
+        $curr_user = $request->user();
+        if (!$curr_user->hasRole(['Admin', 'Manager'])) {
+            return $this->notAllowed();
+        }
         $managers = DB::table('users as t1')
             ->leftJoin('roles as t2', 't2.id', '=', 't1.role_id')
             ->where('t2.name', 'Manager')
-            ->where('t1.id', '<>', $request->user()->id)
+            ->where('t1.id', '<>', $id)
             ->select(
                 't1.id',
                 't1.name',
