@@ -312,7 +312,13 @@ class TaskController extends Controller
     //* Get Sorted users for creating tasks
     public function getUserListForCreatingTask(Request $request)
     {
-        $res = $this->userList();
+        $curr_user = $request->user();
+        if (!$curr_user->hasRole(['Admin', 'Manager']))
+            return $this->notAllowed();
+        if ($curr_user->hasRole('Manager'))
+            $res = $this->userList($curr_user->id);
+        else
+            $res = $this->userList();
         return $this->successResponse($res);
     }
 
